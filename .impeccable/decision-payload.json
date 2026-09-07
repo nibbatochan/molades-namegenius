@@ -1,0 +1,146 @@
+{
+  "title": "Choose the visual world for NameGenius",
+  "question": "The roll assigned The Register of Names. Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "The Register of Names",
+      "kicker": "THE ROLL",
+      "lineage": "land-registry ledgers, title deeds, and the stamp office's security printing",
+      "thesis": "A name is not yours until the register says so. Refuses the arrangement this category always ships \u2014 a centred search field floating on a gradient with three feature cards under it \u2014 and replaces it with the artifact the product's core act already belongs to: a register you are searching, entry by entry, for whether a name is claimed.",
+      "palette": ["#EFE9DC", "#241F1A", "#16233A", "#C4322A"],
+      "materials": [
+        "laid paper stock",
+        "engine-turned guilloche",
+        "rubber-stamp impression",
+        "blind-embossed seal",
+        "ruled ledger columns"
+      ],
+      "viewport": "One full-width ledger plate, no card floating anywhere. A guilloche band runs the top edge in deed blue-black. Beneath it the thesis is set at plate scale in a high-contrast Devanagari-matched serif. Then the entry line: a single ruled ledger row where the name is typed, its folio number struck in at the left margin, and the extension selector cut into the rule itself as tabs \u2014 .in, .co.in, .com, .io, .ai. At the right of that row sits the stamp cartouche, empty until the check resolves, then taking an impression: AVAILABLE in vermilion, REGISTERED in black with the entry struck through, NO IMPRESSION for could-not-verify, and a blind-embossed seal for premium. Below the rule, two register tabs \u2014 Open Register and Vastu Register \u2014 and the primary action isolated on its own, right of the plate.",
+      "risk": "Registry and deed worlds can read as cold bureaucracy, and if the guilloche and stamp material are under-committed the whole thing collapses into a beige admin form \u2014 the exact failure mode of an under-nerved execution.",
+      "raised": [
+        {
+          "from": "Gravity-Rain Garden",
+          "raise": "One organising law now governs every element: everything sits inside the ledger's ruled cell system, type baselines included. Nothing floats, nothing shadows, no element opts out of the rule."
+        },
+        {
+          "from": "Tensegrity Breathing Column",
+          "raise": "The Vastu derivation is annotated on leader lines with its real computed values pinned to the parts of the name they produced, and that region's layout obeys the derivation network rather than a card grid."
+        },
+        {
+          "from": "Dark-First Developer Console",
+          "raise": "Stamp vermilion is reserved for state and the primary action only, never decoration, and the registrar handoff is given deliberate isolation from its neighbours."
+        },
+        {
+          "from": "Oscilloscope Signal Bench",
+          "raise": "No bare figures anywhere: every number the product shows \u2014 name number, syllable count, checked-at time, candidates examined \u2014 is read against a visible scale or divisor."
+        }
+      ],
+      "comp": ".impeccable/mocks/decision/assigned.png"
+    },
+    {
+      "id": "model-pick",
+      "label": "The Panchang",
+      "kicker": "IMPECCABLE\u2019S PICK",
+      "lineage": "Indian panchang almanac sheets, two-colour newsprint, Devanagari beside Latin",
+      "thesis": "The whole product as this year's almanac: dense ruled tables, red and black on newsprint, marginal glyph columns, and the Vastu derivation printed exactly where an almanac prints its workings.",
+      "palette": ["#F2EAD9", "#1A1713", "#B32B1E", "#23345C"],
+      "materials": ["newsprint", "two-colour letterpress", "marginal glyph columns", "ruled tables"],
+      "viewport": "A single almanac sheet: the check as the day's principal entry at the head, the derivation as a ruled table of syllable, pada, number and element, availability marked in the margin in red.",
+      "risk": "It topped my own ranking, which is the honest warning: it is close to what most runs would ship for an Indian-tradition subject, and its almanac frame speaks to the Vastu mode far better than to the ordinary domain check that most visitors arrive for.",
+      "comp": ".impeccable/mocks/decision/model-pick.png"
+    },
+    {
+      "id": "challenger-timetable",
+      "label": "Timetable Slide Rack",
+      "verdict": "competitive",
+      "lineage": "1971 pocket airline timetable as raked tinted-glass slides on a lit goldenrod bed",
+      "thesis": "Availability read the way a timetable reads a seat: a mark in a fixed cell, at one single type size, where rank is carried by weight, case and rule instead of size.",
+      "palette": ["#D9B657", "#3C4650", "#F4EEDC", "#C4322A", "#1F4034"],
+      "materials": ["tinted glass slides", "lit goldenrod stock", "acetate rule", "code strips"],
+      "viewport": "A raked rack of slides, each a name entry restating its own heading, states marked filled, hollow, struck or confirmed in fixed cells.",
+      "case": "Fuses genuinely well. Our three availability states are already marks in fixed cells, and the one-type-size discipline is a better answer to dense derivation columns than most grids manage. It holds product clarity, and loses audience identification: a goldenrod pocket timetable is a travel artifact, not the register of ownership a founder is actually consulting.",
+      "risk": "The rake and single type size are unforgiving; set timidly it reads as a broken table rather than a system.",
+      "comp": ".impeccable/mocks/decision/challenger-timetable.png",
+      "board": "https://impeccable.style/worlds/cards/rw-timetable-slide-rack.webp",
+      "hero": "https://impeccable.style/worlds/cards/rw-timetable-slide-rack-hero.webp"
+    },
+    {
+      "id": "challenger-jackfield",
+      "label": "Normalled Jackfield",
+      "verdict": "competitive",
+      "lineage": "machine-room jackfield normalling schedules, amber on black glass",
+      "thesis": "Every name tied to its derivation by a link line whose stroke pattern \u2014 unbroken, cross-ticked, gapped, doubled, open-ringed \u2014 carries the state, so no colour has to.",
+      "palette": ["#0B0B0C", "#E8A317", "#8A8377"],
+      "materials": ["black glass", "backlit schedule", "SVG link rails", "numbered lanes"],
+      "viewport": "Numbered lanes under a fixed legend strip, each name a lane tied to its default by an amber rail whose break pattern states its condition.",
+      "case": "Fuses well and answers the contrast requirement better than the assigned direction does: state encoded in stroke rather than hue survives colour blindness and dark mode for free, and its numbered lanes make a long derivation resumable. It holds product clarity and loses audience identification \u2014 a machine-room patch schedule is nobody's naming scene, least of all a first-time visitor's.",
+      "risk": "One amber on black glass is a narrow world; the almanac and ledger materials the Vastu mode wants have nowhere to live in it.",
+      "comp": ".impeccable/mocks/decision/challenger-jackfield.png",
+      "board": "https://impeccable.style/worlds/cards/operate-b-normalled-jackfield.webp",
+      "hero": "https://impeccable.style/worlds/cards/operate-b-normalled-jackfield-hero.webp"
+    },
+    {
+      "id": "challenger-gravity-rain",
+      "label": "Gravity-Rain Garden",
+      "verdict": "declined",
+      "lineage": "surreal impossible worlds, rain falling by cloud colour",
+      "palette": ["#4A5A50", "#2F6DB5", "#C4322A"],
+      "materials": ["vector gravity fields", "bending baselines"],
+      "case": "Fuses poorly on both axes: a founder checking a domain does not identify with a surreal garden, and mapping availability onto gravity fields is arbitrary where the register's stamp is literal.",
+      "kept": "Its total commitment to one organising physical law that every element obeys \u2014 now the ledger's rule system, baselines included.",
+      "hero": "https://impeccable.style/worlds/cards/dream-surreal-impossible-worlds-gravity-rain-garden-hero.webp"
+    },
+    {
+      "id": "challenger-tensegrity",
+      "label": "Tensegrity Breathing Column",
+      "verdict": "declined",
+      "lineage": "carbon rods and red cord held in opposing force",
+      "palette": ["#1A1A1A", "#D6D2C9", "#C4322A"],
+      "materials": ["carbon rods", "tension cord", "force diagrams"],
+      "case": "Loses both axes: force networks are not the founder's world, and tension-compression states do not map onto registered, free and unverified without inventing a metaphor the product would then have to teach.",
+      "kept": "Annotation pinned on leader lines with real computed values, and layout obeying the network rather than a page grid \u2014 now how the Vastu derivation is drawn.",
+      "hero": "https://impeccable.style/worlds/cards/kinetic-sculpture-automata-tensegrity-breathing-column-hero.webp"
+    },
+    {
+      "id": "challenger-console",
+      "label": "Dark-First Developer Console",
+      "verdict": "declined",
+      "lineage": "graphite panels, hairline seams, syntax-derived accents",
+      "palette": ["#1B1E22", "#E6E9ED", "#7AA2F7"],
+      "materials": ["graphite ground", "hairline seams"],
+      "case": "Clear on the task and hopeless on identification: this is the category default the calibration warns about, and it says nothing to an India-first audience arriving for a Vedic derivation. It is served honestly by the canon card instead of pretending to be a challenger.",
+      "kept": "Accents reserved for state only, and consequential actions given deliberate isolation.",
+      "hero": "https://impeccable.style/worlds/cards/digital-design-canon-dark-first-developer-console-hero.webp"
+    },
+    {
+      "id": "challenger-oscilloscope",
+      "label": "Oscilloscope Signal Bench",
+      "verdict": "declined",
+      "lineage": "phosphor trace on an etched graticule",
+      "palette": ["#0A0F0A", "#3DF07A", "#E8A317"],
+      "materials": ["phosphor glow", "etched graticule", "detented knobs"],
+      "case": "Loses both: a waveform bench is not where naming happens, and tabular name data has nowhere to live on a single graticule screen.",
+      "kept": "Nothing unmeasured on screen \u2014 every figure read against a visible scale, now applied to every number the product prints.",
+      "hero": "https://impeccable.style/worlds/cards/scientific-notation-oscilloscope-signal-bench-hero.webp"
+    }
+  ],
+  "reroll": {
+    "registers": ["safer", "bolder"]
+  },
+  "buildPath": {
+    "value": "comp",
+    "toggle": true
+  },
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "What an AI naming tool ships, executed impeccably: near-black page, one gradient accent, a large centred search field, three feature cards, a wall of generated names.",
+    "palette": ["#0B0D10", "#F5F7FA", "#3B82F6"],
+    "materials": ["clean grid", "glass cards", "gradient accent"],
+    "viewport": "The arrangement a visitor expects, at full craft: centred field, instant results below, features beneath that.",
+    "risk": "Indistinguishable from the competition by design \u2014 which is sometimes exactly the right trade.",
+    "comp": ".impeccable/mocks/decision/canon.png"
+  },
+  "steer": true
+}
