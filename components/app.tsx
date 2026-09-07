@@ -13,9 +13,27 @@ import {
   type RunInput,
 } from "@/lib/types";
 import { EntryLine } from "./entry-line";
-import { RuleOrnament } from "./guilloche";
-import { Action, Clerk, Impression, Measured, Rule } from "./ledger";
+import {
+  BoltIcon,
+  ChevronIcon,
+  ClockIcon,
+  CloseIcon,
+  LinkIcon,
+  SparkIcon,
+  TagIcon,
+  TargetIcon,
+  TextIcon,
+} from "./icons";
 import { ResultsPanel, type RunPhase } from "./results";
+import {
+  Button,
+  Card,
+  ChoicePill,
+  CountBadge,
+  Hairline,
+  SectionLabel,
+  StatusPill,
+} from "./ui";
 
 const DESCRIPTION_MAX = 1000;
 
@@ -31,9 +49,8 @@ const EXAMPLE = {
 /**
  * The open register: check a name, and when it is gone, get names that are not.
  *
- * Everything optional stays folded until asked for. One filled row is enough to
- * run, which is why the entry line sits alone above the fold and the rest of
- * the sheet is disclosed underneath it.
+ * One filled field is enough to run, which is why the name field sits alone at
+ * the top and everything else stays folded until asked for.
  */
 export function OpenRegister() {
   const [name, setName] = useState("");
@@ -120,7 +137,6 @@ export function OpenRegister() {
     setCandidates([]);
     setCheckedCount(0);
     setRunTld(tld);
-    // The results land below the sheet, so take the reader with them.
     requestAnimationFrame(() =>
       resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
     );
@@ -173,83 +189,99 @@ export function OpenRegister() {
   const remaining = DESCRIPTION_MAX - description.length;
 
   return (
-    <div>
-      <EntryLine
-        value={name}
-        onChange={setName}
-        tld={tld}
-        onTldChange={setTld}
-        onResult={recordCheck}
-        onFindAlternatives={run}
-      />
+    <div className="space-y-4">
+      <Card className="p-6 lg:p-7">
+        <EntryLine
+          value={name}
+          onChange={setName}
+          tld={tld}
+          onTldChange={setTld}
+          onResult={recordCheck}
+          onFindAlternatives={run}
+        />
+      </Card>
 
       {checks.length > 0 ? (
-        <div className="ruled flex flex-wrap items-center gap-x-6 gap-y-3 py-4">
-          <Clerk>Checked this session</Clerk>
-          <ul className="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <Card className="p-5">
+          <SectionLabel icon={<ClockIcon />}>Checked this session</SectionLabel>
+          <ul className="mt-3.5 flex flex-wrap items-center gap-2">
             {checks.map((check) => (
               <li key={check.domain}>
                 <button
                   type="button"
                   onClick={() => setName(check.domain.split(".")[0])}
-                  className="folio flex items-center gap-2 text-[13px] text-ink-2 hover:text-ink"
+                  className="quiet-fill inline-flex items-center gap-2 rounded-full py-1.5 pr-1.5 pl-3 text-[13px] font-semibold transition-all duration-200 ease-soft hover:quiet-fill-hover"
                 >
                   {check.domain}
-                  <Impression state={check.state} size="sm" />
+                  <StatusPill state={check.state} compact />
                 </button>
               </li>
             ))}
           </ul>
-        </div>
+        </Card>
       ) : null}
 
       {/* Everything beyond the name is disclosed on request. */}
-      <div className="ruled">
+      <Card>
         <button
           type="button"
           onClick={() => setSheetOpen((v) => !v)}
           aria-expanded={sheetOpen}
-          className="flex w-full items-baseline gap-5 py-5 text-left"
+          className="flex w-full items-center gap-4 p-6 text-left lg:p-7"
         >
-          <span className="font-display text-[19px] font-semibold tracking-[-0.01em]">
-            Tell the register what you are building
+          <span className="min-w-0">
+            <span className="block text-[16px] font-semibold tracking-[-0.01em]">
+              Tell us what you&rsquo;re building
+            </span>
+            <span className="mt-1 block text-[13px] text-ink-3">
+              Optional, and it makes the suggestions much better.
+            </span>
           </span>
-          <span className="clerk ml-auto text-ink-3">
-            {sheetOpen ? "Close" : canRun ? "Open — filled" : "Open — optional"}
+          <span className="ml-auto flex shrink-0 items-center gap-3">
+            {canRun && !sheetOpen ? <CountBadge>Filled</CountBadge> : null}
+            <ChevronIcon
+              className={`size-5 text-ink-3 transition-transform duration-200 ease-soft ${
+                sheetOpen ? "rotate-180" : ""
+              }`}
+            />
           </span>
         </button>
 
         {sheetOpen ? (
-          <div className="pb-8">
-            <Row
-              label="What you are building"
-              why="The more specific, the better the names. Who it is for, and what it replaces, both help."
+          <div className="space-y-6 px-6 pb-7 lg:px-7">
+            <Hairline />
+
+            <Field
+              icon={<TextIcon />}
+              label="What you're building"
+              hint="The more specific, the better the names. Who it's for, and what it replaces, both help."
               trailing={
                 <span
-                  className={`folio clerk ${remaining <= 120 ? "text-stamp" : "text-ink-3"}`}
+                  className={`text-[12px] font-semibold tabular-nums ${
+                    remaining <= 120 ? "text-warn" : "text-ink-3"
+                  }`}
                 >
-                  {`${description.length} / ${DESCRIPTION_MAX}`}
+                  {`${description.length}/${DESCRIPTION_MAX}`}
                 </span>
               }
             >
-              <textarea
+              <Textarea
                 value={description}
-                onChange={(e) => setDescription(e.target.value.slice(0, DESCRIPTION_MAX))}
-                rows={6}
-                aria-label="What you are building"
+                onChange={(v) => setDescription(v.slice(0, DESCRIPTION_MAX))}
+                label="What you're building"
                 placeholder="A scheduling tool for independent physiotherapy clinics. Patients book their own appointments, clinicians share one calendar, and reminders go out over SMS the day before."
-                className="w-full border border-rule bg-transparent px-3.5 py-3 text-[15px] leading-relaxed focus:border-ink-2"
               />
               {prefilledFrom ? (
-                <p className="mt-2 text-[12.5px] text-ink-2">
-                  {`Prefilled from ${prefilledFrom}. Edit anything that is not right.`}
+                <p className="mt-2 text-[12.5px] text-ok">
+                  {`Prefilled from ${prefilledFrom}. Edit anything that isn't right.`}
                 </p>
               ) : null}
-            </Row>
+            </Field>
 
-            <Row
-              label="Read it off a site"
-              why="Paste a URL and we read the page's own description and keywords off it. Nothing is stored."
+            <Field
+              icon={<LinkIcon />}
+              label="Or read it off a site"
+              hint="Paste a URL and we read the page's own description and keywords off it. Nothing is stored."
             >
               <UrlRow
                 onDerived={(derived) => {
@@ -264,11 +296,12 @@ export function OpenRegister() {
                   setPrefilledFrom(derived.title || derived.url);
                 }}
               />
-            </Row>
+            </Field>
 
-            <Row
+            <Field
+              icon={<TagIcon />}
               label="Keywords"
-              why="Words the name should feel connected to. Press enter or comma to add."
+              hint="Words the name should feel connected to. Press enter or comma to add."
             >
               <Chips
                 values={keywords}
@@ -285,11 +318,12 @@ export function OpenRegister() {
                   setSuggested((previous) => previous.filter((s) => s !== value));
                 }}
               />
-            </Row>
+            </Field>
 
-            <Row
+            <Field
+              icon={<TargetIcon />}
               label="Competitors"
-              why="Used for positioning. We never suggest a name that collides with one of these."
+              hint="Used for positioning. We never suggest a name that collides with one of these."
             >
               <Chips
                 values={competitors}
@@ -297,13 +331,14 @@ export function OpenRegister() {
                 placeholder="cliniko, jane app"
                 label="Competitors"
               />
-            </Row>
+            </Field>
 
-            <Row
+            <Field
+              icon={<BoltIcon />}
               label="How it should sound"
-              why="Optional. These sharpen the shortlist rather than deciding it."
+              hint="Optional. These sharpen the shortlist rather than deciding it."
             >
-              <div className="grid gap-5">
+              <div className="space-y-4">
                 <Pick
                   legend="Tone"
                   options={[
@@ -341,90 +376,119 @@ export function OpenRegister() {
                   }
                 />
               </div>
-            </Row>
+            </Field>
           </div>
         ) : null}
-      </div>
+      </Card>
 
-      <Rule strong />
-
-      <div className="flex flex-wrap items-end justify-between gap-6 py-7">
-        <div>
-          <Clerk>Input strength</Clerk>
-          <div className="mt-2 flex items-center gap-4">
-            <Measured value={strength.score} of={STRENGTH_MAX} unit={strength.level} />
-            <span aria-hidden="true" className="flex items-center gap-1">
-              {Array.from({ length: STRENGTH_MAX }, (_, i) => (
-                <span
-                  key={i}
-                  className={`h-2.5 w-6 ${i < strength.score ? "bg-ink" : "bg-rule-2"}`}
-                />
-              ))}
-            </span>
-          </div>
-          <p className="mt-2.5 max-w-[52ch] text-[13px] leading-relaxed text-ink-3">
-            {strength.nextStep
-              ? `Nothing is required. The one thing that would sharpen the names most: ${strength.nextStep.toLowerCase()}.`
-              : "Everything filled in. The generator has as much to work with as it can get."}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2.5">
-          {isEmpty ? (
-            <Action variant="ruled" onClick={applyExample}>
-              Fill in an example
-            </Action>
-          ) : null}
-          <Action size="lg" onClick={run} disabled={!canRun} loading={phase === "running"}>
-            {phase === "running" ? "Pressing" : "Find names that are free"}
-          </Action>
-        </div>
-      </div>
-
-      <div ref={resultsRef}>
-        {phase !== "idle" ? (
-          <>
-            <RuleOrnament className="py-2" />
-            <div className="pt-8">
-              <ResultsPanel
-                candidates={candidates}
-                phase={phase}
-                checked={checkedCount}
-                seedName={normalizeName(name, runTld).label}
-                tld={runTld}
-              />
+      <Card className="p-6 lg:p-7">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div className="min-w-0">
+            <SectionLabel>Input strength</SectionLabel>
+            <div className="mt-3 flex items-center gap-3">
+              <span className="flex items-center gap-1" aria-hidden="true">
+                {Array.from({ length: STRENGTH_MAX }, (_, i) => (
+                  <span
+                    key={i}
+                    className={`h-2 w-7 rounded-full ${
+                      i < strength.score ? "bg-accent" : "quiet-fill"
+                    }`}
+                  />
+                ))}
+              </span>
+              <span className="text-[13px] font-semibold tabular-nums text-ink-2">
+                {`${strength.score}/${STRENGTH_MAX} · ${strength.level}`}
+              </span>
             </div>
-          </>
+            <p className="mt-2.5 max-w-[50ch] text-[13px] leading-relaxed text-ink-3">
+              {strength.nextStep
+                ? `Nothing is required. The one thing that would sharpen the names most: ${strength.nextStep.toLowerCase()}.`
+                : "Everything filled in. The generator has as much to work with as it can get."}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            {isEmpty ? (
+              <Button variant="quiet" onClick={applyExample}>
+                Fill in an example
+              </Button>
+            ) : null}
+            <Button size="lg" onClick={run} disabled={!canRun} loading={phase === "running"}>
+              <SparkIcon className="size-4" />
+              {phase === "running" ? "Finding names" : "Find available names"}
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      <div ref={resultsRef} className="scroll-mt-6">
+        {phase !== "idle" ? (
+          <div className="pt-6">
+            <ResultsPanel
+              candidates={candidates}
+              phase={phase}
+              checked={checkedCount}
+              seedName={normalizeName(name, runTld).label}
+              tld={runTld}
+            />
+          </div>
         ) : null}
       </div>
     </div>
   );
 }
 
-// --- Sheet rows -------------------------------------------------------------
+// --- Fields -----------------------------------------------------------------
 
-function Row({
+function Field({
+  icon,
   label,
-  why,
+  hint,
   children,
   trailing,
 }: {
+  icon?: ReactNode;
   label: string;
-  why: string;
+  hint: string;
   children: ReactNode;
   trailing?: ReactNode;
 }) {
   return (
-    <div className="ruled grid gap-4 py-5 md:grid-cols-[minmax(0,26ch)_minmax(0,1fr)] md:gap-8">
-      <div>
-        <div className="flex items-baseline gap-3">
-          <p className="text-[15px] leading-snug font-semibold tracking-[-0.01em]">{label}</p>
-          {trailing ? <span className="ml-auto md:ml-0">{trailing}</span> : null}
-        </div>
-        <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-3">{why}</p>
-      </div>
-      <div className="min-w-0">{children}</div>
+    <div className="space-y-3">
+      <SectionLabel icon={icon} trailing={trailing}>
+        {label}
+      </SectionLabel>
+      <p className="text-[12.5px] leading-relaxed text-ink-3">{hint}</p>
+      {children}
     </div>
+  );
+}
+
+function Textarea({
+  value,
+  onChange,
+  label,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+  placeholder: string;
+}) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      rows={6}
+      aria-label={label}
+      placeholder={placeholder}
+      className={`field-surface w-full px-4 py-3.5 text-[15px] leading-relaxed ${
+        focused ? "field-focus" : ""
+      }`}
+    />
   );
 }
 
@@ -441,26 +505,17 @@ function Pick({
 }) {
   return (
     <fieldset>
-      <legend className="clerk mb-2.5 text-ink-3">{legend}</legend>
-      <div className="flex flex-wrap items-stretch">
-        {options.map((option) => {
-          const active = option.id === value;
-          return (
-            <button
-              key={option.id}
-              type="button"
-              aria-pressed={active}
-              onClick={() => onChange(option.id)}
-              className={`clerk -ml-hair inline-flex h-10 items-center border px-3.5 transition-colors duration-150 first:ml-0 ${
-                active
-                  ? "z-10 border-ink bg-ink text-stock"
-                  : "border-rule text-ink-2 hover:bg-band hover:text-ink"
-              }`}
-            >
-              {option.label}
-            </button>
-          );
-        })}
+      <legend className="u-label mb-2.5">{legend}</legend>
+      <div className="flex flex-wrap items-center gap-2">
+        {options.map((option) => (
+          <ChoicePill
+            key={option.id}
+            active={option.id === value}
+            onClick={() => onChange(option.id)}
+          >
+            {option.label}
+          </ChoicePill>
+        ))}
       </div>
     </fieldset>
   );
@@ -484,6 +539,7 @@ function Chips({
   onDismiss?: (value: string) => void;
 }) {
   const [draft, setDraft] = useState("");
+  const [focused, setFocused] = useState(false);
 
   function commit(raw: string) {
     const value = raw.trim().toLowerCase().replace(/\s+/g, " ");
@@ -492,25 +548,27 @@ function Chips({
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center gap-2">
-        {values.map((value) => (
-          <span
-            key={value}
-            className="inline-flex items-center gap-2 border border-rule px-2.5 py-1.5 text-[13px]"
-          >
-            {value}
-            <button
-              type="button"
-              onClick={() => onChange(values.filter((v) => v !== value))}
-              aria-label={`Remove ${value}`}
-              className="text-ink-3 hover:text-stamp"
+    <div className="space-y-3">
+      {values.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {values.map((value) => (
+            <span
+              key={value}
+              className="quiet-fill inline-flex items-center gap-1.5 rounded-full py-1.5 pr-2 pl-3 text-[13px] font-semibold"
             >
-              &times;
-            </button>
-          </span>
-        ))}
-      </div>
+              {value}
+              <button
+                type="button"
+                onClick={() => onChange(values.filter((v) => v !== value))}
+                aria-label={`Remove ${value}`}
+                className="text-ink-3 transition-colors duration-200 hover:text-ink"
+              >
+                <CloseIcon className="size-3.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : null}
 
       <input
         value={draft}
@@ -529,28 +587,28 @@ function Chips({
             onChange(values.slice(0, -1));
           }
         }}
+        onFocus={() => setFocused(true)}
         onBlur={() => {
+          setFocused(false);
           commit(draft);
           setDraft("");
         }}
         placeholder={values.length >= 10 ? "Ten is the limit" : placeholder}
         aria-label={label}
         disabled={values.length >= 10}
-        className={`h-11 w-full border border-rule bg-transparent px-3 text-[14.5px] focus:border-ink-2 ${
-          values.length ? "mt-2.5" : ""
-        }`}
+        className={`field-surface h-12 w-full px-4 text-[14.5px] ${focused ? "field-focus" : ""}`}
       />
 
       {suggestions.length > 0 ? (
-        <div className="mt-3">
-          <Clerk className="mb-2">From your description</Clerk>
+        <div className="space-y-2">
+          <p className="u-label">From your description</p>
           <ul className="flex flex-wrap items-center gap-2">
             {suggestions.slice(0, 6).map((suggestion) => (
-              <li key={suggestion} className="flex items-stretch">
+              <li key={suggestion} className="flex items-center">
                 <button
                   type="button"
                   onClick={() => onAccept?.(suggestion)}
-                  className="border border-dashed border-rule-strong px-2.5 py-1.5 text-[13px] text-ink-2 hover:bg-band hover:text-ink"
+                  className="rounded-l-full py-1.5 pr-2 pl-3 text-[13px] font-semibold text-accent ring-1 ring-accent-soft transition-all duration-200 ease-soft hover:bg-accent-soft"
                 >
                   {`+ ${suggestion}`}
                 </button>
@@ -558,9 +616,9 @@ function Chips({
                   type="button"
                   onClick={() => onDismiss?.(suggestion)}
                   aria-label={`Dismiss ${suggestion}`}
-                  className="-ml-hair border border-dashed border-rule-strong px-2 text-ink-3 hover:text-stamp"
+                  className="rounded-r-full py-1.5 pr-2.5 pl-1.5 text-ink-3 ring-1 ring-accent-soft transition-colors duration-200 hover:text-ink"
                 >
-                  &times;
+                  <CloseIcon className="size-3.5" />
                 </button>
               </li>
             ))}
@@ -577,6 +635,7 @@ function UrlRow({ onDerived }: { onDerived: (derived: Derived) => void }) {
   const [url, setUrl] = useState("");
   const [state, setState] = useState<"idle" | "fetching" | "done" | "failed">("idle");
   const [message, setMessage] = useState("");
+  const [focused, setFocused] = useState(false);
 
   async function fetchIt() {
     if (!url.trim()) return;
@@ -594,7 +653,7 @@ function UrlRow({ onDerived }: { onDerived: (derived: Derived) => void }) {
         setMessage(
           data.error === "blocked"
             ? "That address is not one we will fetch."
-            : "We could not read anything useful off that page. Type the description instead.",
+            : "We couldn't read anything useful off that page. Type the description instead.",
         );
         return;
       }
@@ -608,16 +667,18 @@ function UrlRow({ onDerived }: { onDerived: (derived: Derived) => void }) {
       setMessage(`Read from ${data.title || url}.`);
     } catch {
       setState("failed");
-      setMessage("That fetch did not complete. Type the description instead.");
+      setMessage("That fetch didn't complete. Type the description instead.");
     }
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-stretch gap-2">
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
         <input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -627,16 +688,18 @@ function UrlRow({ onDerived }: { onDerived: (derived: Derived) => void }) {
           placeholder="https://example.com"
           aria-label="A site to read the description from"
           inputMode="url"
-          className="folio h-11 min-w-0 flex-1 border border-rule bg-transparent px-3 text-[14.5px] focus:border-ink-2"
+          className={`field-surface h-12 min-w-0 flex-1 px-4 text-[14.5px] ${
+            focused ? "field-focus" : ""
+          }`}
         />
-        <Action variant="ruled" onClick={fetchIt} loading={state === "fetching"}>
+        <Button variant="outline" onClick={fetchIt} loading={state === "fetching"}>
           {state === "fetching" ? "Reading" : "Read it"}
-        </Action>
+        </Button>
       </div>
       {message ? (
         <p
-          className={`mt-2 text-[12.5px] leading-relaxed ${
-            state === "failed" ? "text-stamp" : "text-ink-2"
+          className={`text-[12.5px] leading-relaxed ${
+            state === "failed" ? "text-warn" : "text-ok"
           }`}
         >
           {message}

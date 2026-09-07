@@ -1,83 +1,190 @@
 @import "tailwindcss";
 
-/* The register is printed on one of two stocks. `paper` is the day desk under
-   room light; `deed` is the same book read at 1am with the laptop as the only
-   light source, so it is an oxidised ledger blue rather than a neutral black. */
-@custom-variant deed (&:where([data-stock="deed"], [data-stock="deed"] *));
+/* The original design language: soft cards on a cool grey canvas, pill
+   controls, a blue accent, and tinted panels. The palette below is the light
+   theme as it was; the dark theme is its counterpart, added because the
+   product keeps a real theme preference now. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root,
-[data-stock="paper"] {
-  --stock: #efe9dc;
-  --stock-band: #e7dfcd;
-  --stock-sunk: #e3dac6;
-  --ink: #241f1a;
-  --ink-2: #5c544a;
-  --ink-3: #6b6255;
-  --rule: rgba(36, 31, 26, 0.3);
-  --rule-2: rgba(36, 31, 26, 0.14);
-  --rule-strong: rgba(36, 31, 26, 0.62);
-  --deed: #16233a;
-  --deed-ink: #f1ece0;
-  /* A selected tab reverses out. On paper that is the deed navy; on the deed
-     stock the navy is the ground, so there it has to be the ink instead. */
-  --tab-on: #16233a;
-  --tab-on-ink: #f1ece0;
-  --stamp: #a82920;
-  --stamp-fill: #c4322a;
-  --seal: #4b3f86;
-  --laid: rgba(36, 31, 26, 0.022);
-  --chain: rgba(36, 31, 26, 0.05);
+[data-theme="light"] {
+  --canvas: #edeef1;
+  --card: #ffffff;
+  --hair: #e7e9ed;
+  --field: #f4f5f7;
+  --field-on: #ffffff;
+
+  --ink: #14161a;
+  --ink-2: #6f757e;
+  --ink-3: #9aa1aa;
+
+  --accent: #0a7aff;
+  /* The fill is the darker step: white on #0a7aff is only 4.0:1, which a
+     button label at this size should not ship at. #0a6ae0 reads the same and
+     clears 5:1. The lighter value stays for focus rings and quiet accents. */
+  --accent-fill: #0a6ae0;
+  --accent-fill-hover: #0a5cc4;
+  --accent-fg: #ffffff;
+  --accent-soft: #e8f2ff;
+
+  --lime: #dcf94b;
+  --obsidian: #24262c;
+  --obsidian-fg: #ffffff;
+
+  --ok: #17945a;
+  --ok-soft: #e4f6ea;
+  --taken: #5f656e;
+  --taken-soft: #eceef1;
+  --warn: #8a5600;
+  --warn-soft: #fdf0d9;
+  --prem: #6b45d9;
+  --prem-soft: #efeaff;
+
+  --tint-lav: #eef0ff;
+  --tint-cream: #f7f3e6;
+  --tint-pink: #fceef4;
+  --tint-mint: #e9f7ef;
+
+  --ring: rgba(10, 122, 255, 0.12);
+  --ring-line: rgba(10, 122, 255, 0.4);
+  --inset: rgba(18, 20, 24, 0.05);
+  --hover: rgba(18, 20, 24, 0.05);
+  --hover-2: rgba(18, 20, 24, 0.08);
+
+  --shadow-card: 0 1px 2px rgba(18, 20, 24, 0.05),
+    0 10px 28px -12px rgba(18, 20, 24, 0.14);
+  --shadow-lift: 0 2px 4px rgba(18, 20, 24, 0.06),
+    0 18px 44px -16px rgba(18, 20, 24, 0.2);
 }
 
-[data-stock="deed"] {
-  --stock: #101724;
-  --stock-band: #16202f;
-  --stock-sunk: #0b111b;
-  --ink: #ede6d8;
-  --ink-2: #b9af9c;
-  --ink-3: #8e8577;
-  --rule: rgba(237, 230, 216, 0.26);
-  --rule-2: rgba(237, 230, 216, 0.12);
-  --rule-strong: rgba(237, 230, 216, 0.5);
-  --deed: #0a1120;
-  --deed-ink: #ede6d8;
-  --tab-on: #ede6d8;
-  --tab-on-ink: #101724;
-  --stamp: #e4573f;
-  /* Darkened from the display vermilion so a small letterspaced label in white
-     clears 4.5:1 on it rather than sitting exactly on the line. */
-  --stamp-fill: #c43e29;
-  --seal: #a99ae8;
-  --laid: rgba(237, 230, 216, 0.022);
-  --chain: rgba(237, 230, 216, 0.045);
+[data-theme="dark"] {
+  --canvas: #0f1115;
+  --card: #171a20;
+  --hair: #262a32;
+  --field: #1d2128;
+  --field-on: #21262e;
+
+  --ink: #eef0f4;
+  --ink-2: #a2a9b4;
+  --ink-3: #7c848f;
+
+  --accent: #4d9bff;
+  --accent-fill: #3d8ef5;
+  --accent-fill-hover: #5aa4ff;
+  /* On a light-blue fill the readable label is the dark canvas, not white:
+     white on #3d8ef5 is under 3:1. */
+  --accent-fg: #0d1117;
+  --accent-soft: #16233a;
+
+  --lime: #cbe83f;
+  --obsidian: #e7e9ee;
+  --obsidian-fg: #14161a;
+
+  --ok: #4ec98a;
+  --ok-soft: #12291d;
+  --taken: #a2a9b4;
+  --taken-soft: #22262e;
+  --warn: #e0a338;
+  --warn-soft: #2e2413;
+  --prem: #a48cf0;
+  --prem-soft: #221c38;
+
+  --tint-lav: #191b2a;
+  --tint-cream: #241f16;
+  --tint-pink: #2a1a22;
+  --tint-mint: #14261c;
+
+  --ring: rgba(77, 155, 255, 0.18);
+  --ring-line: rgba(77, 155, 255, 0.55);
+  --inset: rgba(255, 255, 255, 0.07);
+  --hover: rgba(255, 255, 255, 0.06);
+  --hover-2: rgba(255, 255, 255, 0.1);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 28px -12px rgba(0, 0, 0, 0.7);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.55), 0 18px 44px -16px rgba(0, 0, 0, 0.8);
 }
 
 @theme inline {
-  --color-stock: var(--stock);
-  --color-band: var(--stock-band);
-  --color-sunk: var(--stock-sunk);
+  --color-canvas: var(--canvas);
+  --color-card: var(--card);
+  --color-hair: var(--hair);
+  --color-field: var(--field);
+
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
-  --color-rule: var(--rule);
-  --color-rule-2: var(--rule-2);
-  --color-rule-strong: var(--rule-strong);
-  --color-deed: var(--deed);
-  --color-deed-ink: var(--deed-ink);
-  --color-tab-on: var(--tab-on);
-  --color-tab-on-ink: var(--tab-on-ink);
-  --color-stamp: var(--stamp);
-  --color-stamp-fill: var(--stamp-fill);
-  --color-seal: var(--seal);
 
-  --font-display: var(--font-display), ui-serif, Georgia, serif;
-  --font-text: var(--font-text), ui-sans-serif, system-ui, sans-serif;
+  --color-accent: var(--accent);
+  --color-accent-fill: var(--accent-fill);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-lime: var(--lime);
+  --color-obsidian: var(--obsidian);
+  --color-obsidian-fg: var(--obsidian-fg);
 
-  /* Ledger rules are hairlines at every density, never scaled up into borders. */
-  --spacing-hair: 1px;
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-taken: var(--taken);
+  --color-taken-soft: var(--taken-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-prem: var(--prem);
+  --color-prem-soft: var(--prem-soft);
 
-  --ease-stamp: cubic-bezier(0.16, 1.4, 0.3, 1);
-  --ease-draw: cubic-bezier(0.2, 0.9, 0, 1);
+  --color-tint-lav: var(--tint-lav);
+  --color-tint-cream: var(--tint-cream);
+  --color-tint-pink: var(--tint-pink);
+  --color-tint-mint: var(--tint-mint);
+
+  --radius-card: 26px;
+  --radius-ctl: 16px;
+  --radius-inner: 12px;
+
+  --shadow-card: var(--shadow-card);
+  --shadow-lift: var(--shadow-lift);
+
+  --ease-soft: cubic-bezier(0.22, 0.68, 0, 1);
+}
+
+@utility u-label {
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+@utility card-surface {
+  background: var(--card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+@utility field-surface {
+  background: var(--field);
+  border-radius: var(--radius-ctl);
+  box-shadow: inset 0 0 0 1px var(--inset);
+  transition:
+    box-shadow 160ms var(--ease-soft),
+    background 160ms var(--ease-soft);
+}
+
+@utility field-focus {
+  background: var(--field-on);
+  box-shadow:
+    inset 0 0 0 1px var(--ring-line),
+    0 0 0 4px var(--ring);
+}
+
+/* Quiet fills, so a hover or a chip does not need a hard-coded black alpha
+   that inverts wrongly on the dark theme. */
+@utility quiet-fill {
+  background: var(--hover);
+}
+
+@utility quiet-fill-hover {
+  background: var(--hover-2);
 }
 
 @layer base {
@@ -85,43 +192,23 @@
     color-scheme: light;
   }
 
-  [data-stock="deed"] {
+  [data-theme="dark"] {
     color-scheme: dark;
   }
 
   body {
-    /* Laid paper, as the mould actually leaves it: fine laid lines close
-       together in one direction, and chain lines far apart across them. Both
-       are near-invisible individually — two dense grids would read as graph
-       paper, which is a different stationery altogether. */
-    background-color: var(--stock);
-    background-image:
-      repeating-linear-gradient(
-        90deg,
-        var(--laid) 0 1px,
-        transparent 1px 5px
-      ),
-      repeating-linear-gradient(
-        0deg,
-        var(--chain) 0 1px,
-        transparent 1px 84px
-      ),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23t)' opacity='0.32'/%3E%3C/svg%3E");
-    background-blend-mode: normal, normal, soft-light;
+    background: var(--canvas);
     color: var(--ink);
-    font-family: var(--font-text);
-    font-feature-settings: "tnum" 1;
+    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Layered on purpose: unlayered declarations outrank every Tailwind utility. */
   input,
   textarea,
   button,
   select {
     font: inherit;
     color: inherit;
-    background: none;
   }
 
   input:focus,
@@ -135,9 +222,8 @@
     resize: none;
   }
 
-  /* The surfaces we did not draw still belong to the register. */
   ::selection {
-    background: color-mix(in oklab, var(--stamp-fill) 26%, transparent);
+    background: var(--ring);
     color: var(--ink);
   }
 
@@ -147,139 +233,58 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--stamp);
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
 
   * {
-    caret-color: var(--stamp);
-  }
-
-  * {
+    caret-color: var(--accent);
     scrollbar-width: thin;
-    scrollbar-color: var(--rule-strong) transparent;
+    scrollbar-color: var(--ink-3) transparent;
   }
 
   ::-webkit-scrollbar {
-    width: 11px;
-    height: 11px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: var(--stock-sunk);
+    width: 12px;
+    height: 12px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--rule-strong);
-    border: 3px solid var(--stock-sunk);
-    border-radius: 0;
+    background: var(--hair);
+    border: 3px solid var(--canvas);
+    border-radius: 99px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ink-3);
   }
 
   a {
-    text-underline-offset: 0.22em;
-    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
   }
 }
 
-/* A clerk's label: letterspaced small capitals, the only label form in the book. */
-@utility clerk {
-  font-family: var(--font-text);
-  font-size: 10.5px;
-  line-height: 1;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-variation-settings: "wdth" 92;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-@utility clerk-lg {
-  font-family: var(--font-text);
-  font-size: 12.5px;
-  line-height: 1.1;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-variation-settings: "wdth" 92;
-}
-
-/* Folio and every other figure: tabular, so columns of numbers line up. */
-@utility folio {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "zero" 1;
-  letter-spacing: 0.04em;
-}
-
-/* Engine-turned line work, drawn as real lathe curves in guilloche.tsx. The
-   band only ever carries the pattern; it never gradients into the page. */
-@utility plate {
-  background-color: var(--deed);
-  color: var(--deed-ink);
-}
-
-/* A ruled row. Division in this world is a hairline, never a shadow or radius. */
-@utility ruled {
-  border-top: 1px solid var(--rule);
-}
-
-@utility ruled-b {
-  border-bottom: 1px solid var(--rule);
-}
-
-@utility ruled-col {
-  border-left: 1px solid var(--rule-2);
-}
-
-/* The stamp: an impression, so its coverage breaks up the way a rubber stamp
-   actually prints. The erosion is deliberately slight — a real stamp is mostly
-   solid with a mottled bite, and anything heavier stops being readable, which
-   would make the most load-bearing word on the page the least legible one. */
-@utility impression {
-  --impression-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='130'%3E%3Cfilter id='e'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='3' seed='7'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -0.42 1.2'/%3E%3C/filter%3E%3Crect width='260' height='130' filter='url(%23e)'/%3E%3C/svg%3E");
-  -webkit-mask-image: var(--impression-mask);
-  mask-image: var(--impression-mask);
-  -webkit-mask-size: 260px 130px;
-  mask-size: 260px 130px;
-}
-
-/* The one authored moment: the impression compresses as it lands. */
-@keyframes strike {
+@keyframes popIn {
   0% {
     opacity: 0;
-    transform: rotate(var(--tilt, -2.4deg)) scale(1.7);
-    filter: blur(3px);
-  }
-  55% {
-    opacity: 1;
-    filter: blur(0);
+    transform: scale(0.9);
   }
   70% {
-    transform: rotate(var(--tilt, -2.4deg)) scale(0.965);
+    transform: scale(1.03);
   }
   100% {
     opacity: 1;
-    transform: rotate(var(--tilt, -2.4deg)) scale(1);
-    filter: blur(0);
-  }
-}
-
-/* A registered entry is struck through by a rule that draws across it. */
-@keyframes strike-rule {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
-@keyframes write-in {
-  from {
-    opacity: 0;
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
+    transform: scale(1);
   }
 }
 

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import type { Candidate } from "@/lib/types";
-import { Action, Clerk, Folio, Impression, Measured, Nib, Rule } from "./ledger";
+import { ChevronIcon, LayersIcon, SparkIcon } from "./icons";
+import { Button, Card, CountBadge, Hairline, SectionLabel, Spinner, StatusPill } from "./ui";
 
 export type RunPhase = "idle" | "running" | "done";
 
@@ -15,12 +16,9 @@ const STYLE_COPY: Record<Candidate["style"], string> = {
 };
 
 /**
- * The results ledger. Names arrive as ruled entries, written in as the registry
- * answers, each with its impression already taken — nothing appears here that
- * has not been checked, so a row never changes its mind after you read it.
- *
- * Detail is folded: the entry carries the name and the verdict, and the
- * reasoning opens on request rather than shouting over twenty other rows.
+ * The results. Names appear as the registry answers, each already checked, so
+ * a card never changes its mind after you have read it. The reasoning is folded
+ * away rather than shouting over twenty other cards.
  */
 export function ResultsPanel({
   candidates,
@@ -39,105 +37,94 @@ export function ResultsPanel({
   const fresh = candidates.filter((c) => c.group === "fresh");
 
   return (
-    <section aria-label="Names found">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3 pb-5">
-        <h2 className="font-display text-[26px] leading-none font-semibold tracking-[-0.02em]">
-          {phase === "running" ? "Pressing the register" : "The register"}
+    <section aria-label="Names found" className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+        <h2 className="text-[22px] font-semibold tracking-[-0.02em]">
+          {phase === "running" ? "Checking names" : "Names you can own"}
         </h2>
-        <div className="flex items-center gap-5">
-          <Measured value={candidates.length} unit={`free on .${tld}`} />
-          <Measured value={checked} unit="checked" />
-          {phase === "running" ? <Nib /> : null}
+        <div className="flex items-center gap-3 text-[13px] font-semibold text-ink-2">
+          <CountBadge>{`${candidates.length} free on .${tld}`}</CountBadge>
+          <CountBadge>{`${checked} checked`}</CountBadge>
+          {phase === "running" ? <Spinner /> : null}
         </div>
       </div>
 
-      <Rule strong />
-
       {candidates.length === 0 && phase === "running" ? (
-        <ul aria-hidden="true">
-          {Array.from({ length: 5 }, (_, i) => (
-            <li key={i} className="ruled-b flex items-center gap-6 py-6">
-              <span className="h-hair w-10 bg-rule-2" />
-              <span
-                className="h-5 bg-rule-2"
-                style={{ width: `${34 - i * 4}%`, opacity: 1 - i * 0.16 }}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }, (_, i) => (
+            <Card key={i} className="p-5">
+              <div
+                className="quiet-fill h-6 rounded-full"
+                style={{ width: `${68 - i * 6}%` }}
               />
-            </li>
+              <div className="quiet-fill mt-3 h-4 w-1/3 rounded-full" />
+            </Card>
           ))}
-        </ul>
+        </div>
       ) : null}
 
       {close.length > 0 ? (
         <Group
+          icon={<LayersIcon />}
           title={seedName ? `Close to ${seedName}` : "Close to what you typed"}
           note="Recognisably the name you came in with, with the smallest change that clears the registry."
           entries={close}
-          startAt={1}
           tld={tld}
         />
       ) : null}
 
       {fresh.length > 0 ? (
         <Group
+          icon={<SparkIcon />}
           title="Fresh names"
           note="Drawn from your description and keywords rather than from the name you typed."
           entries={fresh}
-          startAt={close.length + 1}
           tld={tld}
         />
       ) : null}
 
       {phase === "done" && candidates.length === 0 ? (
-        <div className="py-10">
+        <Card className="p-7">
           <p className="max-w-[58ch] text-[15px] leading-relaxed text-ink-2">
-            {`Every name the generator drafted is already registered on .${tld}. That is a real answer, not a failure — try another ending, or give the description more to work with.`}
+            {`Every name we drafted is already registered on .${tld}. That is a real answer, not a failure — try another ending, or give the description more to work with.`}
           </p>
-        </div>
+        </Card>
       ) : null}
     </section>
   );
 }
 
 function Group({
+  icon,
   title,
   note,
   entries,
-  startAt,
   tld,
 }: {
+  icon: React.ReactNode;
   title: string;
   note: string;
   entries: Candidate[];
-  startAt: number;
   tld: string;
 }) {
   return (
-    <div className="pt-7">
-      <Clerk>{title}</Clerk>
-      <p className="mt-2 max-w-[64ch] pb-4 text-[13px] leading-relaxed text-ink-3">{note}</p>
-      <ul className="ruled">
-        {entries.map((candidate, i) => (
-          <Entry
-            key={candidate.domain}
-            candidate={candidate}
-            folio={startAt + i}
-            tld={tld}
-          />
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <SectionLabel icon={icon} trailing={<CountBadge>{entries.length}</CountBadge>}>
+          {title}
+        </SectionLabel>
+        <p className="max-w-[64ch] text-[13px] leading-relaxed text-ink-3">{note}</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {entries.map((candidate) => (
+          <Entry key={candidate.domain} candidate={candidate} tld={tld} />
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
 
-function Entry({
-  candidate,
-  folio,
-  tld,
-}: {
-  candidate: Candidate;
-  folio: number;
-  tld: string;
-}) {
+function Entry({ candidate, tld }: { candidate: Candidate; tld: string }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -151,46 +138,47 @@ function Entry({
   }
 
   return (
-    <li className="ruled-b animate-[write-in_320ms_var(--ease-draw)_both]">
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 py-5">
-        <Folio n={folio} className="shrink-0" />
-
-        <div className="min-w-0 flex-1">
-          <p className="font-display text-[24px] leading-none font-semibold tracking-[-0.02em]">
+    <Card className="animate-[fadeIn_320ms_var(--ease-soft)_both] p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-[20px] font-semibold tracking-[-0.02em]">
             {candidate.name}
           </p>
-          <p className="folio mt-2 text-[13px] text-ink-3">{`.${tld}`}</p>
+          <p className="mt-1 truncate text-[13px] text-ink-3">{`.${tld}`}</p>
         </div>
+        <StatusPill state={candidate.state} compact animate />
+      </div>
 
-        <Impression state={candidate.state} size="sm" animate />
-
+      <div className="mt-4 flex items-center gap-2">
+        <Button size="sm" variant="quiet" onClick={copy}>
+          {copied ? "Copied" : "Copy"}
+        </Button>
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="clerk border border-rule px-3 py-2 text-ink-2 transition-colors duration-150 hover:bg-band hover:text-ink"
+          className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-semibold text-ink-2 transition-colors duration-200 hover:text-ink"
         >
-          {open ? "Less" : "Why"}
+          {open ? "Less" : "Why this one"}
+          <ChevronIcon
+            className={`size-4 transition-transform duration-200 ease-soft ${
+              open ? "rotate-180" : ""
+            }`}
+          />
         </button>
       </div>
 
       {open ? (
-        <div className="grid gap-4 pb-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:gap-8">
-          <div>
-            <p className="max-w-[62ch] text-[14px] leading-relaxed text-ink">
-              {candidate.rationale}
-            </p>
-            <p className="mt-2 text-[12.5px] text-ink-3">
-              {`${STYLE_COPY[candidate.style]} · checked against the registry at ${new Date(
-                candidate.checkedAt,
-              ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
-            </p>
-          </div>
-          <Action variant="ruled" size="sm" onClick={copy}>
-            {copied ? "Copied" : "Copy"}
-          </Action>
+        <div className="mt-4 space-y-3">
+          <Hairline />
+          <p className="text-[13.5px] leading-relaxed text-ink">{candidate.rationale}</p>
+          <p className="text-[12px] text-ink-3">
+            {`${STYLE_COPY[candidate.style]} · checked at ${new Date(
+              candidate.checkedAt,
+            ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+          </p>
         </div>
       ) : null}
-    </li>
+    </Card>
   );
 }

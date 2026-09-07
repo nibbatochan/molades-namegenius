@@ -1,18 +1,25 @@
 "use client";
 
 import { useRef, useState, type ReactNode } from "react";
-import { RuleOrnament } from "./guilloche";
-import {
-  Action,
-  Clerk,
-  Folio,
-  Impression,
-  Measured,
-  Nib,
-  ProvenanceMark,
-  Rule,
-} from "./ledger";
 import { ExtensionTabs } from "./extension-tabs";
+import {
+  ChevronIcon,
+  CompassIcon,
+  LayersIcon,
+  SparkIcon,
+  TargetIcon,
+} from "./icons";
+import {
+  Button,
+  Card,
+  ChoicePill,
+  CountBadge,
+  Hairline,
+  ProvenanceTag,
+  SectionLabel,
+  Spinner,
+  StatusPill,
+} from "./ui";
 import {
   CATEGORIES,
   DEITIES,
@@ -20,7 +27,13 @@ import {
   ELEMENTS,
   NAKSHATRAS,
 } from "@/lib/vastu-data";
-import { EMPTY_VASTU_INPUT, readiness, type DerivedName, type VastuContext, type VastuInput } from "@/lib/vastu";
+import {
+  EMPTY_VASTU_INPUT,
+  readiness,
+  type DerivedName,
+  type VastuContext,
+  type VastuInput,
+} from "@/lib/vastu";
 import type { AvailState } from "@/lib/types";
 import { DEFAULT_TLD_ID } from "@/lib/tlds";
 
@@ -36,12 +49,12 @@ type Entry = {
 type Phase = "asking" | "deriving" | "done";
 
 /**
- * The Vastu register: a longer question sheet, then names derived from the
+ * The Vastu register: a longer set of questions, then names derived from the
  * answers, each carrying the chain that produced it.
  *
- * The sheet discloses itself in three folios rather than presenting fourteen
- * questions at once. Nothing is required — an unanswered question costs the
- * rule that depended on it, and the derivation says so instead of guessing.
+ * The questions come in three groups rather than all at once. Nothing is
+ * required — an unanswered question costs the rule that depended on it, and the
+ * derivation says so instead of guessing.
  */
 export function VastuRegister() {
   const [input, setInput] = useState<VastuInput>(EMPTY_VASTU_INPUT);
@@ -51,6 +64,7 @@ export function VastuRegister() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [context, setContext] = useState<VastuContext | null>(null);
   const runRef = useRef<AbortController | null>(null);
+  const resultsRef = useRef<HTMLDivElement | null>(null);
 
   const ready = readiness(input);
   const set = <K extends keyof VastuInput>(key: K, value: VastuInput[K]) =>
@@ -66,6 +80,9 @@ export function VastuRegister() {
     setPhase("deriving");
     setEntries([]);
     setContext(null);
+    requestAnimationFrame(() =>
+      resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
 
     try {
       const res = await fetch("/api/vastu", {
@@ -118,42 +135,39 @@ export function VastuRegister() {
 
   // Group by state only. The engine already ordered these to spread the opening
   // word around, and sorting by score here would undo that and stack every
-  // name sharing a lead together — which is what it looked like when it did.
-  const availableFirst = [...entries].sort((a, b) => {
+  // name sharing a lead together.
+  const ordered = [...entries].sort((a, b) => {
     const rank = (s: AvailState) =>
       s === "available" ? 0 : s === "premium" ? 1 : s === "unverified" ? 2 : 3;
     return rank(a.state) - rank(b.state) || a.index - b.index;
   });
 
-  const available = availableFirst.filter((e) => e.state === "available");
-  const others = availableFirst.filter((e) => e.state !== "available");
+  const available = ordered.filter((e) => e.state === "available");
+  const others = ordered.filter((e) => e.state !== "available");
 
   return (
-    <div>
-      <header className="pb-7">
-        <h2 className="font-display text-[clamp(1.9rem,3.6vw,3rem)] leading-[1.04] font-semibold tracking-[-0.02em]">
-          The Vastu register
+    <div className="space-y-4">
+      <Card tint="cream" className="p-6 lg:p-7">
+        <h2 className="text-[22px] font-semibold tracking-[-0.02em]">
+          Derive a name from your chart
         </h2>
-        <p className="mt-3.5 max-w-[68ch] text-[15px] leading-relaxed text-ink-2">
-          Answer what you know and the register derives names from it the way a
-          practitioner would — from your birth nakshatra&rsquo;s syllables, the
-          direction your premises faces, the trade, and the numerology of the
-          letters. Every name shows the full chain, rule by rule, with the source
-          of each rule named.
+        <p className="mt-3 max-w-[68ch] text-[14.5px] leading-relaxed text-ink-2">
+          Answer what you know and we derive names the way a practitioner would —
+          from your birth nakshatra&rsquo;s syllables, the direction your premises
+          faces, the trade, and the numerology of the letters. Every name shows
+          the full chain, rule by rule, with the source of each rule named.
         </p>
         <p className="mt-3 max-w-[68ch] text-[13px] leading-relaxed text-ink-3">
-          This is a traditional system applied consistently, not an empirical
-          one. We show you exactly which rules have a text behind them, which are
-          practitioner convention, and which we assembled ourselves — because on
-          the last kind, no text agrees.
+          This applies a traditional system consistently. It does not claim the
+          system is empirically true. We mark which rules have a text behind
+          them, which are practitioner convention, and which we assembled
+          ourselves — because on the last kind, no text agrees.
         </p>
-      </header>
+      </Card>
 
-      <Rule strong />
-
-      {/* Folio I — the founder */}
-      <Folio3
+      <Group
         n={1}
+        icon={<SparkIcon />}
         title="The founder"
         summary={
           nakshatra
@@ -161,7 +175,7 @@ export function VastuRegister() {
             : "Not answered"
         }
         open={open === 1}
-        onOpen={() => setOpen(1)}
+        onOpen={() => setOpen(open === 1 ? 1 : 1)}
       >
         <Ask
           label="Birth nakshatra"
@@ -183,7 +197,7 @@ export function VastuRegister() {
 
         <Ask
           label="Pada"
-          why="The Moon crosses one pada in about an hour, so this needs a birth time you trust. Without it we use all four syllables and say the match is not exact."
+          why="The Moon crosses one pada in about an hour, so this needs a birth time you trust. Without it we use all four syllables and say the match isn't exact."
         >
           <Select
             value={input.pada === null ? "" : String(input.pada)}
@@ -199,7 +213,7 @@ export function VastuRegister() {
             ))}
           </Select>
           {nakshatra?.lowConfidence ? (
-            <p className="mt-2 text-[12.5px] leading-relaxed text-stamp">
+            <p className="mt-2 text-[12.5px] leading-relaxed text-warn">
               {nakshatra.lowConfidence}
             </p>
           ) : null}
@@ -207,7 +221,7 @@ export function VastuRegister() {
 
         <Ask
           label="Day of the month you were born"
-          why="The psychic number is the day, reduced. It is the number a practitioner harmonises the name against."
+          why="The psychic number is the day, reduced. It's the number a practitioner harmonises the name against."
         >
           <input
             type="number"
@@ -219,7 +233,7 @@ export function VastuRegister() {
             }
             placeholder="e.g. 23"
             aria-label="Day of the month you were born"
-            className="folio h-11 w-[13ch] border border-rule bg-transparent px-3 text-[15px] focus:border-ink-2"
+            className="field-surface h-12 w-[14ch] px-4 text-[15px] tabular-nums"
           />
         </Ask>
 
@@ -227,7 +241,7 @@ export function VastuRegister() {
           label="Are there co-founders or partners?"
           why="A name harmonised to one chart is treated as a partnership risk, and compound 26 is the specific warning about ruin through associations."
         >
-          <Choice
+          <Pills
             options={[
               { id: "yes", label: "Yes" },
               { id: "no", label: "No, just me" },
@@ -237,20 +251,20 @@ export function VastuRegister() {
           />
         </Ask>
 
-        <div className="pt-5">
-          <Action variant="ruled" onClick={() => setOpen(2)}>
+        <div className="pt-2">
+          <Button variant="outline" onClick={() => setOpen(2)}>
             Next — the business
-          </Action>
+          </Button>
         </div>
-      </Folio3>
+      </Group>
 
-      {/* Folio II — the business */}
-      <Folio3
+      <Group
         n={2}
+        icon={<CompassIcon />}
         title="The business"
         summary={
           input.category
-            ? CATEGORIES.find((c) => c.id === input.category)?.label ?? "Answered"
+            ? (CATEGORIES.find((c) => c.id === input.category)?.label ?? "Answered")
             : "Not answered"
         }
         open={open === 2}
@@ -301,7 +315,7 @@ export function VastuRegister() {
           label="Are the premises already fixed?"
           why="If the building is chosen, direction is a constraint we work within. If not, it becomes advice we can give you."
         >
-          <Choice
+          <Pills
             options={[
               { id: "yes", label: "Yes, already there" },
               { id: "no", label: "Not yet" },
@@ -315,7 +329,7 @@ export function VastuRegister() {
           label="Over the next three to five years, which matters more?"
           why="Directly scriptural, and the cleanest rule in the system: Ashvalayana Grhya Sutra I.15.6 gives two syllables for one desiring a firm position, four for one desiring renown."
         >
-          <Choice
+          <Pills
             options={[
               { id: "stability", label: "A firm position" },
               { id: "renown", label: "Renown and growth" },
@@ -329,7 +343,7 @@ export function VastuRegister() {
           label="Who is the market?"
           why="Used for directional weighting when the entrance is unknown. East governs standing, north governs wealth flow, north-west governs turnover."
         >
-          <Choice
+          <Pills
             options={[
               { id: "b2b", label: "Business to business" },
               { id: "b2c", label: "Consumers" },
@@ -342,19 +356,19 @@ export function VastuRegister() {
           />
         </Ask>
 
-        <div className="flex flex-wrap gap-2 pt-5">
-          <Action variant="ruled" onClick={() => setOpen(3)}>
+        <div className="flex flex-wrap gap-2.5 pt-2">
+          <Button variant="outline" onClick={() => setOpen(3)}>
             Next — refinements
-          </Action>
-          <Action variant="quiet" onClick={() => setOpen(1)}>
+          </Button>
+          <Button variant="quiet" onClick={() => setOpen(1)}>
             Back
-          </Action>
+          </Button>
         </div>
-      </Folio3>
+      </Group>
 
-      {/* Folio III — refinements */}
-      <Folio3
+      <Group
         n={3}
+        icon={<LayersIcon />}
         title="Refinements"
         summary="Optional"
         open={open === 3}
@@ -381,7 +395,7 @@ export function VastuRegister() {
           label="Which script will customers read it in?"
           why="The system is sound-based, and not every language carries the distinctions the Sanskrit table depends on. Tamil has no aspirate series, so some syllables collapse."
         >
-          <Choice
+          <Pills
             options={[
               { id: "devanagari", label: "Devanagari" },
               { id: "tamil", label: "Tamil" },
@@ -403,12 +417,12 @@ export function VastuRegister() {
             onChange={(e) => set("founderName", e.target.value)}
             placeholder="Leave blank to keep them separate"
             aria-label="Founder's name in the brand"
-            className="h-11 w-full max-w-[36ch] border border-rule bg-transparent px-3 text-[15px] focus:border-ink-2"
+            className="field-surface h-12 w-full max-w-[38ch] px-4 text-[15px]"
           />
         </Ask>
 
         <Ask
-          label="Is there an existing name you are changing?"
+          label="Is there an existing name you're changing?"
           why="Practitioners treat rectification differently from fresh naming: the classic move is shifting a name off a cautionary compound with the smallest possible spelling change."
         >
           <input
@@ -416,79 +430,82 @@ export function VastuRegister() {
             onChange={(e) => set("existingName", e.target.value)}
             placeholder="The name being replaced"
             aria-label="Existing name"
-            className="h-11 w-full max-w-[36ch] border border-rule bg-transparent px-3 text-[15px] focus:border-ink-2"
+            className="field-surface h-12 w-full max-w-[38ch] px-4 text-[15px]"
           />
         </Ask>
 
-        <Ask label="Anything to avoid?" why="Words or fragments that should not appear in a suggestion.">
+        <Ask label="Anything to avoid?" why="Words or fragments that shouldn't appear in a suggestion.">
           <input
             value={input.avoid}
             onChange={(e) => set("avoid", e.target.value)}
             placeholder="Separate with commas"
             aria-label="Words to avoid"
-            className="h-11 w-full max-w-[36ch] border border-rule bg-transparent px-3 text-[15px] focus:border-ink-2"
+            className="field-surface h-12 w-full max-w-[38ch] px-4 text-[15px]"
           />
         </Ask>
 
-        <div className="pt-5">
-          <Action variant="quiet" onClick={() => setOpen(2)}>
+        <div className="pt-2">
+          <Button variant="quiet" onClick={() => setOpen(2)}>
             Back
-          </Action>
+          </Button>
         </div>
-      </Folio3>
+      </Group>
 
-      <Rule strong />
-
-      {/* The press */}
-      <div className="flex flex-wrap items-end justify-between gap-6 py-7">
-        <div>
-          <Clerk>Answered</Clerk>
-          <div className="mt-2">
-            <Measured value={ready.answered} of={ready.total} unit="questions" />
+      <Card className="p-6 lg:p-7">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div className="min-w-0">
+            <SectionLabel trailing={<CountBadge>{`${ready.answered}/${ready.total}`}</CountBadge>}>
+              Answered
+            </SectionLabel>
+            {ready.missing.length > 0 ? (
+              <p className="mt-3 max-w-[52ch] text-[13px] leading-relaxed text-ink-3">
+                {`Still open: ${ready.missing.slice(0, 4).join(", ")}${
+                  ready.missing.length > 4 ? `, and ${ready.missing.length - 4} more` : ""
+                }. Each unanswered question costs the rule that depends on it, and the derivation will say which.`}
+              </p>
+            ) : (
+              <p className="mt-3 text-[13px] text-ink-2">
+                Every question answered. The full chain will apply.
+              </p>
+            )}
           </div>
-          {ready.missing.length > 0 ? (
-            <p className="mt-2.5 max-w-[52ch] text-[13px] leading-relaxed text-ink-3">
-              {`Still open: ${ready.missing.slice(0, 4).join(", ")}${
-                ready.missing.length > 4 ? `, and ${ready.missing.length - 4} more` : ""
-              }. Each unanswered question costs the rule that depends on it, and the derivation will say which.`}
-            </p>
-          ) : (
-            <p className="mt-2.5 text-[13px] text-ink-2">
-              Every question answered. The full chain will apply.
-            </p>
-          )}
-        </div>
 
-        <div className="min-w-[280px]">
-          <Clerk className="mb-2.5">Ending</Clerk>
-          <ExtensionTabs value={tld} onChange={setTld} id="vastu-extension" />
-        </div>
+          <div className="min-w-[280px]">
+            <SectionLabel>Ending</SectionLabel>
+            <div className="mt-3">
+              <ExtensionTabs value={tld} onChange={setTld} id="vastu-extension" />
+            </div>
+          </div>
 
-        <Action size="lg" onClick={derive} loading={phase === "deriving"}>
-          {phase === "deriving" ? "Deriving" : "Derive names"}
-        </Action>
+          <Button size="lg" onClick={derive} loading={phase === "deriving"}>
+            <SparkIcon className="size-4" />
+            {phase === "deriving" ? "Deriving" : "Derive names"}
+          </Button>
+        </div>
+      </Card>
+
+      <div ref={resultsRef} className="scroll-mt-6">
+        {phase !== "asking" ? (
+          <div className="pt-6">
+            <Derivation
+              context={context}
+              available={available}
+              others={others}
+              phase={phase}
+              total={entries.length}
+            />
+          </div>
+        ) : null}
       </div>
-
-      {phase !== "asking" ? (
-        <>
-          <RuleOrnament className="py-2" />
-          <Derivation
-            context={context}
-            available={available}
-            others={others}
-            phase={phase}
-            total={entries.length}
-          />
-        </>
-      ) : null}
     </div>
   );
 }
 
-// --- The sheet --------------------------------------------------------------
+// --- The question groups ----------------------------------------------------
 
-function Folio3({
+function Group({
   n,
+  icon,
   title,
   summary,
   open,
@@ -496,6 +513,7 @@ function Folio3({
   children,
 }: {
   n: number;
+  icon: ReactNode;
   title: string;
   summary: string;
   open: boolean;
@@ -503,23 +521,37 @@ function Folio3({
   children: ReactNode;
 }) {
   return (
-    <section className="ruled-b">
-      <h3>
-        <button
-          type="button"
-          onClick={onOpen}
-          aria-expanded={open}
-          className="flex w-full items-baseline gap-5 py-5 text-left"
-        >
-          <Folio n={n} />
-          <span className="font-display text-[19px] font-semibold tracking-[-0.01em]">
-            {title}
-          </span>
-          <span className="clerk ml-auto text-ink-3">{open ? "Open" : summary}</span>
-        </button>
-      </h3>
-      {open ? <div className="pb-7">{children}</div> : null}
-    </section>
+    <Card>
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-expanded={open}
+        className="flex w-full items-center gap-4 p-6 text-left lg:p-7"
+      >
+        <span className="quiet-fill flex size-9 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold tabular-nums text-ink-2">
+          {n}
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[16px] font-semibold tracking-[-0.01em]">{title}</span>
+          <span className="mt-1 block truncate text-[13px] text-ink-3">{summary}</span>
+        </span>
+        <span className="ml-auto flex shrink-0 items-center gap-3 text-ink-3">
+          <span className="[&>svg]:size-4">{icon}</span>
+          <ChevronIcon
+            className={`size-5 transition-transform duration-200 ease-soft ${
+              open ? "rotate-180" : ""
+            }`}
+          />
+        </span>
+      </button>
+
+      {open ? (
+        <div className="space-y-6 px-6 pb-7 lg:px-7">
+          <Hairline />
+          {children}
+        </div>
+      ) : null}
+    </Card>
   );
 }
 
@@ -533,9 +565,9 @@ function Ask({
   children: ReactNode;
 }) {
   return (
-    <div className="ruled grid gap-4 py-5 md:grid-cols-[minmax(0,26ch)_minmax(0,1fr)] md:gap-8">
+    <div className="grid gap-3 md:grid-cols-[minmax(0,28ch)_minmax(0,1fr)] md:gap-8">
       <div>
-        <p className="text-[15px] leading-snug font-semibold tracking-[-0.01em]">{label}</p>
+        <p className="text-[14.5px] leading-snug font-semibold tracking-[-0.01em]">{label}</p>
         <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-3">{why}</p>
       </div>
       <div className="min-w-0">{children}</div>
@@ -562,14 +594,14 @@ function Select({
       value={value}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className="h-11 w-full max-w-[52ch] border border-rule bg-transparent px-3 text-[14.5px] focus:border-ink-2 disabled:text-ink-3"
+      className="field-surface h-12 w-full max-w-[54ch] px-4 text-[14.5px] disabled:text-ink-3"
     >
       {children}
     </select>
   );
 }
 
-function Choice({
+function Pills({
   options,
   value,
   onChange,
@@ -579,25 +611,16 @@ function Choice({
   onChange: (id: string) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-stretch">
-      {options.map((option) => {
-        const active = option.id === value;
-        return (
-          <button
-            key={option.id}
-            type="button"
-            aria-pressed={active}
-            onClick={() => onChange(option.id)}
-            className={`clerk -ml-hair inline-flex h-10 items-center border px-3.5 transition-colors duration-150 first:ml-0 ${
-              active
-                ? "z-10 border-ink bg-ink text-stock"
-                : "border-rule text-ink-2 hover:bg-band hover:text-ink"
-            }`}
-          >
-            {option.label}
-          </button>
-        );
-      })}
+    <div className="flex flex-wrap items-center gap-2">
+      {options.map((option) => (
+        <ChoicePill
+          key={option.id}
+          active={option.id === value}
+          onClick={() => onChange(option.id)}
+        >
+          {option.label}
+        </ChoicePill>
+      ))}
     </div>
   );
 }
@@ -618,9 +641,9 @@ function Derivation({
   total: number;
 }) {
   return (
-    <div className="pt-7">
+    <section aria-label="Derived names" className="space-y-5">
       {context ? (
-        <div className="ruled-b grid gap-x-10 gap-y-5 pb-6 sm:grid-cols-2 lg:grid-cols-4">
+        <Card tint="lav" className="grid gap-x-8 gap-y-5 p-6 sm:grid-cols-2 lg:grid-cols-4">
           <Reading label="Nakshatra">
             {context.nakshatraName
               ? `${context.nakshatraName} ${context.nakshatraDevanagari ?? ""}`
@@ -637,49 +660,58 @@ function Derivation({
           <Reading label="Psychic number">
             {context.psychic ? String(context.psychic) : "Not given"}
           </Reading>
-        </div>
+        </Card>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-x-8 gap-y-3 py-5">
-        <Clerk>{phase === "deriving" ? "Pressing the register" : "Derived"}</Clerk>
-        <Measured value={available.length} of={total} unit="free on this ending" />
-        {phase === "deriving" ? <Nib /> : null}
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+        <h2 className="text-[22px] font-semibold tracking-[-0.02em]">
+          {phase === "deriving" ? "Deriving names" : "Derived names"}
+        </h2>
+        <div className="flex items-center gap-3 text-[13px] font-semibold text-ink-2">
+          <CountBadge>{`${available.length} of ${total} free`}</CountBadge>
+          {phase === "deriving" ? <Spinner /> : null}
+        </div>
       </div>
 
       {available.length > 0 ? (
-        <ul className="ruled">
+        <div className="space-y-3">
           {available.map((entry) => (
             <NameEntry key={entry.domain} entry={entry} />
           ))}
-        </ul>
+        </div>
       ) : phase === "done" ? (
-        <p className="ruled py-8 text-[15px] leading-relaxed text-ink-2">
-          Nothing the register derived is free on this ending. Try another ending
-          above — the derivation does not change, only the availability does.
-        </p>
+        <Card className="p-7">
+          <p className="max-w-[58ch] text-[15px] leading-relaxed text-ink-2">
+            Nothing we derived is free on this ending. Try another ending above —
+            the derivation doesn&rsquo;t change, only the availability does.
+          </p>
+        </Card>
       ) : null}
 
       {others.length > 0 ? (
-        <details className="ruled mt-8">
-          <summary className="clerk cursor-pointer py-5 text-ink-2 hover:text-ink">
+        <details className="group">
+          <summary className="inline-flex cursor-pointer items-center gap-2 text-[13px] font-semibold text-ink-2 hover:text-ink">
+            <TargetIcon className="size-4" />
             {`${others.length} more derived, but not free here`}
           </summary>
-          <ul className="ruled">
+          <div className="mt-3 space-y-3">
             {others.map((entry) => (
               <NameEntry key={entry.domain} entry={entry} />
             ))}
-          </ul>
+          </div>
         </details>
       ) : null}
-    </div>
+    </section>
   );
 }
 
 function Reading({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <Clerk>{label}</Clerk>
-      <p className="mt-2 font-display text-[17px] leading-snug">{children}</p>
+      <p className="u-label">{label}</p>
+      <p className="mt-2 text-[15px] leading-snug font-semibold tracking-[-0.01em]">
+        {children}
+      </p>
     </div>
   );
 }
@@ -689,52 +721,58 @@ function NameEntry({ entry }: { entry: Entry }) {
   const { name } = entry;
 
   return (
-    <li className="ruled-b">
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 py-5">
+    <Card className="animate-[fadeIn_320ms_var(--ease-soft)_both] p-5 lg:p-6">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
         <div className="min-w-0 flex-1">
-          <p className="font-display text-[26px] leading-none font-semibold tracking-[-0.02em]">
-            {name.display}
-          </p>
-          <p className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[13px] text-ink-2">
-            <span className="font-display text-[16px] text-ink">{name.devanagari}</span>
-            <span className="folio">{entry.domain}</span>
-            <span className="text-ink-3">
-              {name.parts.map((p) => p.gloss).join(" + ")}
-            </span>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <p className="text-[22px] leading-none font-semibold tracking-[-0.02em]">
+              {name.display}
+            </p>
+            <p className="text-[16px] leading-none text-ink-2">{name.devanagari}</p>
+          </div>
+          <p className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[13px] text-ink-3">
+            <span className="font-semibold text-ink-2">{entry.domain}</span>
+            <span>{name.parts.map((p) => p.gloss).join(" + ")}</span>
           </p>
         </div>
 
-        <div className="flex items-center gap-5">
-          <Measured value={name.syllables} unit="syl" />
-          <Measured value={name.compound} of={name.root} unit="compound / root" />
-          <Impression state={entry.state} size="sm" animate />
+        <div className="flex flex-wrap items-center gap-2.5">
+          <CountBadge>{`${name.syllables} syl`}</CountBadge>
+          <CountBadge>{`${name.compound} / ${name.root}`}</CountBadge>
+          <StatusPill state={entry.state} compact animate />
         </div>
 
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="clerk border border-rule px-3 py-2 text-ink-2 transition-colors duration-150 hover:bg-band hover:text-ink"
+          className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-ink-2 transition-colors duration-200 hover:text-ink"
         >
           {open ? "Hide derivation" : "Show derivation"}
+          <ChevronIcon
+            className={`size-4 transition-transform duration-200 ease-soft ${
+              open ? "rotate-180" : ""
+            }`}
+          />
         </button>
       </div>
 
       {open ? (
-        <div className="pb-7">
-          <ol className="ruled">
+        <div className="mt-5 space-y-4">
+          <Hairline />
+          <ol className="space-y-4">
             {name.steps.map((step) => (
               <li
                 key={step.key}
-                className="ruled-b grid gap-2 py-4 md:grid-cols-[minmax(0,22ch)_minmax(0,1fr)] md:gap-8"
+                className="grid gap-2 md:grid-cols-[minmax(0,24ch)_minmax(0,1fr)] md:gap-8"
               >
                 <div className="flex flex-wrap items-start gap-2">
-                  <span className="clerk text-ink">{step.label}</span>
-                  <ProvenanceMark kind={step.provenance} />
+                  <span className="text-[13px] font-semibold">{step.label}</span>
+                  <ProvenanceTag kind={step.provenance} />
                 </div>
                 <div className="min-w-0">
                   <p
-                    className={`text-[14px] leading-relaxed ${
+                    className={`text-[13.5px] leading-relaxed ${
                       step.outcome === "unmet" ? "text-ink-3" : "text-ink"
                     }`}
                   >
@@ -751,6 +789,6 @@ function NameEntry({ entry }: { entry: Entry }) {
           </ol>
         </div>
       ) : null}
-    </li>
+    </Card>
   );
 }

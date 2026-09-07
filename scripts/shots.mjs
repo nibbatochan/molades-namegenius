@@ -1,5 +1,5 @@
 // Batched inspection round: every state we need to look at in one render pass,
-// both stocks, desktop and mobile. Screenshots land in .shots/.
+// both themes, desktop and mobile. Screenshots land in .shots/.
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
 
@@ -10,11 +10,11 @@ mkdirSync(OUT, { recursive: true });
 const DESKTOP = { width: 1440, height: 950 };
 const MOBILE = { width: 390, height: 844 };
 
-async function setStock(page, stock) {
-  await page.evaluate((s) => {
-    localStorage.setItem("ng-stock", s);
-    document.documentElement.dataset.stock = s;
-  }, stock);
+async function setTheme(page, theme) {
+  await page.evaluate((t) => {
+    localStorage.setItem("ng-theme", t);
+    document.documentElement.dataset.theme = t;
+  }, theme);
 }
 
 async function shot(page, name) {
@@ -40,56 +40,56 @@ async function type(page, text) {
 
 const browser = await chromium.launch();
 
-for (const stock of ["paper", "deed"]) {
+for (const theme of ["light", "dark"]) {
   const context = await browser.newContext({ viewport: DESKTOP });
   const page = await context.newPage();
 
   await page.goto(BASE, { waitUntil: "networkidle" });
-  await setStock(page, stock);
+  await setTheme(page, theme);
   await page.reload({ waitUntil: "networkidle" });
 
-  console.log(`\n${stock} / desktop`);
-  await shot(page, `${stock}-01-hero`);
-  await full(page, `${stock}-02-page`);
+  console.log(`\n${theme} / desktop`);
+  await shot(page, `${theme}-01-hero`);
+  await full(page, `${theme}-02-page`);
 
-  // A taken name, so the registered impression lands.
+  // A taken name, so the taken pill lands.
   await type(page, "google");
   await page.waitForTimeout(2600);
-  await shot(page, `${stock}-03-registered`);
+  await shot(page, `${theme}-03-registered`);
 
   // A name that should be free.
   await type(page, "arkavista-nine");
   await page.waitForTimeout(2600);
-  await shot(page, `${stock}-04-available`);
+  await shot(page, `${theme}-04-available`);
 
   // Normalisation feedback from a pasted URL.
   await type(page, "https://WWW.Acme Coffee.co.in/pricing");
   await page.waitForTimeout(2600);
-  await shot(page, `${stock}-05-normalised`);
+  await shot(page, `${theme}-05-normalised`);
 
   // Another ending selected.
   await type(page, "arkavista");
   await page.getByRole("tab", { name: ".co.in", exact: true }).click();
   await page.waitForTimeout(2600);
-  await shot(page, `${stock}-06-extension`);
+  await shot(page, `${theme}-06-extension`);
 
-  // The disclosed sheet, prefilled.
-  await page.getByRole("button", { name: /Tell the register/ }).click();
+  // The disclosed sheet.
+  await page.getByRole("button", { name: /Tell us what you/ }).click();
   await page.waitForTimeout(300);
-  await full(page, `${stock}-07-sheet`);
+  await full(page, `${theme}-07-sheet`);
 
   // A generation run.
   await type(page, "northwind");
-  await page.getByRole("button", { name: /Find names that are free/ }).click();
+  await page.getByRole("button", { name: /Find available names/ }).click();
   await page.waitForTimeout(2200);
-  await shot(page, `${stock}-08-streaming`);
+  await shot(page, `${theme}-08-streaming`);
   await page.waitForTimeout(9000);
-  await full(page, `${stock}-09-results`);
+  await full(page, `${theme}-09-results`);
 
   // The Vastu register.
-  await page.getByRole("tab", { name: "Vastu register" }).click();
+  await page.getByRole("tab", { name: "Vastu derivation" }).click();
   await page.waitForTimeout(400);
-  await shot(page, `${stock}-10-vastu-folio1`);
+  await shot(page, `${theme}-10-vastu-group1`);
 
   await page.selectOption('select[aria-label="Birth nakshatra"]', "23");
   await page.selectOption('select[aria-label="Nakshatra pada"]', "2");
@@ -104,41 +104,44 @@ for (const stock of ["paper", "deed"]) {
   await page.getByRole("button", { name: "Not yet" }).click();
   await page.getByRole("button", { name: "Renown and growth" }).click();
   await page.getByRole("button", { name: "Business to business" }).click();
-  await full(page, `${stock}-11-vastu-answered`);
+  await full(page, `${theme}-11-vastu-answered`);
 
   await page.getByRole("button", { name: "Derive names" }).click();
   await page.waitForTimeout(11000);
-  await full(page, `${stock}-12-vastu-derived`);
+  await full(page, `${theme}-12-vastu-derived`);
 
   // The derived list and the chain both need reading at real scale, not as a
   // full-page thumbnail, so scroll them into view and shoot the viewport.
-  const firstEntry = page.locator("li").filter({ hasText: "Show derivation" }).first();
+  const firstEntry = page
+    .locator("section")
+    .filter({ hasText: "Show derivation" })
+    .last();
   if (await firstEntry.count()) {
     await firstEntry.scrollIntoViewIfNeeded();
-    await shot(page, `${stock}-13-vastu-list`);
+    await shot(page, `${theme}-13-vastu-list`);
     await page.getByRole("button", { name: "Show derivation" }).first().click();
     await page.waitForTimeout(400);
     await firstEntry.scrollIntoViewIfNeeded();
-    await shot(page, `${stock}-14-vastu-chain`);
+    await shot(page, `${theme}-14-vastu-chain`);
     await page.mouse.wheel(0, 700);
-    await shot(page, `${stock}-15-vastu-chain-cont`);
+    await shot(page, `${theme}-15-vastu-chain-cont`);
   }
 
   await context.close();
 }
 
-// Mobile, paper only: the composition has to hold, not be re-proven twice.
+// Mobile, light only: the composition has to hold, not be re-proven twice.
 {
   const context = await browser.newContext({ viewport: MOBILE });
   const page = await context.newPage();
   await page.goto(BASE, { waitUntil: "networkidle" });
-  console.log("\npaper / mobile");
+  console.log("\nlight / mobile");
   await shot(page, "mobile-01-hero");
   await full(page, "mobile-02-page");
   await type(page, "google");
   await page.waitForTimeout(2600);
   await shot(page, "mobile-03-registered");
-  await page.getByRole("tab", { name: "Vastu register" }).click();
+  await page.getByRole("tab", { name: "Vastu derivation" }).click();
   await page.waitForTimeout(400);
   await full(page, "mobile-04-vastu");
   await context.close();
