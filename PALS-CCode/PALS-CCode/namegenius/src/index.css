@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'Necosmic';
+  src: url('/fonts/Necosmic.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,15 +25,15 @@
   }
 
   body {
-    background: #fbfbfe;
-    color: #0f172a;
+    background: #fae127;
+    color: #0d0f12;
     line-height: 1.5;
   }
 
   /* Browser surfaces themed to high craft standards */
   ::selection {
-    background: #2563eb;
-    color: #ffffff;
+    background: #0d0f12;
+    color: #fae127;
   }
 
   input, textarea {
@@ -33,7 +41,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid #0d0f12;
     outline-offset: 2px;
   }
 
@@ -46,11 +54,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: #0d0f12;
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: #27272a;
   }
 }
 
@@ -89,6 +97,19 @@
   }
 }
 
+@keyframes float-subtle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.5deg);
+  }
+}
+
+.animate-float-subtle {
+  animation: float-subtle 4s ease-in-out infinite;
+}
+
 .animate-card-enter {
   animation: enter-card 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -108,30 +129,29 @@
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.06'/%3E%3C/svg%3E");
 }
 
-/* 1. Page Background Canvas (Studio Pedestal with directional lighting + fine grain) */
+/* 1. Page Background Canvas (Acid Yellow Neo-Pop Canvas from Style Guide §2 & Image 2) */
 .bg-hardware-canvas {
-  background-color: #f6f8fb;
+  background-color: #fae127;
   background-image: 
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E"),
-    radial-gradient(100% 70% at 50% 0%, rgba(255, 255, 255, 0.95) 0%, rgba(241, 245, 249, 0.8) 60%, #e2e8f0 100%);
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
   background-attachment: fixed;
 }
 
-/* 2. Device Chassis (Molded industrial body catching directional top-left studio light) */
-.skeuo-chassis {
-  background-color: #ebf0f5;
+/* 2. Device Chassis (Candy Purple molded chassis from Reference Image 2) */
+.skeuo-chassis,
+.skeuo-chassis-purple {
+  background-color: #be8bf6;
   background-image: 
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.075'/%3E%3C/svg%3E"),
-    radial-gradient(130% 90% at 20% 10%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 50%),
-    linear-gradient(160deg, #f8fafc 0%, #e6edf4 45%, #d9e2ec 100%);
-  border: 1px solid #c4d1de;
-  border-radius: 36px;
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"),
+    radial-gradient(120% 90% at 20% 12%, rgba(255, 255, 255, 0.48) 0%, transparent 45%),
+    linear-gradient(160deg, #d3a4fa 0%, #b873f4 45%, #9240e4 100%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 44px;
   box-shadow:
-    inset 0 2px 3px rgba(255, 255, 255, 0.95),   /* top edge specular catch */
-    inset 0 -6px 12px rgba(100, 116, 139, 0.25), /* bottom edge occlusion shadow */
-    0 2px 4px rgba(15, 23, 42, 0.08),             /* contact shadow */
-    0 28px 64px -16px rgba(15, 23, 42, 0.18),     /* ambient floating shadow */
-    0 10px 24px -6px rgba(15, 23, 42, 0.08);
+    inset 0 3px 2px rgba(255, 255, 255, 0.7),   /* top edge specular light */
+    inset 0 -8px 14px rgba(60, 10, 100, 0.35),  /* bottom occlusion shadow */
+    0 4px 8px rgba(0, 0, 0, 0.18),
+    0 36px 70px -12px rgba(45, 12, 70, 0.55);   /* ambient lifted shadow */
   position: relative;
 }
 
@@ -215,6 +235,126 @@
   box-shadow: 
     inset 0 3px 6px rgba(0, 0, 0, 0.7),
     0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Terracotta Keycap (Image 1 & 3) */
+.key-cap-terracotta {
+  background: linear-gradient(155deg, #f97316 0%, #ea580c 50%, #9a3412 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #7c2d12 !important;
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -5px 8px rgba(0, 0, 0, 0.4),
+    0 3px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.key-cap-terracotta:hover {
+  background: linear-gradient(155deg, #fb923c 0%, #ea580c 50%, #7c2d12 100%) !important;
+}
+
+.key-cap-terracotta:active {
+  transform: translateY(2px);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.6),
+    0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Cobalt Keycap (Image 2) */
+.key-cap-cobalt {
+  background: linear-gradient(155deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #1e40af !important;
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -5px 8px rgba(0, 0, 0, 0.35),
+    0 3px 6px rgba(0, 0, 0, 0.25) !important;
+}
+
+.key-cap-cobalt:hover {
+  background: linear-gradient(155deg, #60a5fa 0%, #2563eb 50%, #1e40af 100%) !important;
+}
+
+.key-cap-cobalt:active {
+  transform: translateY(2px);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Knurled Hardware Dial Knob (Image 1 & 4) */
+.knurled-dial-knob {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, #ea580c 0deg 8deg, #c2410c 8deg 16deg);
+  padding: 6px;
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.45),
+    inset 0 2px 2px rgba(255, 255, 255, 0.5),
+    inset 0 -3px 4px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-block;
+  user-select: none;
+}
+
+.knurled-dial-knob:hover {
+  transform: scale(1.04);
+}
+
+.knurled-dial-knob:active {
+  transform: scale(0.95);
+}
+
+.knurled-dial-cap {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #f1f5f9 50%, #cbd5e1 100%);
+  box-shadow: 
+    inset 0 2px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.25),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: #1e293b;
+  font-size: 22px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Lanyard Bracket & Loop (Image 2) */
+.lanyard-bracket {
+  width: 18px;
+  height: 60px;
+  background: linear-gradient(180deg, #d3a4fa 0%, #a855f7 50%, #7e22ce 100%);
+  border-radius: 12px 0 0 12px;
+  box-shadow: 
+    inset 0 2px 1px rgba(255, 255, 255, 0.6),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+    -4px 4px 12px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+.lanyard-bracket-slot {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 3px;
+  right: 3px;
+  background: #1e1b4b;
+  border-radius: 6px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* Rocker Pill Switch (Image 2 & 4) */
+.rocker-pill {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 9999px;
+  padding: 3px;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.2);
+  display: inline-flex;
 }
 
 /* Signature Terracotta / Burnt Orange Push Button (Images 1 & 3) */

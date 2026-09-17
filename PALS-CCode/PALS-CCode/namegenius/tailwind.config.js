@@ -4,8 +4,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        necosmic: ['Necosmic', 'sans-serif'],
         sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-        display: ['"Plus Jakarta Sans"', 'sans-serif'],
+        display: ['Necosmic', '"Plus Jakarta Sans"', 'sans-serif'],
         serif: ['Fraunces', 'Georgia', 'serif'],
         mono: ['"JetBrains Mono"', '"Space Mono"', 'ui-monospace', 'monospace'],
       },

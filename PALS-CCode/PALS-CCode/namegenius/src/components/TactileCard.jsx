@@ -121,7 +121,7 @@ export default function TactileCard({
       {/* Brand Name Window */}
       <div className="my-5 relative z-10">
         <div className="flex items-baseline justify-between gap-2">
-          <h3 className="font-serif text-2xl font-black tracking-tight text-slate-900 sm:text-3xl deboss-light">
+          <h3 className="font-necosmic text-2xl sm:text-3xl font-normal tracking-tight text-slate-950 uppercase deboss-light">
             {item.name}
           </h3>
           <span className="font-mono text-xs text-slate-400">

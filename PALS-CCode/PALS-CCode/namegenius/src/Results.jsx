@@ -120,12 +120,12 @@ export default function Results({
               onClick={onNewSearch}
               className="flex items-center gap-2 text-base font-extrabold tracking-tight text-slate-900 transition-opacity hover:opacity-80"
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-xs font-black text-white shadow-skeuo-button">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-950 text-xs font-black text-white shadow-md border border-slate-800">
                 N
               </span>
-              <span className="font-serif text-lg font-bold">NameGenius</span>
+              <span className="font-necosmic text-2xl font-bold tracking-tight text-slate-950 uppercase">NameGenius</span>
             </button>
-            <span className="hidden rounded-md bg-slate-100/90 px-2 py-0.5 font-mono text-[10px] font-bold text-slate-700 sm:inline-block border border-slate-200 shadow-xs">
+            <span className="hidden rounded-lg bg-slate-950/10 px-2 py-0.5 font-mono text-[10px] font-black text-slate-900 sm:inline-block border border-slate-950/20">
               MOD. NG-01 // RESULTS
             </span>
           </div>
@@ -193,11 +193,11 @@ export default function Results({
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-serif text-2xl font-black text-slate-900 sm:text-3xl deboss-light">
+                <h1 className="font-necosmic text-2xl sm:text-3xl font-normal uppercase tracking-tight text-slate-950 deboss-light">
                   {hasKeyword ? (
                     <>
                       Generated names for{' '}
-                      <span className="rounded-lg bg-blue-50 px-2.5 py-0.5 text-blue-900 border border-blue-200">
+                      <span className="rounded-xl bg-slate-950 px-3 py-0.5 text-white border border-slate-800">
                         "{brief.name.trim()}"
                       </span>
                     </>
