@@ -1,7 +1,48 @@
 @font-face {
-  font-family: 'Necosmic';
-  src: url('/fonts/Necosmic.otf') format('opentype');
+  font-family: 'Raster';
+  src: url('/fonts/header-active.ttf') format('truetype'),
+       url('/fonts/raster.ttf') format('truetype');
   font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'ActiveHeaderFont';
+  src: url('/fonts/header-active.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Meltmino';
+  src: url('/fonts/Meltmino-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Meltmino';
+  src: url('/fonts/Meltmino-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Meltmino';
+  src: url('/fonts/Meltmino-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Meltmino';
+  src: url('/fonts/Meltmino-Bold.ttf') format('truetype');
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -10,6 +51,36 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --font-display: 'Raster', 'ActiveHeaderFont', sans-serif;
+  --font-ui: 'Meltmino', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Use Raster sparingly, mostly in H1, H2 and dedicated display markers */
+h1, h2, .font-raster, .font-display {
+  font-family: var(--font-display) !important;
+  font-synthesis: weight;
+  letter-spacing: -0.01em;
+}
+
+.hero-header {
+  font-weight: 900 !important;
+  -webkit-text-stroke: 0.75px currentColor;
+  paint-order: stroke fill;
+}
+
+/* Keep card titles, UI elements, buttons, inputs, and body text clean and readable with Meltmino */
+h3, h4, h5, h6,
+body, p, input, textarea, button, select,
+.font-sans,
+.font-mono,
+.font-meltmino,
+.font-neuropol,
+.font-zentarch,
+.font-necosmic {
+  font-family: var(--font-ui) !important;
+}
+
 @layer base {
   :root {
     --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
@@ -17,16 +88,19 @@
   }
 
   html {
-    font-family: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-      Helvetica, Arial, sans-serif;
+    font-family: 'Meltmino', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
   }
 
   body {
-    background: #fae127;
+    background-color: #fae127;
+    background-image: url('/grain.png');
+    background-repeat: repeat;
+    background-size: 96px 96px;
     color: #0d0f12;
+    font-family: 'Meltmino', -apple-system, BlinkMacSystemFont, sans-serif;
     line-height: 1.5;
   }
 
@@ -124,31 +198,29 @@
 
 /* === Neo-Skeuomorphic Hardware Surface & Component System === */
 
-/* High-craft procedural noise overlay for plastic/aluminum texture */
-.texture-noise {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.06'/%3E%3C/svg%3E");
-}
-
-/* 1. Page Background Canvas (Acid Yellow Neo-Pop Canvas from Style Guide §2 & Image 2) */
+/* 1. Page Background Canvas (Acid Yellow Neo-Pop Canvas with Visible Tactile Paper Grain & Studio Vignette) */
 .bg-hardware-canvas {
   background-color: #fae127;
   background-image: 
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
-  background-attachment: fixed;
+    url('/grain.png'),
+    radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.4) 0%, rgba(250, 225, 39, 0) 65%),
+    radial-gradient(ellipse at 85% 85%, rgba(234, 179, 8, 0.18) 0%, transparent 60%);
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-size: 96px 96px, cover, cover;
+  background-attachment: fixed, fixed, fixed;
 }
 
-/* 2. Device Chassis (Candy Purple molded chassis from Reference Image 2) */
+/* 2. Device Chassis (Molded Plastic Unibody matching Reference Image 2) */
 .skeuo-chassis,
 .skeuo-chassis-purple {
   background-color: #be8bf6;
   background-image: 
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"),
-    radial-gradient(120% 90% at 20% 12%, rgba(255, 255, 255, 0.48) 0%, transparent 45%),
+    radial-gradient(120% 90% at 20% 12%, rgba(255, 255, 255, 0.5) 0%, transparent 45%),
     linear-gradient(160deg, #d3a4fa 0%, #b873f4 45%, #9240e4 100%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.55);
   border-radius: 44px;
   box-shadow:
-    inset 0 3px 2px rgba(255, 255, 255, 0.7),   /* top edge specular light */
+    inset 0 3px 2px rgba(255, 255, 255, 0.75),   /* top edge specular light */
     inset 0 -8px 14px rgba(60, 10, 100, 0.35),  /* bottom occlusion shadow */
     0 4px 8px rgba(0, 0, 0, 0.18),
     0 36px 70px -12px rgba(45, 12, 70, 0.55);   /* ambient lifted shadow */
@@ -159,7 +231,6 @@
 .skeuo-chassis-putty {
   background-color: #e5e0d4;
   background-image: 
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E"),
     radial-gradient(130% 90% at 20% 10%, rgba(255, 255, 255, 0.7) 0%, transparent 45%),
     linear-gradient(160deg, #ece7dc 0%, #dcd6cb 55%, #c8c0b2 100%);
   border: 1px solid #beb5a5;
@@ -191,15 +262,15 @@
     0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-/* 4. Raised Mechanical Keycaps (Button body sitting inside socket with gap) */
+/* 4. Raised Mechanical Keycaps (Clean Precision Molded Keys) */
 .key-cap {
   background: linear-gradient(160deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
   border-radius: 15px;
-  border: 1px solid rgba(203, 213, 225, 0.8);
+  border: 1px solid rgba(203, 213, 225, 0.85);
   box-shadow: 
     inset 0 2px 0 rgba(255, 255, 255, 0.95),   /* top bevel highlight */
-    inset 0 -4px 6px rgba(15, 23, 42, 0.1),     /* bottom occlusion */
-    0 3px 6px rgba(15, 23, 42, 0.12);           /* cast shadow onto socket floor */
+    inset 0 -4px 6px rgba(15, 23, 42, 0.12),    /* bottom occlusion */
+    0 3px 6px rgba(15, 23, 42, 0.14);           /* cast shadow onto socket floor */
   transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 90ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -447,9 +518,7 @@
 .skeuo-plate {
   border: 1px solid #c8d4e0;
   background-color: #fdfefe;
-  background-image: 
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"),
-    linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+  background-image: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
   box-shadow: 
     inset 0 1px 0 #ffffff,
     inset 0 -2px 4px rgba(100, 116, 139, 0.08),
@@ -581,9 +650,7 @@
 /* 12. Tactile Hardware Cards */
 .skeuo-card {
   background-color: #ffffff;
-  background-image: 
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"),
-    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  background-image: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   border: 1px solid #cbd5e1;
   box-shadow: 
     0 1px 2px rgba(15, 23, 42, 0.04),
@@ -696,6 +763,54 @@ input[type='range'].hardware-slider::-webkit-slider-thumb:active {
   background: #c8d4e0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+/* Feline Tail / Woven Flight Lanyard Ribbon Tag Sway Animation */
+@keyframes tail-sway {
+  0%, 100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes ribbon-sway {
+  0%, 100% {
+    transform: rotate(-2.5deg) skewX(-1deg);
+  }
+  50% {
+    transform: rotate(3.5deg) skewX(1.5deg);
+  }
+}
+
+.animate-tail-sway {
+  transform-origin: 20px 6px;
+  animation: tail-sway 3.2s ease-in-out infinite;
+}
+
+.animate-ribbon-sway {
+  transform-origin: top center;
+  animation: ribbon-sway 3.8s ease-in-out infinite;
+}
+
+/* Behind-the-Dock Confetti Shower Animation */
+@keyframes confetti-burst {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(0.6);
+    opacity: 1;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--confetti-x, 0px), var(--confetti-y, 220px)) rotate(var(--confetti-rot, 360deg)) scale(1);
+    opacity: 0;
+  }
+}
+
+.animate-confetti-piece {
+  animation: confetti-burst 3.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 /* Reduced motion accessibility */

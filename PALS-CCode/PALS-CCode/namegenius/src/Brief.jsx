@@ -38,28 +38,20 @@ export default function Brief({
   return (
     <div className="min-h-screen bg-hardware-canvas text-slate-950 selection:bg-slate-950 selection:text-[#fae127]">
       {/* FULL-SCREEN 100vh HERO SECTION ON LOAD */}
-      <section className="relative min-h-[100dvh] h-screen flex flex-col justify-between p-4 sm:p-6 lg:p-8 overflow-hidden select-none">
-        {/* Technical Periphery Markings (Style Guide §2 & Reference Image 2) */}
-        <div className="pointer-events-none absolute top-3 left-6 font-mono text-[10px] font-black tracking-widest text-slate-900/60 uppercase hidden sm:block">
-          NG-01 // TACTILE SYNTHESIZER
-        </div>
-        <div className="pointer-events-none absolute top-3 right-6 font-mono text-[10px] font-black tracking-widest text-slate-900/60 uppercase hidden sm:block">
-          48kHz PHONETIC ENGINE // STEREO
-        </div>
-
+      <section className="relative min-h-[100dvh] h-screen flex flex-col justify-between pt-3 sm:pt-4 pb-4 px-4 sm:px-6 lg:px-8 overflow-hidden select-none">
         {/* Top Navigation Bar: Tactile Hardware Control Strip */}
-        <header className="z-20 w-full max-w-7xl mx-auto flex items-center justify-between">
+        <header className="z-20 w-full max-w-7xl mx-auto flex items-center justify-between shrink-0 mb-1 sm:mb-3">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-950 text-sm font-black text-white shadow-md border border-slate-800">
                 N
               </span>
-              <span className="font-necosmic text-2xl font-bold tracking-tight text-slate-950 uppercase">
+              <span className="font-sans text-2xl font-bold tracking-tight text-slate-950 uppercase">
                 NameGenius
               </span>
             </div>
             <span className="hidden rounded-lg bg-slate-950/10 px-2 py-0.5 font-mono text-[11px] font-black text-slate-900 sm:inline-block border border-slate-950/20">
-              MOD. NG-01
+              HARDWARE EDITION
             </span>
           </div>
 
@@ -139,60 +131,59 @@ export default function Brief({
         </header>
 
         {/* Hero Center Stage: Neo-Pop Typography Left + Hardware Gadget Right */}
-        <div className="w-full max-w-7xl mx-auto my-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center py-4">
-          {/* Left Column: Bold Neo-Pop Headline with Necosmic Font */}
+        <div className="w-full max-w-6xl mx-auto my-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-center py-2">
+          {/* Left Column: Bold Neo-Pop Headline with Zentarch Font */}
           <div className="lg:col-span-7 flex flex-col justify-center text-left">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-950/30 bg-slate-950/10 px-4 py-1.5 font-mono text-xs font-black text-slate-900 mb-6 backdrop-blur-xs w-fit">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-950/30 bg-slate-950/10 px-4 py-1.5 font-mono text-xs font-black text-slate-900 mb-4 backdrop-blur-xs w-fit">
               <Sparkle weight="fill" className="text-amber-600 text-sm" />
-              <span>TACTILE HARDWARE & DOMAIN SYNTHESIZER</span>
+              <span>TACTILE DOMAIN GENERATOR</span>
             </div>
 
-            <h1 className="font-necosmic text-5xl sm:text-7xl lg:text-[5.4rem] font-normal tracking-tight text-slate-950 leading-[0.92] uppercase deboss-light">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-[62px] font-black hero-header tracking-tight text-slate-950 leading-[0.98] uppercase deboss-light">
               BRAND NAMES
               <span className="block text-purple-950 drop-shadow-xs">
                 YOU CAN OWN.
               </span>
             </h1>
 
-            <p className="mt-6 max-w-xl font-sans text-base sm:text-xl font-medium text-slate-900/80 leading-relaxed">
-              Stop falling in love with taken names. NameGenius combines acoustic phonetic scoring, semantic resonance, and real-time registrar milling across .com, .ai, and global country domains.
+            <p className="mt-5 max-w-xl font-sans text-base sm:text-lg font-medium text-slate-900/80 leading-relaxed">
+              Find available domain names that sound memorable and roll off the tongue. Check real-time registration across .com, .ai, and global country domains without getting stuck on taken names.
             </p>
 
-            {/* Hardware Telemetry Spec Pills */}
-            <div className="mt-6 flex flex-wrap items-center gap-2.5 font-mono text-[11px] font-black uppercase text-slate-900">
+            {/* Hardware Feature Spec Pills */}
+            <div className="mt-5 flex flex-wrap items-center gap-2 font-mono text-[11px] font-black uppercase text-slate-900">
               <span className="rounded-lg bg-slate-950/10 px-3 py-1 border border-slate-950/20">
-                ● 48kHz PHONETIC ENGINE
+                ⚡ REAL-TIME REGISTRAR CHECK
               </span>
               <span className="rounded-lg bg-slate-950/10 px-3 py-1 border border-slate-950/20">
-                ⚡ LIVE REGISTRAR VERIFIED
+                ● PHONETIC TONE CONTROLS
               </span>
               <span className="rounded-lg bg-slate-950/10 px-3 py-1 border border-slate-950/20">
-                ★ SKEUOMORPHIC CONSOLE
+                ★ 30+ COUNTRY EXTENSIONS
               </span>
             </div>
 
             {/* Primary Action Button: Massive Terracotta Mechanical Switch */}
-            <div className="mt-8 flex items-center gap-4">
+            <div className="mt-6 flex items-center gap-4">
               <button
                 type="button"
                 onClick={handleScrollToConsole}
-                className="skeuo-button-terracotta inline-flex items-center gap-3 rounded-2xl px-8 py-4 font-mono text-xs sm:text-sm font-black uppercase tracking-wider text-white shadow-2xl active:scale-95 group"
+                className="skeuo-button-terracotta inline-flex items-center justify-center rounded-2xl px-8 py-4 font-mono text-xs sm:text-sm font-black uppercase tracking-wider text-white shadow-2xl active:scale-95 cursor-pointer"
               >
-                <span>INITIALIZE SYNTHESIZER [↓]</span>
-                <ArrowDown weight="bold" className="group-hover:translate-y-1 transition-transform text-lg" />
+                <span>FIND MY DOMAIN</span>
               </button>
             </div>
           </div>
 
           {/* Right Column: Floating Interactive Hardware Gadget Centerpiece */}
-          <div className="lg:col-span-5 flex justify-center items-center">
+          <div className="lg:col-span-5 flex justify-center lg:justify-center items-center">
             <HeroHardwareGadget onInteractWithConsole={handleScrollToConsole} />
           </div>
         </div>
 
         {/* Hero Bottom Bar / Hardware Status Cue */}
         <footer className="w-full max-w-7xl mx-auto flex items-center justify-between font-mono text-[10px] font-black uppercase tracking-wider text-slate-900/60 pt-2 border-t border-slate-950/15">
-          <div>MILLED HARDWARE SPEC // 2026</div>
+          <div>TACTILE HARDWARE EDITION</div>
           <button
             type="button"
             onClick={handleScrollToConsole}
@@ -201,7 +192,7 @@ export default function Brief({
             <span>OPERATE MASTER CONSOLE</span>
             <ArrowDown weight="bold" />
           </button>
-          <div>NYC MMXXIV // STEREO PHONETICS</div>
+          <div>VERIFIED REGISTRAR DATA</div>
         </footer>
       </section>
 
@@ -224,7 +215,7 @@ export default function Brief({
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-950 text-xs font-black text-white">
                   N
                 </span>
-                <h3 className="font-necosmic text-2xl font-bold uppercase tracking-tight text-slate-950">
+                <h3 className="font-neuropol text-2xl font-bold uppercase tracking-tight text-slate-950">
                   How NameGenius Works
                 </h3>
               </div>

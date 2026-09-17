@@ -53,17 +53,17 @@ export default function TactileCard({
           {item.phonetic && (
             <span
               className={`rounded-md px-2 py-0.5 font-sans text-xs font-medium shadow-xs ${
-                item.phonetic.profile === 'kiki'
+                item.phonetic.profile === 'kiki' || item.phonetic.profile === 'punchy'
                   ? 'bg-cyan-50 text-cyan-800 border border-cyan-200'
-                  : item.phonetic.profile === 'bouba'
+                  : item.phonetic.profile === 'bouba' || item.phonetic.profile === 'smooth'
                   ? 'bg-amber-50 text-amber-800 border border-amber-200'
                   : 'bg-slate-100 text-slate-700 border border-slate-200'
               }`}
             >
-              {item.phonetic.profile === 'kiki'
-                ? 'Sharp tone'
-                : item.phonetic.profile === 'bouba'
-                ? 'Soft tone'
+              {item.phonetic.profile === 'kiki' || item.phonetic.profile === 'punchy'
+                ? 'Short & punchy'
+                : item.phonetic.profile === 'bouba' || item.phonetic.profile === 'smooth'
+                ? 'Smooth & friendly'
                 : 'Balanced'}
             </span>
           )}
@@ -121,7 +121,7 @@ export default function TactileCard({
       {/* Brand Name Window */}
       <div className="my-5 relative z-10">
         <div className="flex items-baseline justify-between gap-2">
-          <h3 className="font-necosmic text-2xl sm:text-3xl font-normal tracking-tight text-slate-950 uppercase deboss-light">
+          <h3 className="font-sans font-bold text-2xl sm:text-3xl tracking-tight text-slate-950 uppercase deboss-light">
             {item.name}
           </h3>
           <span className="font-mono text-xs text-slate-400">

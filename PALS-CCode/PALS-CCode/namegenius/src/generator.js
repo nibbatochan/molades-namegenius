@@ -112,22 +112,22 @@ export function countSyllables(word) {
 }
 
 export function calculatePhoneticProfile(word) {
-  if (!word) return { score: 50, label: 'Harmonic Balance', profile: 'balanced' }
+  if (!word) return { score: 50, label: 'Balanced tone', profile: 'balanced', tone: 'balanced' }
   const lower = word.toLowerCase()
-  const boubaLetters = new Set(['b', 'm', 'l', 'n', 'r', 'w', 'u', 'o'])
-  const kikiLetters = new Set(['k', 't', 'p', 'z', 'x', 'c', 'q', 'i', 'e'])
-  let bCount = 0
-  let kCount = 0
+  const smoothLetters = new Set(['b', 'm', 'l', 'n', 'r', 'w', 'u', 'o'])
+  const punchyLetters = new Set(['k', 't', 'p', 'z', 'x', 'c', 'q', 'i', 'e'])
+  let sCount = 0
+  let pCount = 0
   for (const ch of lower) {
-    if (boubaLetters.has(ch)) bCount++
-    if (kikiLetters.has(ch)) kCount++
+    if (smoothLetters.has(ch)) sCount++
+    if (punchyLetters.has(ch)) pCount++
   }
-  const total = bCount + kCount
-  if (total === 0) return { score: 50, label: 'Harmonic Balance', profile: 'balanced' }
-  const ratio = Math.round((kCount / total) * 100)
-  if (ratio > 62) return { score: ratio, label: 'Sharp tone', profile: 'kiki' }
-  if (ratio < 38) return { score: ratio, label: 'Soft tone', profile: 'bouba' }
-  return { score: ratio, label: 'Balanced tone', profile: 'balanced' }
+  const total = sCount + pCount
+  if (total === 0) return { score: 50, label: 'Balanced tone', profile: 'balanced', tone: 'balanced' }
+  const ratio = Math.round((pCount / total) * 100)
+  if (ratio > 62) return { score: ratio, label: 'Short & punchy', profile: 'punchy', legacyProfile: 'kiki', tone: 'punchy' }
+  if (ratio < 38) return { score: ratio, label: 'Smooth & friendly', profile: 'smooth', legacyProfile: 'bouba', tone: 'smooth' }
+  return { score: ratio, label: 'Balanced tone', profile: 'balanced', legacyProfile: 'balanced', tone: 'balanced' }
 }
 
 // Deterministic per-TLD availability with realistic scarcity (.com rare, .ai growing).

@@ -1,8 +1,17 @@
 // Web Audio API micro-haptics for tactile mechanical switches and knobs
 let audioCtx = null
+let soundMuted = false
+
+export function setSoundMuted(muted) {
+  soundMuted = Boolean(muted)
+}
+
+export function isSoundMuted() {
+  return soundMuted
+}
 
 export function playMechanicalClick(type = 'click') {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined' || soundMuted) return
   try {
     if (!audioCtx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext
@@ -55,3 +64,253 @@ export function playMechanicalClick(type = 'click') {
     // Graceful fallback
   }
 }
+
+export function playPixelJump() {
+  if (typeof window === 'undefined' || soundMuted) return
+  try {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      if (!AudioContext) return
+      audioCtx = new AudioContext()
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+    const now = audioCtx.currentTime
+
+    osc.type = 'square'
+    osc.frequency.setValueAtTime(220, now)
+    osc.frequency.exponentialRampToValueAtTime(620, now + 0.09)
+    gain.gain.setValueAtTime(0.08, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1)
+
+    osc.connect(gain)
+    gain.connect(audioCtx.destination)
+    osc.start(now)
+    osc.stop(now + 0.1)
+  } catch (_) {}
+}
+
+export function playPowerupChime() {
+  if (typeof window === 'undefined' || soundMuted) return
+  try {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      if (!AudioContext) return
+      audioCtx = new AudioContext()
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+
+    const now = audioCtx.currentTime
+    const notes = [523.25, 659.25, 783.99, 1046.5] // C5, E5, G5, C6
+    notes.forEach((freq, idx) => {
+      const osc = audioCtx.createOscillator()
+      const gain = audioCtx.createGain()
+      const start = now + idx * 0.05
+
+      osc.type = 'square'
+      osc.frequency.setValueAtTime(freq, start)
+      gain.gain.setValueAtTime(0.07, start)
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.07)
+
+      osc.connect(gain)
+      gain.connect(audioCtx.destination)
+      osc.start(start)
+      osc.stop(start + 0.08)
+    })
+  } catch (_) {}
+}
+
+export function playGameOver() {
+  if (typeof window === 'undefined' || soundMuted) return
+  try {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      if (!AudioContext) return
+      audioCtx = new AudioContext()
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+    const now = audioCtx.currentTime
+
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(320, now)
+    osc.frequency.exponentialRampToValueAtTime(90, now + 0.28)
+    gain.gain.setValueAtTime(0.12, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3)
+
+    osc.connect(gain)
+    gain.connect(audioCtx.destination)
+    osc.start(now)
+    osc.stop(now + 0.3)
+  } catch (_) {}
+}
+
+export function playCountdownBeep(isGo = false) {
+  if (typeof window === 'undefined' || soundMuted) return
+  try {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      if (!AudioContext) return
+      audioCtx = new AudioContext()
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+
+    const now = audioCtx.currentTime
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+
+    osc.type = isGo ? 'square' : 'triangle'
+    const freq = isGo ? 880 : 440 // A5 for GO!, A4 for 3, 2, 1
+    const dur = isGo ? 0.35 : 0.15
+
+    osc.frequency.setValueAtTime(freq, now)
+    if (isGo) {
+      osc.frequency.exponentialRampToValueAtTime(1174.66, now + dur) // D6 upward fanfare
+    }
+    gain.gain.setValueAtTime(isGo ? 0.14 : 0.08, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + dur)
+
+    osc.connect(gain)
+    gain.connect(audioCtx.destination)
+    osc.start(now)
+    osc.stop(now + dur)
+  } catch (_) {}
+}
+
+export function playCannonBlast() {
+  if (typeof window === 'undefined' || soundMuted) return
+  try {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      if (!AudioContext) return
+      audioCtx = new AudioContext()
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+
+    const now = audioCtx.currentTime
+
+    // Heavy bass thud
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(160, now)
+    osc.frequency.exponentialRampToValueAtTime(40, now + 0.35)
+    gain.gain.setValueAtTime(0.25, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4)
+
+    osc.connect(gain)
+    gain.connect(audioCtx.destination)
+    osc.start(now)
+    osc.stop(now + 0.4)
+
+    // Upward launch whistle / hiss
+    const launchOsc = audioCtx.createOscillator()
+    const launchGain = audioCtx.createGain()
+    launchOsc.type = 'triangle'
+    launchOsc.frequency.setValueAtTime(220, now + 0.05)
+    launchOsc.frequency.exponentialRampToValueAtTime(880, now + 0.3)
+    launchGain.gain.setValueAtTime(0.1, now + 0.05)
+    launchGain.gain.exponentialRampToValueAtTime(0.001, now + 0.32)
+
+    launchOsc.connect(launchGain)
+    launchGain.connect(audioCtx.destination)
+    launchOsc.start(now + 0.05)
+    launchOsc.stop(now + 0.32)
+  } catch (_) {}
+}
+
+export function playPhaseChime() {
+  if (typeof window === 'undefined' || soundMuted) return
+  try {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      if (!AudioContext) return
+      audioCtx = new AudioContext()
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+
+    const now = audioCtx.currentTime
+    // Ascending major arpeggio: C5 (523), E5 (659), G5 (784), C6 (1046)
+    const notes = [523.25, 659.25, 783.99, 1046.5]
+    notes.forEach((freq, i) => {
+      const osc = audioCtx.createOscillator()
+      const gain = audioCtx.createGain()
+      const start = now + i * 0.08
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq, start)
+      gain.gain.setValueAtTime(0.09 * masterVolume, start)
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.22)
+      osc.connect(gain)
+      gain.connect(audioCtx.destination)
+      osc.start(start)
+      osc.stop(start + 0.25)
+    })
+  } catch (_) {}
+}
+
+// Background In-Game 8-Bit Music Controller
+const MUSIC_TRACKS = [
+  '/game/ingame-music/8-bit Funk.mp3',
+  '/game/ingame-music/8-bit Funk 2.mp3',
+]
+
+let bgMusicAudio = null
+let currentTrackIdx = 0
+let musicActive = false
+let masterVolume = 0.75
+
+export function setMasterVolume(vol) {
+  masterVolume = Math.max(0, Math.min(1, Number(vol) || 0))
+  if (bgMusicAudio) {
+    bgMusicAudio.volume = masterVolume * 0.55 // comfortable bg level
+  }
+}
+
+export function getMasterVolume() {
+  return masterVolume
+}
+
+export function setMusicEnabled(enabled) {
+  musicActive = Boolean(enabled)
+  if (typeof window === 'undefined') return
+
+  if (musicActive) {
+    if (!bgMusicAudio) {
+      bgMusicAudio = new Audio(MUSIC_TRACKS[currentTrackIdx])
+      bgMusicAudio.loop = false
+      bgMusicAudio.volume = masterVolume * 0.55
+      bgMusicAudio.addEventListener('ended', () => {
+        currentTrackIdx = (currentTrackIdx + 1) % MUSIC_TRACKS.length
+        bgMusicAudio.src = MUSIC_TRACKS[currentTrackIdx]
+        bgMusicAudio.play().catch(() => {})
+      })
+    }
+    bgMusicAudio.volume = masterVolume * 0.55
+    bgMusicAudio.play().catch(() => {
+      // Browser autoplay policy might require user click
+    })
+  } else {
+    if (bgMusicAudio) {
+      bgMusicAudio.pause()
+    }
+  }
+}
+
+export function isMusicEnabled() {
+  return musicActive
+}
+
+export function nextMusicTrack() {
+  if (typeof window === 'undefined' || !bgMusicAudio) return
+  currentTrackIdx = (currentTrackIdx + 1) % MUSIC_TRACKS.length
+  bgMusicAudio.src = MUSIC_TRACKS[currentTrackIdx]
+  if (musicActive) {
+    bgMusicAudio.play().catch(() => {})
+  }
+}
+
+

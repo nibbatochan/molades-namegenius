@@ -4,11 +4,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        necosmic: ['Necosmic', 'sans-serif'],
-        sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-        display: ['Necosmic', '"Plus Jakarta Sans"', 'sans-serif'],
-        serif: ['Fraunces', 'Georgia', 'serif'],
-        mono: ['"JetBrains Mono"', '"Space Mono"', 'ui-monospace', 'monospace'],
+        raster: ['Raster', 'sans-serif'],
+        display: ['Raster', 'sans-serif'],
+        sans: ['Meltmino', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        mono: ['Meltmino', 'ui-monospace', 'monospace'],
       },
       colors: {
         titanium: {

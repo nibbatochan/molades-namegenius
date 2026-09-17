@@ -84,8 +84,8 @@ export default function Results({
       if (filter === 'com') return Boolean(item.tlds?.['.com'])
       if (filter === 'ai') return Boolean(item.tlds?.['.ai'])
       if (filter === 'short') return item.slug.length <= 6
-      if (filter === 'kiki') return item.phonetic?.profile === 'kiki'
-      if (filter === 'bouba') return item.phonetic?.profile === 'bouba'
+      if (filter === 'punchy' || filter === 'kiki') return item.phonetic?.profile === 'kiki' || item.phonetic?.profile === 'punchy'
+      if (filter === 'smooth' || filter === 'bouba') return item.phonetic?.profile === 'bouba' || item.phonetic?.profile === 'smooth'
       return true
     })
   }, [allItems, filter])
@@ -123,7 +123,7 @@ export default function Results({
               <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-950 text-xs font-black text-white shadow-md border border-slate-800">
                 N
               </span>
-              <span className="font-necosmic text-2xl font-bold tracking-tight text-slate-950 uppercase">NameGenius</span>
+              <span className="font-sans text-2xl font-bold tracking-tight text-slate-950 uppercase">NameGenius</span>
             </button>
             <span className="hidden rounded-lg bg-slate-950/10 px-2 py-0.5 font-mono text-[10px] font-black text-slate-900 sm:inline-block border border-slate-950/20">
               MOD. NG-01 // RESULTS
@@ -184,16 +184,10 @@ export default function Results({
       <main className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
         {/* Telemetry Hardware Chassis Deck */}
         <div className="skeuo-chassis relative overflow-hidden rounded-[28px] p-6 sm:p-7 shadow-xl">
-          {/* Chassis Screws */}
-          <div className="chassis-screw absolute top-3.5 left-4"><span>+</span></div>
-          <div className="chassis-screw absolute top-3.5 right-4"><span>+</span></div>
-          <div className="chassis-screw absolute bottom-3.5 left-4"><span>+</span></div>
-          <div className="chassis-screw absolute bottom-3.5 right-4"><span>+</span></div>
-
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-necosmic text-2xl sm:text-3xl font-normal uppercase tracking-tight text-slate-950 deboss-light">
+                <h1 className="font-display text-2xl sm:text-3xl font-normal uppercase tracking-tight text-slate-950 deboss-light">
                   {hasKeyword ? (
                     <>
                       Generated names for{' '}
@@ -244,8 +238,8 @@ export default function Results({
               { id: 'com', label: `.com (${allItems.filter((i) => i.tlds?.['.com']).length})` },
               { id: 'ai', label: `.ai (${allItems.filter((i) => i.tlds?.['.ai']).length})` },
               { id: 'short', label: 'Short (≤6 chars)' },
-              { id: 'kiki', label: '⚡ Sharp tone' },
-              { id: 'bouba', label: '☁ Soft tone' },
+              { id: 'punchy', label: '⚡ Punchy' },
+              { id: 'smooth', label: '☁ Smooth' },
             ].map((f) => {
               const isActive = filter === f.id
               return (

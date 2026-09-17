@@ -98,7 +98,11 @@ export default function CompareBench({ items = [], onRemove, onClear, selectedTl
                     <div className="flex items-center justify-between border-b border-slate-800 pb-1.5 text-slate-300">
                       <span className="text-slate-400">Tone:</span>
                       <span className="font-semibold text-cyan-300">
-                        {item.phonetic?.profile === 'kiki' ? 'Sharp tone' : item.phonetic?.profile === 'bouba' ? 'Soft tone' : 'Balanced'}
+                        {item.phonetic?.profile === 'kiki' || item.phonetic?.profile === 'punchy'
+                          ? 'Short & punchy'
+                          : item.phonetic?.profile === 'bouba' || item.phonetic?.profile === 'smooth'
+                          ? 'Smooth & friendly'
+                          : 'Balanced'}
                       </span>
                     </div>
 

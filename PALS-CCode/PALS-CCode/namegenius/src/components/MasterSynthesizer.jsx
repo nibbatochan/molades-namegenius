@@ -121,12 +121,6 @@ export default function MasterSynthesizer({
           </div>
         </div>
 
-        {/* Chassis Hex Corner Screws (Style Guide §8) */}
-        <div className="chassis-screw absolute top-4 left-4" title="Chassis Hex Bolt M3"><span className="scale-75">+</span></div>
-        <div className="chassis-screw absolute top-4 right-4" title="Chassis Hex Bolt M3"><span className="scale-75">+</span></div>
-        <div className="chassis-screw absolute bottom-4 left-4" title="Chassis Hex Bolt M3"><span className="scale-75">+</span></div>
-        <div className="chassis-screw absolute bottom-4 right-4" title="Chassis Hex Bolt M3"><span className="scale-75">+</span></div>
-
         {/* Console Header: Technical markings + 3x3 Perforated Speaker Grille */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-purple-400/30 pb-5">
           <div>
@@ -134,19 +128,19 @@ export default function MasterSynthesizer({
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-950 text-xs font-black text-white shadow-md border border-slate-800">
                 N
               </div>
-              <h2 className="font-necosmic text-3xl sm:text-4xl font-normal tracking-tight text-slate-950 uppercase deboss-light">
+              <h2 className="font-display text-3xl sm:text-4xl font-normal tracking-tight text-slate-950 uppercase deboss-light">
                 Master Synthesizer
               </h2>
             </div>
             <p className="mt-1 font-mono text-xs font-bold text-purple-950/80 uppercase tracking-wider">
-              CONFIGURE KEYWORDS, TLD MATRIX & ACOUSTIC PHONETICS
+              CONFIGURE KEYWORDS, EXTENSION MATRIX & PHONETIC TONE
             </p>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="text-right font-mono text-[10px] font-black text-slate-900 uppercase tracking-wider leading-tight hidden sm:block">
               <div>NG-01 MASTER CONSOLE</div>
-              <div className="text-purple-950/70">48kHz PHONETIC ACCURACY</div>
+              <div className="text-purple-950/70">PORKBUN REGISTRAR CONNECTED</div>
             </div>
             {/* 3x3 Perforated Speaker Grille (from Image 2) */}
             <div
@@ -171,11 +165,11 @@ export default function MasterSynthesizer({
               <div className="flex items-center gap-2.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 led-glow-emerald" />
                 <span className="font-mono text-xs font-bold tracking-wider text-emerald-400 uppercase">
-                  STATUS: READY // 48kHz PHONETIC ENGINE
+                  STATUS: READY // REGISTRAR API CONNECTED
                 </span>
               </div>
               <div className="flex items-center gap-3 font-mono text-[10px] text-slate-400">
-                <span className="hidden sm:inline-block">REGISTRAR PING: 18ms</span>
+                <span className="hidden sm:inline-block">LIVE AVAILABILITY CHECK</span>
                 <span className="rounded bg-slate-800 px-2 py-0.5 text-cyan-300 font-bold">
                   MODE: {hasNameInMind ? 'SEED DIRECT' : 'CONTEXT FIRST'}
                 </span>
@@ -262,7 +256,7 @@ export default function MasterSynthesizer({
                       if (error) setError('')
                     }}
                     placeholder="Ex: Northwind, Prism, Apex, Lumen..."
-                    className="w-full rounded-2xl border border-slate-700 bg-slate-900/90 px-5 py-3.5 font-necosmic text-2xl sm:text-3xl text-white tracking-wide placeholder:font-sans placeholder:text-base placeholder:text-slate-600 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 shadow-inner"
+                    className="w-full rounded-2xl border border-slate-700 bg-slate-900/90 px-5 py-3.5 font-sans font-bold text-2xl sm:text-3xl text-white tracking-wide placeholder:font-sans placeholder:font-normal placeholder:text-base placeholder:text-slate-600 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 shadow-inner"
                   />
                   {error && (
                     <div className="mt-2 font-mono text-xs font-bold text-rose-400 animate-toast">
@@ -306,10 +300,10 @@ export default function MasterSynthesizer({
               <div className="flex items-center gap-2 text-cyan-400 font-mono">
                 <Waveform weight="bold" className="text-base animate-pulse" />
                 <span className="text-[11px] text-slate-300">
-                  ACOUSTIC RESONANCE WAVEFORM:
+                  PHONETIC TONE:
                 </span>
                 <span className="font-bold text-cyan-300">
-                  {acousticBias < 40 ? 'BOUBA (SOFT)' : acousticBias > 60 ? 'KIKI (SHARP)' : 'BALANCED'}
+                  {acousticBias < 40 ? 'SMOOTH & FRIENDLY' : acousticBias > 60 ? 'SHORT & PUNCHY' : 'BALANCED TONE'}
                 </span>
               </div>
               <div className="h-4 flex items-center gap-1">
@@ -349,21 +343,17 @@ export default function MasterSynthesizer({
                 const isSelected = selectedTlds.includes(tld)
                 const countryMatch = COUNTRY_TLDS.find((c) => c.tld === tld)
                 
-                // Color assignment inspired by Reference Image 1 & 3:
-                // Terracotta for .com, Cobalt for .ai, Stone for others
-                let keycapStyle = 'key-cap text-slate-800'
-                if (isSelected) {
-                  if (tld === '.com') keycapStyle = 'key-cap-terracotta'
-                  else if (tld === '.ai') keycapStyle = 'key-cap-cobalt'
-                  else keycapStyle = 'key-cap-active-dark'
-                }
+                // All selected TLD keycaps use the signature illuminated cobalt blue skeuomorphic style
+                let keycapStyle = isSelected
+                  ? 'key-cap-cobalt text-white'
+                  : 'key-cap text-slate-800'
 
                 return (
                   <div key={tld} className="key-socket-dark !p-[2.5px] !rounded-2xl">
                     <button
                       type="button"
                       onClick={() => handleTldToggle(tld)}
-                      className={`${keycapStyle} flex items-center gap-2 rounded-[13px] px-4 py-2 font-mono text-xs font-black transition-all`}
+                      className={`${keycapStyle} flex items-center gap-2 rounded-[13px] px-4 py-2 font-mono text-xs font-black transition-all cursor-pointer`}
                     >
                       {countryMatch ? (
                         <img
@@ -379,14 +369,14 @@ export default function MasterSynthesizer({
                         <span
                           className={`h-2 w-2 rounded-full ${
                             isSelected
-                              ? 'bg-white shadow-xs'
+                              ? 'bg-cyan-300 led-glow-cyan shadow-xs'
                               : 'bg-slate-400'
                           }`}
                         />
                       )}
                       <span className="deboss-light">{tld}</span>
                       {isSelected && (
-                        <span className="text-[10px] font-black">✓</span>
+                        <span className="text-[10px] font-black text-cyan-200">✓</span>
                       )}
                     </button>
                   </div>
@@ -563,7 +553,7 @@ export default function MasterSynthesizer({
               <div>
                 <div className="flex items-center justify-between border-b border-slate-200/80 pb-2.5 mb-3">
                   <span className="font-mono text-xs font-black uppercase tracking-wider text-slate-900">
-                    {hasNameInMind ? '3. Secondary Context' : '3. Keywords or Themes'}
+                    3. Tell me about your business, product etc.
                   </span>
                   <span className="font-mono text-[10px] text-slate-500 uppercase">Optional</span>
                 </div>
@@ -696,7 +686,7 @@ export default function MasterSynthesizer({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="font-necosmic text-sm font-bold text-slate-950 uppercase">
+                      <div className="font-neuropol text-sm font-bold text-slate-950 uppercase">
                         {item.label}
                       </div>
                       {isActive && (
@@ -716,18 +706,18 @@ export default function MasterSynthesizer({
               <div className="flex items-center justify-between font-mono text-xs font-bold text-slate-800">
                 <span className="flex items-center gap-1.5 text-amber-800">
                   <Waveform weight="bold" />
-                  SOFT & ROUND (BOUBA)
+                  SMOOTH & FRIENDLY (WARM VOWELS)
                 </span>
                 <span className="rounded-full bg-slate-950 px-3.5 py-1 font-mono text-[11px] font-black text-white shadow-xs">
                   {acousticBias < 40
-                    ? 'BOUBA // SOFT'
+                    ? 'SMOOTH TONE'
                     : acousticBias > 60
-                    ? 'KIKI // SHARP'
+                    ? 'PUNCHY TONE'
                     : 'BALANCED TONE'}
                 </span>
                 <span className="flex items-center gap-1.5 text-cyan-800">
                   <Lightning weight="bold" />
-                  SHARP & TECHNICAL (KIKI)
+                  SHORT & PUNCHY (SHARP CONSONANTS)
                 </span>
               </div>
 
@@ -744,11 +734,11 @@ export default function MasterSynthesizer({
                   className="hardware-slider w-full"
                 />
                 <div className="flex justify-between px-2 pt-1 font-mono text-[9px] font-bold text-slate-500 select-none">
-                  <span>| 0% (MAX BOUBA)</span>
+                  <span>| 0% (SMOOTH)</span>
                   <span>| 25%</span>
                   <span className="text-slate-900 font-black">| 50% (BALANCED)</span>
                   <span>| 75%</span>
-                  <span>| 100% (MAX KIKI)</span>
+                  <span>| 100% (PUNCHY)</span>
                 </div>
               </div>
             </div>
