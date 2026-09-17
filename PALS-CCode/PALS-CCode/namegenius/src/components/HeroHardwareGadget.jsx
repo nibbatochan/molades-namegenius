@@ -14,6 +14,8 @@ import {
   SpeakerHigh,
   SpeakerSlash,
   MusicNotes,
+  Crosshair,
+  Lightning,
 } from '@phosphor-icons/react'
 
 // Skeuomorphic Knurled Stadium Toggle Switch (White ON active state + scaled up)
@@ -366,13 +368,18 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
           </div>
         </div>
 
-        {/* Right Side: Sleek Minimal Tactile Grip Edge */}
-        <div className="absolute -right-2 top-1/2 -translate-y-1/2 flex flex-col items-center z-20 pointer-events-none">
-          <div className="w-2.5 py-4 px-0.5 rounded-r-md bg-gradient-to-r from-purple-950 to-slate-950 border-y border-r border-purple-400/40 shadow-md flex flex-col items-center justify-center gap-1.5">
-            <div className="w-1.5 h-[2px] rounded-full bg-purple-400/50" />
-            <div className="w-1.5 h-[2px] rounded-full bg-purple-400/50" />
-            <div className="w-1.5 h-[2px] rounded-full bg-purple-400/50" />
-          </div>
+        {/* 4 Corner Screws for Hardware Authenticity */}
+        <div className="absolute top-2.5 left-2.5 w-2.5 h-2.5 rounded-full bg-purple-950/80 border border-purple-400/40 shadow-inner flex items-center justify-center">
+          <div className="w-1.5 h-[0.5px] bg-purple-300/80" />
+        </div>
+        <div className="absolute top-2.5 right-2.5 w-2.5 h-2.5 rounded-full bg-purple-950/80 border border-purple-400/40 shadow-inner flex items-center justify-center">
+          <div className="w-1.5 h-[0.5px] bg-purple-300/80 rotate-90" />
+        </div>
+        <div className="absolute bottom-2.5 left-2.5 w-2.5 h-2.5 rounded-full bg-purple-950/80 border border-purple-400/40 shadow-inner flex items-center justify-center">
+          <div className="w-1.5 h-[0.5px] bg-purple-300/80 rotate-45" />
+        </div>
+        <div className="absolute bottom-2.5 right-2.5 w-2.5 h-2.5 rounded-full bg-purple-950/80 border border-purple-400/40 shadow-inner flex items-center justify-center">
+          <div className="w-1.5 h-[0.5px] bg-purple-300/80 -rotate-45" />
         </div>
 
         {/* Top Header: Left Speaker Mesh + Title, Right: Volume Knob + SFX Switch + Music Switch */}
@@ -438,42 +445,45 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
           />
         </div>
 
-        {/* Zone 2: 3-Button Physical Hardware Controls Deck */}
+        {/* Zone 2: 4-Button Physical Hardware Controls Deck */}
         <div className="mt-3.5 pt-0.5">
-          <div className="flex items-center justify-end mb-2 px-1">
-            <span className="font-mono text-[9px] font-bold text-purple-950/80 uppercase tracking-wider">
-              PHYSICAL HARDWARE CONTROLS
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className="font-mono text-[8.5px] font-bold text-purple-950/70 uppercase tracking-wider">
+              NG-01 TACTILE DECK
+            </span>
+            <span className="font-mono text-[8.5px] font-bold text-purple-950/80 uppercase tracking-wider">
+              HARDWARE CONTROLS
             </span>
           </div>
 
-          {/* 3 Precision Mechanical Hardware Keycaps with Perfect Concentric Radii */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+          {/* 4 Precision Mechanical Hardware Keycaps */}
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
             {/* Button 1: Mode Switch (AUTO / MANUAL) */}
-            <div className="key-socket-dark !p-1 !rounded-2xl">
+            <div className="key-socket-dark !p-0.5 sm:!p-1 !rounded-2xl">
               <button
                 type="button"
                 onClick={handleToggleMode}
                 className="key-cap w-full py-2 sm:py-2.5 rounded-xl font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 cursor-pointer select-none"
                 title="Toggle between Auto-Pilot and Manual Control"
               >
-                <div className="flex items-center gap-1.5 font-black text-[11px] tracking-wide text-slate-800">
+                <div className="flex items-center gap-1 font-black text-[10px] sm:text-[11px] tracking-tight text-slate-800">
                   <span
-                    className={`inline-block w-2 h-2 rounded-full transition-colors ${
+                    className={`inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-colors ${
                       isAutoMode
                         ? 'bg-amber-400 shadow-sm border border-amber-500/60'
                         : 'bg-emerald-500 led-glow-emerald border border-emerald-600/60'
                     }`}
                   />
-                  <span>{isAutoMode ? 'AUTO' : 'MANUAL'}</span>
+                  <span>{isAutoMode ? 'AUTO' : 'MAN'}</span>
                 </div>
-                <span className="text-[8px] font-bold text-slate-500 tracking-widest uppercase">
+                <span className="text-[7.5px] sm:text-[8px] font-bold text-slate-500 tracking-widest uppercase">
                   MODE
                 </span>
               </button>
             </div>
 
             {/* Button 2: Primary JUMP Keycap */}
-            <div className="key-socket-dark !p-1 !rounded-2xl">
+            <div className="key-socket-dark !p-0.5 sm:!p-1 !rounded-2xl">
               <button
                 type="button"
                 onClick={handleJumpClick}
@@ -482,32 +492,54 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                   handleJumpClick()
                 }}
                 className="key-cap-terracotta w-full py-2 sm:py-2.5 rounded-xl font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg active:scale-95 cursor-pointer select-none"
-                title="Click to jump! (Mouse, Spacebar, or Up Arrow)"
+                title="Click to jump! (Spacebar / Up Arrow)"
               >
-                <div className="flex items-center gap-1.5 font-black text-[12px] tracking-wider text-white">
-                  <PawPrint weight="fill" className="text-amber-200 text-xs" />
+                <div className="flex items-center gap-1 font-black text-[11px] sm:text-[12px] tracking-wide text-white">
+                  <PawPrint weight="fill" className="text-amber-200 text-xs shrink-0" />
                   <span>JUMP</span>
                 </div>
-                <span className="text-[8px] font-bold text-amber-200/80 tracking-widest uppercase">
-                  MANUAL / HOP
+                <span className="text-[7.5px] sm:text-[8px] font-bold text-amber-200/80 tracking-widest uppercase">
+                  HOP
                 </span>
               </button>
             </div>
 
-            {/* Button 3: BIOME / RETRY Keycap */}
-            <div className="key-socket-dark !p-1 !rounded-2xl">
+            {/* Button 3: Primary FIRE Keycap */}
+            <div className="key-socket-dark !p-0.5 sm:!p-1 !rounded-2xl">
+              <button
+                type="button"
+                onClick={handleShootClick}
+                onPointerDown={(e) => {
+                  e.preventDefault()
+                  handleShootClick()
+                }}
+                className="key-cap-cobalt w-full py-2 sm:py-2.5 rounded-xl font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg active:scale-95 cursor-pointer select-none"
+                title="Fire blaster at enemies & bosses! (F / X / Enter key)"
+              >
+                <div className="flex items-center gap-1 font-black text-[11px] sm:text-[12px] tracking-wide text-white">
+                  <Crosshair weight="bold" className="text-cyan-200 text-xs shrink-0" />
+                  <span>FIRE</span>
+                </div>
+                <span className="text-[7.5px] sm:text-[8px] font-bold text-cyan-200/80 tracking-widest uppercase">
+                  BLAST
+                </span>
+              </button>
+            </div>
+
+            {/* Button 4: BIOME / RETRY Keycap */}
+            <div className="key-socket-dark !p-0.5 sm:!p-1 !rounded-2xl">
               <button
                 type="button"
                 onClick={handleRetryClick}
                 className="key-cap text-slate-800 font-bold w-full py-2 sm:py-2.5 rounded-xl font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 cursor-pointer select-none"
                 title="Skip to Next Biome or Restart Run"
               >
-                <div className="flex items-center gap-1.5 font-black text-[11px] tracking-wide text-slate-800">
-                  <ArrowClockwise weight="bold" className="text-xs text-sky-600" />
+                <div className="flex items-center gap-1 font-black text-[10px] sm:text-[11px] tracking-tight text-slate-800">
+                  <ArrowClockwise weight="bold" className="text-xs text-sky-600 shrink-0" />
                   <span>BIOME</span>
                 </div>
-                <span className="text-[8px] font-bold text-slate-500 tracking-widest uppercase">
-                  NEXT / RESET
+                <span className="text-[7.5px] sm:text-[8px] font-bold text-slate-500 tracking-widest uppercase">
+                  NEXT
                 </span>
               </button>
             </div>

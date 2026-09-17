@@ -313,4 +313,175 @@ export function nextMusicTrack() {
   }
 }
 
+// 8-Bit Laser Blaster Sound
+export function playLaserShoot(weapon = 'plasma') {
+  if (typeof window === 'undefined' || soundMuted) return
+  try {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      if (!AudioContext) return
+      audioCtx = new AudioContext()
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+
+    const now = audioCtx.currentTime
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+
+    if (weapon === 'railgun') {
+      osc.type = 'sawtooth'
+      osc.frequency.setValueAtTime(1400, now)
+      osc.frequency.exponentialRampToValueAtTime(180, now + 0.12)
+      gain.gain.setValueAtTime(0.12 * masterVolume, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12)
+    } else if (weapon === 'missile') {
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(320, now)
+      osc.frequency.exponentialRampToValueAtTime(680, now + 0.15)
+      gain.gain.setValueAtTime(0.14 * masterVolume, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16)
+    } else {
+      // Crisp snappy pixel pew
+      osc.type = 'square'
+      osc.frequency.setValueAtTime(880, now)
+      osc.frequency.exponentialRampToValueAtTime(220, now + 0.07)
+      gain.gain.setValueAtTime(0.09 * masterVolume, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08)
+    }
+
+    osc.connect(gain)
+    gain.connect(audioCtx.destination)
+    osc.start(now)
+    osc.stop(now + 0.16)
+  } catch (_) {}
+}
+
+// 8-Bit Enemy Explosion / Shatter Sound
+export function playEnemyExplode() {
+  if (typeof window === 'undefined' || soundMuted) return
+  try {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      if (!AudioContext) return
+      audioCtx = new AudioContext()
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+
+    const now = audioCtx.currentTime
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(340, now)
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.14)
+    gain.gain.setValueAtTime(0.15 * masterVolume, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15)
+
+    osc.connect(gain)
+    gain.connect(audioCtx.destination)
+    osc.start(now)
+    osc.stop(now + 0.16)
+  } catch (_) {}
+}
+
+// Boss Incoming Siren Warning
+export function playBossWarning() {
+  if (typeof window === 'undefined' || soundMuted) return
+  try {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      if (!AudioContext) return
+      audioCtx = new AudioContext()
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+
+    const now = audioCtx.currentTime
+    const freqs = [660, 440, 660, 440]
+    freqs.forEach((f, i) => {
+      const osc = audioCtx.createOscillator()
+      const gain = audioCtx.createGain()
+      const start = now + i * 0.12
+      osc.type = 'square'
+      osc.frequency.setValueAtTime(f, start)
+      gain.gain.setValueAtTime(0.12 * masterVolume, start)
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.1)
+      osc.connect(gain)
+      gain.connect(audioCtx.destination)
+      osc.start(start)
+      osc.stop(start + 0.11)
+    })
+  } catch (_) {}
+}
+
+// Boss Metal Armor Hit Sound
+export function playBossHit() {
+  if (typeof window === 'undefined' || soundMuted) return
+  try {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      if (!AudioContext) return
+      audioCtx = new AudioContext()
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+
+    const now = audioCtx.currentTime
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+
+    osc.type = 'triangle'
+    osc.frequency.setValueAtTime(240, now)
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.05)
+    gain.gain.setValueAtTime(0.12 * masterVolume, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06)
+
+    osc.connect(gain)
+    gain.connect(audioCtx.destination)
+    osc.start(now)
+    osc.stop(now + 0.06)
+  } catch (_) {}
+}
+
+// Boss Defeated Victory Blast
+export function playBossDefeated() {
+  if (typeof window === 'undefined' || soundMuted) return
+  try {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      if (!AudioContext) return
+      audioCtx = new AudioContext()
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+
+    const now = audioCtx.currentTime
+    // Big booming explosion
+    const boomOsc = audioCtx.createOscillator()
+    const boomGain = audioCtx.createGain()
+    boomOsc.type = 'sawtooth'
+    boomOsc.frequency.setValueAtTime(220, now)
+    boomOsc.frequency.exponentialRampToValueAtTime(30, now + 0.45)
+    boomGain.gain.setValueAtTime(0.28 * masterVolume, now)
+    boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5)
+    boomOsc.connect(boomGain)
+    boomGain.connect(audioCtx.destination)
+    boomOsc.start(now)
+    boomOsc.stop(now + 0.5)
+
+    // Victory fanfare arpeggio
+    const fanfareNotes = [523.25, 659.25, 783.99, 1046.5, 1318.5]
+    fanfareNotes.forEach((freq, i) => {
+      const osc = audioCtx.createOscillator()
+      const gain = audioCtx.createGain()
+      const start = now + 0.2 + i * 0.08
+      osc.type = 'square'
+      osc.frequency.setValueAtTime(freq, start)
+      gain.gain.setValueAtTime(0.12 * masterVolume, start)
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.18)
+      osc.connect(gain)
+      gain.connect(audioCtx.destination)
+      osc.start(start)
+      osc.stop(start + 0.2)
+    })
+  } catch (_) {}
+}
+
 
