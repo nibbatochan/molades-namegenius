@@ -1,107 +1,126 @@
 @import "tailwindcss";
 
-/* The original design language: soft cards on a cool grey canvas, pill
-   controls, a blue accent, and tinted panels. The palette below is the light
-   theme as it was; the dark theme is its counterpart, added because the
-   product keeps a real theme preference now. */
+/* Widget cards on a grainy sunset wash: the two references, kept as one
+   language. White (or dark-glass) tiles with a 32px radius sit on a peach–
+   lavender–orange field; action is the widget blue, status is the widget
+   green, warmth is the sunset orange. Labels are mono and tracked, values
+   are the sans. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root,
 [data-theme="light"] {
-  --canvas: #edeef1;
+  --canvas: #f3e6d8;
   --card: #ffffff;
-  --hair: #e7e9ed;
-  --field: #f4f5f7;
+  --hair: #eadfd4;
+  --field: #f7eee6;
   --field-on: #ffffff;
 
-  --ink: #14161a;
-  --ink-2: #6f757e;
-  --ink-3: #9aa1aa;
+  --ink: #1a1714;
+  --ink-2: #6e675f;
+  --ink-3: #9a9188;
 
-  --accent: #0a7aff;
-  /* The fill is the darker step: white on #0a7aff is only 4.0:1, which a
-     button label at this size should not ship at. #0a6ae0 reads the same and
-     clears 5:1. The lighter value stays for focus rings and quiet accents. */
-  --accent-fill: #0a6ae0;
-  --accent-fill-hover: #0a5cc4;
+  /* Widget blue. The fill is a step darker so white type clears 4.5:1. */
+  --accent: #007aff;
+  --accent-fill: #0066d6;
+  --accent-fill-hover: #0058b8;
   --accent-fg: #ffffff;
-  --accent-soft: #e8f2ff;
+  --accent-soft: #e3f0ff;
 
-  --lime: #dcf94b;
-  --obsidian: #24262c;
+  /* Sunset orange. Dark enough for a label sitting on peach; never used as
+     white-on-orange at button size. */
+  --warm: #e45a1b;
+  --warm-fill: #ff8a4a;
+  --peach: #ffc7a0;
+  --lav: #c9b6ea;
+
+  --lime: #ffc48a;
+  --obsidian: #1a1714;
   --obsidian-fg: #ffffff;
 
-  --ok: #17945a;
-  --ok-soft: #e4f6ea;
-  --taken: #5f656e;
-  --taken-soft: #eceef1;
-  --warn: #8a5600;
-  --warn-soft: #fdf0d9;
-  --prem: #6b45d9;
-  --prem-soft: #efeaff;
+  --ok: #0e8a4a;
+  --ok-soft: #d8f5e6;
+  --taken: #6e675f;
+  --taken-soft: #efe7de;
+  --warn: #b35a12;
+  --warn-soft: #ffe4c8;
+  --prem: #6d4db8;
+  --prem-soft: #ece4fb;
 
-  --tint-lav: #eef0ff;
-  --tint-cream: #f7f3e6;
-  --tint-pink: #fceef4;
-  --tint-mint: #e9f7ef;
+  --tint-lav: #ece4fb;
+  --tint-cream: #ffe8d4;
+  --tint-pink: #ffd9c8;
+  --tint-mint: #d8f5e6;
 
-  --ring: rgba(10, 122, 255, 0.12);
-  --ring-line: rgba(10, 122, 255, 0.4);
-  --inset: rgba(18, 20, 24, 0.05);
-  --hover: rgba(18, 20, 24, 0.05);
-  --hover-2: rgba(18, 20, 24, 0.08);
+  --ring: rgba(0, 122, 255, 0.14);
+  --ring-line: rgba(0, 122, 255, 0.45);
+  --inset: rgba(26, 23, 20, 0.05);
+  --hover: rgba(26, 23, 20, 0.05);
+  --hover-2: rgba(26, 23, 20, 0.08);
 
-  --shadow-card: 0 1px 2px rgba(18, 20, 24, 0.05),
-    0 10px 28px -12px rgba(18, 20, 24, 0.14);
-  --shadow-lift: 0 2px 4px rgba(18, 20, 24, 0.06),
-    0 18px 44px -16px rgba(18, 20, 24, 0.2);
+  --shadow-card: 0 1px 2px rgba(90, 50, 20, 0.04),
+    0 18px 40px -18px rgba(90, 50, 20, 0.22);
+  --shadow-lift: 0 2px 6px rgba(90, 50, 20, 0.06),
+    0 24px 52px -18px rgba(90, 50, 20, 0.28);
+
+  --wash: radial-gradient(ellipse 90% 58% at 8% -12%, #cbb6ea 0%, transparent 58%),
+    radial-gradient(ellipse 80% 50% at 94% -4%, #ffb07a 0%, transparent 54%),
+    radial-gradient(ellipse 62% 38% at 48% 4%, #ff7a3c 0%, transparent 52%);
+  --meter: linear-gradient(90deg, #ff7a3c 0%, #ffb07a 42%, #8eb8d8 100%);
 }
 
 [data-theme="dark"] {
-  --canvas: #0f1115;
-  --card: #171a20;
-  --hair: #262a32;
-  --field: #1d2128;
-  --field-on: #21262e;
+  --canvas: #1a1422;
+  --card: #241c2c;
+  --hair: #3a3044;
+  --field: #2c2436;
+  --field-on: #322a3e;
 
-  --ink: #eef0f4;
-  --ink-2: #a2a9b4;
-  --ink-3: #7c848f;
+  --ink: #f4eee8;
+  --ink-2: #b6a89c;
+  --ink-3: #8a7c72;
 
-  --accent: #4d9bff;
+  --accent: #5aa8ff;
   --accent-fill: #3d8ef5;
   --accent-fill-hover: #5aa4ff;
-  /* On a light-blue fill the readable label is the dark canvas, not white:
-     white on #3d8ef5 is under 3:1. */
   --accent-fg: #0d1117;
-  --accent-soft: #16233a;
+  --accent-soft: #1a2740;
 
-  --lime: #cbe83f;
-  --obsidian: #e7e9ee;
-  --obsidian-fg: #14161a;
+  --warm: #ff9a5c;
+  --warm-fill: #e45a1b;
+  --peach: #c47a4a;
+  --lav: #9d86c9;
+
+  --lime: #e0a06a;
+  --obsidian: #f4eee8;
+  --obsidian-fg: #1a1422;
 
   --ok: #4ec98a;
-  --ok-soft: #12291d;
-  --taken: #a2a9b4;
-  --taken-soft: #22262e;
+  --ok-soft: #143024;
+  --taken: #b6a89c;
+  --taken-soft: #322a38;
   --warn: #e0a338;
-  --warn-soft: #2e2413;
-  --prem: #a48cf0;
-  --prem-soft: #221c38;
+  --warn-soft: #3a2814;
+  --prem: #b49ae8;
+  --prem-soft: #2a2040;
 
-  --tint-lav: #191b2a;
-  --tint-cream: #241f16;
-  --tint-pink: #2a1a22;
-  --tint-mint: #14261c;
+  --tint-lav: #2a2040;
+  --tint-cream: #3a2818;
+  --tint-pink: #3a221c;
+  --tint-mint: #143024;
 
-  --ring: rgba(77, 155, 255, 0.18);
-  --ring-line: rgba(77, 155, 255, 0.55);
+  --ring: rgba(90, 168, 255, 0.2);
+  --ring-line: rgba(90, 168, 255, 0.55);
   --inset: rgba(255, 255, 255, 0.07);
   --hover: rgba(255, 255, 255, 0.06);
   --hover-2: rgba(255, 255, 255, 0.1);
 
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 28px -12px rgba(0, 0, 0, 0.7);
-  --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.55), 0 18px 44px -16px rgba(0, 0, 0, 0.8);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.45), 0 18px 40px -16px rgba(0, 0, 0, 0.7);
+  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.5), 0 24px 52px -16px rgba(0, 0, 0, 0.8);
+
+  --wash: radial-gradient(ellipse 90% 58% at 8% -12%, #4a3870 0%, transparent 58%),
+    radial-gradient(ellipse 80% 50% at 94% -4%, #8a3c18 0%, transparent 54%),
+    radial-gradient(ellipse 62% 38% at 48% 4%, #c45a20 0%, transparent 52%);
+  --meter: linear-gradient(90deg, #ff7a3c 0%, #c47a4a 42%, #5a88b0 100%);
 }
 
 @theme inline {
@@ -118,6 +137,9 @@
   --color-accent-fill: var(--accent-fill);
   --color-accent-fg: var(--accent-fg);
   --color-accent-soft: var(--accent-soft);
+  --color-warm: var(--warm);
+  --color-peach: var(--peach);
+  --color-lav: var(--lav);
   --color-lime: var(--lime);
   --color-obsidian: var(--obsidian);
   --color-obsidian-fg: var(--obsidian-fg);
@@ -136,21 +158,24 @@
   --color-tint-pink: var(--tint-pink);
   --color-tint-mint: var(--tint-mint);
 
-  --radius-card: 26px;
-  --radius-ctl: 16px;
-  --radius-inner: 12px;
+  --radius-card: 32px;
+  --radius-ctl: 20px;
+  --radius-inner: 14px;
 
   --shadow-card: var(--shadow-card);
   --shadow-lift: var(--shadow-lift);
+
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   --ease-soft: cubic-bezier(0.22, 0.68, 0, 1);
 }
 
 @utility u-label {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
   font-size: 11px;
   line-height: 1;
-  font-weight: 600;
-  letter-spacing: 0.09em;
+  font-weight: 500;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-3);
 }
@@ -177,14 +202,27 @@
     0 0 0 4px var(--ring);
 }
 
-/* Quiet fills, so a hover or a chip does not need a hard-coded black alpha
-   that inverts wrongly on the dark theme. */
 @utility quiet-fill {
   background: var(--hover);
 }
 
 @utility quiet-fill-hover {
   background: var(--hover-2);
+}
+
+@utility meter-track {
+  display: block;
+  height: 22px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--hover);
+}
+
+@utility meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--meter);
 }
 
 @layer base {
@@ -197,10 +235,21 @@
   }
 
   body {
-    background: var(--canvas);
+    background-color: var(--canvas);
+    background-image:
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.14'/%3E%3C/svg%3E"),
+      var(--wash);
+    background-size:
+      400px 400px,
+      auto;
+    background-attachment: fixed;
     color: var(--ink);
     font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+  }
+
+  [data-theme="dark"] body {
+    background-blend-mode: overlay, normal;
   }
 
   input,

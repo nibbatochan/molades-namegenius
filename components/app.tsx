@@ -386,15 +386,18 @@ export function OpenRegister() {
           <div className="min-w-0">
             <SectionLabel>Input strength</SectionLabel>
             <div className="mt-3 flex items-center gap-3">
-              <span className="flex items-center gap-1" aria-hidden="true">
-                {Array.from({ length: STRENGTH_MAX }, (_, i) => (
-                  <span
-                    key={i}
-                    className={`h-2 w-7 rounded-full ${
-                      i < strength.score ? "bg-accent" : "quiet-fill"
-                    }`}
-                  />
-                ))}
+              <span
+                className="meter-track w-44"
+                role="meter"
+                aria-label="Input strength"
+                aria-valuemin={0}
+                aria-valuemax={STRENGTH_MAX}
+                aria-valuenow={strength.score}
+              >
+                <span
+                  className="meter-fill"
+                  style={{ width: `${(strength.score / STRENGTH_MAX) * 100}%` }}
+                />
               </span>
               <span className="text-[13px] font-semibold tabular-nums text-ink-2">
                 {`${strength.score}/${STRENGTH_MAX} · ${strength.level}`}

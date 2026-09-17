@@ -1,7 +1,7 @@
 import { Registers } from "@/components/registers";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BoltIcon, CompassIcon, GlobeIcon, ShieldIcon } from "@/components/icons";
-import { Card, SectionLabel } from "@/components/ui";
+import { Card, PaletteDots, SectionLabel } from "@/components/ui";
 import { PRIMARY_TLD_IDS, TLDS } from "@/lib/tlds";
 
 const EXPLAINERS = [
@@ -32,13 +32,13 @@ export default function Home() {
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-hair bg-canvas/85 backdrop-blur-md">
+      <header className="sticky top-0 z-20 border-b border-hair/70 bg-card/55 backdrop-blur-xl">
         <nav
           aria-label="Main"
           className="mx-auto flex h-16 max-w-[1180px] items-center gap-6 px-5 lg:px-8"
         >
           <a href="/" className="flex items-center gap-2.5 font-semibold tracking-[-0.02em]">
-            <span className="flex size-8 items-center justify-center rounded-[10px] bg-obsidian text-obsidian-fg">
+            <span className="flex size-8 items-center justify-center rounded-full bg-[linear-gradient(145deg,#ffc7a0,#ff7a3c)] text-[#1a1714]">
               <GlobeIcon className="size-4" />
             </span>
             <span className="text-[16px]">NameGenius</span>
@@ -66,7 +66,10 @@ export default function Home() {
 
       <main className="mx-auto w-full max-w-[1180px] flex-1 px-5 pb-24 lg:px-8">
         <section className="pt-14 pb-10 lg:pt-20 lg:pb-12">
-          <p className="u-label">Domain availability, verified at the registry</p>
+          <p className="flex items-center gap-3">
+            <PaletteDots />
+            <span className="u-label">Domain availability, verified at the registry</span>
+          </p>
           <h1 className="mt-4 max-w-[34ch] text-[clamp(2.25rem,5vw,3.5rem)] leading-[1.04] font-semibold tracking-[-0.035em]">
             Names you can actually own.
           </h1>
@@ -117,7 +120,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-hair">
+      <footer className="border-t border-hair/70 bg-card/40 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-8 gap-y-3 px-5 py-8 lg:px-8">
           <p className="text-[13px] text-ink-3">
             NameGenius checks availability. It does not sell or register domains.

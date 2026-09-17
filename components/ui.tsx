@@ -58,6 +58,17 @@ export function Hairline() {
   return <div className="h-px bg-hair" />;
 }
 
+/** The three palette marks from the sunset reference. */
+export function PaletteDots({ className = "" }: { className?: string }) {
+  return (
+    <span aria-hidden className={`inline-flex items-center gap-1.5 ${className}`}>
+      <span className="size-2 rounded-full bg-peach" />
+      <span className="size-2 rounded-full bg-[var(--warm-fill)]" />
+      <span className="size-2 rounded-full bg-lav" />
+    </span>
+  );
+}
+
 const PILL_TONE = {
   available: "bg-ok-soft text-ok",
   taken: "bg-taken-soft text-taken",

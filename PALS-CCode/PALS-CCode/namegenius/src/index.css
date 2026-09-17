@@ -1,0 +1,572 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  html {
+    font-family: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+      Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: #fbfbfe;
+    color: #0f172a;
+    line-height: 1.5;
+  }
+
+  /* Browser surfaces themed to high craft standards */
+  ::selection {
+    background: #2563eb;
+    color: #ffffff;
+  }
+
+  input, textarea {
+    caret-color: #2563eb;
+  }
+
+  :focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+  }
+
+  /* Custom subtle scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}
+
+/* Emil Kowalski spring-physics animation keyframes */
+@keyframes enter-card {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pop-icon {
+  0% {
+    transform: scale(0.85);
+  }
+  50% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes toast-spring {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-card-enter {
+  animation: enter-card 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-pop {
+  animation: pop-icon 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-toast {
+  animation: toast-spring 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* === Neo-Skeuomorphic Hardware Surface & Component System === */
+
+/* High-craft procedural noise overlay for plastic/aluminum texture */
+.texture-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.06'/%3E%3C/svg%3E");
+}
+
+/* 1. Page Background Canvas (Studio Pedestal with directional lighting + fine grain) */
+.bg-hardware-canvas {
+  background-color: #f6f8fb;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E"),
+    radial-gradient(100% 70% at 50% 0%, rgba(255, 255, 255, 0.95) 0%, rgba(241, 245, 249, 0.8) 60%, #e2e8f0 100%);
+  background-attachment: fixed;
+}
+
+/* 2. Device Chassis (Molded industrial body catching directional top-left studio light) */
+.skeuo-chassis {
+  background-color: #ebf0f5;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.075'/%3E%3C/svg%3E"),
+    radial-gradient(130% 90% at 20% 10%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 50%),
+    linear-gradient(160deg, #f8fafc 0%, #e6edf4 45%, #d9e2ec 100%);
+  border: 1px solid #c4d1de;
+  border-radius: 36px;
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.95),   /* top edge specular catch */
+    inset 0 -6px 12px rgba(100, 116, 139, 0.25), /* bottom edge occlusion shadow */
+    0 2px 4px rgba(15, 23, 42, 0.08),             /* contact shadow */
+    0 28px 64px -16px rgba(15, 23, 42, 0.18),     /* ambient floating shadow */
+    0 10px 24px -6px rgba(15, 23, 42, 0.08);
+  position: relative;
+}
+
+/* Warm Putty / Stone Gray Chassis Variant */
+.skeuo-chassis-putty {
+  background-color: #e5e0d4;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E"),
+    radial-gradient(130% 90% at 20% 10%, rgba(255, 255, 255, 0.7) 0%, transparent 45%),
+    linear-gradient(160deg, #ece7dc 0%, #dcd6cb 55%, #c8c0b2 100%);
+  border: 1px solid #beb5a5;
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.9),
+    inset 0 -6px 12px rgba(60, 50, 40, 0.25),
+    0 2px 4px rgba(15, 23, 42, 0.1),
+    0 28px 64px -16px rgba(45, 35, 25, 0.25);
+}
+
+/* 3. Sockets (The recessed holes buttons and modules sit in) */
+.key-socket {
+  background: linear-gradient(180deg, #cbd5e1 0%, #e2e8f0 100%);
+  border-radius: 18px;
+  padding: 3px;
+  box-shadow: 
+    inset 0 3px 6px rgba(15, 23, 42, 0.18),
+    inset 0 1px 2px rgba(15, 23, 42, 0.25),
+    0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.key-socket-dark {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 18px;
+  padding: 3px;
+  box-shadow: 
+    inset 0 3px 7px rgba(0, 0, 0, 0.6),
+    inset 0 1px 2px rgba(0, 0, 0, 0.8),
+    0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* 4. Raised Mechanical Keycaps (Button body sitting inside socket with gap) */
+.key-cap {
+  background: linear-gradient(160deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
+  border-radius: 15px;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 0.95),   /* top bevel highlight */
+    inset 0 -4px 6px rgba(15, 23, 42, 0.1),     /* bottom occlusion */
+    0 3px 6px rgba(15, 23, 42, 0.12);           /* cast shadow onto socket floor */
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 90ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.key-cap:hover {
+  background: linear-gradient(160deg, #ffffff 0%, #f8fafc 50%, #e2e8f0 100%);
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 1),
+    inset 0 -4px 6px rgba(15, 23, 42, 0.12),
+    0 4px 8px rgba(15, 23, 42, 0.16);
+}
+
+.key-cap:active {
+  transform: translateY(2px);
+  box-shadow: 
+    inset 0 2px 4px rgba(15, 23, 42, 0.2),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.6),
+    0 1px 2px rgba(15, 23, 42, 0.1);
+}
+
+/* Active Dark Mechanical Keycap (Selected State) */
+.key-cap-active-dark {
+  background: linear-gradient(160deg, #334155 0%, #1e293b 55%, #0f172a 100%) !important;
+  color: #ffffff !important;
+  border-color: #020617 !important;
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -5px 8px rgba(0, 0, 0, 0.5),
+    0 2px 5px rgba(0, 0, 0, 0.3) !important;
+}
+
+.key-cap-active-dark:active {
+  transform: translateY(2px);
+  box-shadow: 
+    inset 0 3px 6px rgba(0, 0, 0, 0.7),
+    0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Signature Terracotta / Burnt Orange Push Button (Images 1 & 3) */
+.skeuo-button-terracotta {
+  background: linear-gradient(155deg, #fb923c 0%, #ea580c 45%, #9a3412 100%);
+  border: 1px solid #7c2d12;
+  border-radius: 18px;
+  color: #ffffff;
+  box-shadow: 
+    inset 0 2px 1px rgba(255, 255, 255, 0.65), /* bright top bevel highlight */
+    inset 0 -6px 10px rgba(0, 0, 0, 0.35),      /* bottom occlusion */
+    0 4px 14px rgba(234, 88, 12, 0.45),         /* chromatic orange glow */
+    0 2px 4px rgba(0, 0, 0, 0.2);               /* contact shadow */
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 90ms cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeuo-button-terracotta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 100%);
+  border-radius: 17px 17px 60px 60px;
+  pointer-events: none;
+}
+
+.skeuo-button-terracotta:hover {
+  background: linear-gradient(155deg, #fdba74 0%, #ea580c 45%, #7c2d12 100%);
+  box-shadow: 
+    inset 0 2px 1px rgba(255, 255, 255, 0.75),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.35),
+    0 6px 20px rgba(234, 88, 12, 0.55),
+    0 3px 6px rgba(0, 0, 0, 0.25);
+}
+
+.skeuo-button-terracotta:active {
+  transform: translateY(2px);
+  box-shadow: 
+    inset 0 3px 6px rgba(0, 0, 0, 0.5),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.2),
+    0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Electric Cobalt Button (Image 2 style) */
+.skeuo-button-primary {
+  background: linear-gradient(155deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+  border: 1px solid #1e40af;
+  border-radius: 18px;
+  color: #ffffff;
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -5px 8px rgba(15, 23, 42, 0.35),
+    0 4px 16px rgba(37, 99, 235, 0.35),
+    0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 90ms cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.skeuo-button-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, transparent 100%);
+  border-radius: 17px 17px 50px 50px;
+  pointer-events: none;
+}
+
+.skeuo-button-primary:hover {
+  background: linear-gradient(155deg, #60a5fa 0%, #2563eb 50%, #1e40af 100%);
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 0.65),
+    0 6px 20px rgba(37, 99, 235, 0.45);
+}
+
+.skeuo-button-primary:active {
+  transform: translateY(2px);
+  box-shadow: 
+    inset 0 3px 6px rgba(0, 0, 0, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* 5. Physical Chassis Hardware Plates */
+.skeuo-plate {
+  border: 1px solid #c8d4e0;
+  background-color: #fdfefe;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+  box-shadow: 
+    inset 0 1px 0 #ffffff,
+    inset 0 -2px 4px rgba(100, 116, 139, 0.08),
+    0 1px 3px rgba(15, 23, 42, 0.05),
+    0 6px 18px -4px rgba(15, 23, 42, 0.06);
+}
+
+/* 6. Hardware Screws & Rivets (Manufactured object cues) */
+.chassis-screw {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #ffffff 0%, #cbd5e1 55%, #94a3b8 100%);
+  border: 1px solid #64748b;
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-family: monospace;
+  font-size: 10px;
+  font-weight: 900;
+  color: #475569;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* 7. Perforated Speaker Grille (Image 2 style) */
+.speaker-grille-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1e293b;
+  box-shadow: 
+    inset 0 2px 3px rgba(0, 0, 0, 0.9),
+    0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* 8. Rotary Dial Knob (Image 1 & 4 style) */
+.rotary-knob-outer {
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, #64748b 0deg 10deg, #475569 10deg 20deg);
+  padding: 4px;
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.rotary-knob-cap {
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #f1f5f9 45%, #cbd5e1 100%);
+  border: 1px solid #94a3b8;
+  box-shadow: 
+    inset 0 2px 3px rgba(255, 255, 255, 0.9),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* 9. Recessed Screen & Glass Gloss Sheen (Zone 2: Flat / Crisp UI) */
+.screen-recess {
+  background: #080c14;
+  border-radius: 24px;
+  border: 1px solid #1e293b;
+  box-shadow: 
+    inset 0 4px 12px rgba(0, 0, 0, 0.9),
+    inset 0 1px 2px rgba(0, 0, 0, 0.95),
+    0 1px 0 rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.gloss-sheen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 40%, transparent 60%);
+  pointer-events: none;
+}
+
+/* 10. Multi-Tier Realistic LEDs (Core + Soft Atmospheric Glow) */
+.led-glow-emerald {
+  box-shadow: 
+    0 0 2px #10b981,
+    0 0 6px #10b981,
+    0 0 14px rgba(16, 185, 129, 0.55),
+    0 0 24px rgba(16, 185, 129, 0.25);
+}
+
+.led-glow-cyan {
+  box-shadow: 
+    0 0 2px #06b6d4,
+    0 0 6px #06b6d4,
+    0 0 14px rgba(6, 182, 212, 0.6),
+    0 0 24px rgba(6, 182, 212, 0.3);
+}
+
+.led-glow-amber {
+  box-shadow: 
+    0 0 2px #f59e0b,
+    0 0 6px #f59e0b,
+    0 0 14px rgba(245, 158, 11, 0.55),
+    0 0 24px rgba(245, 158, 11, 0.25);
+}
+
+.led-glow-terracotta {
+  box-shadow: 
+    0 0 2px #ea580c,
+    0 0 6px #ea580c,
+    0 0 16px rgba(234, 88, 12, 0.6),
+    0 0 28px rgba(234, 88, 12, 0.3);
+}
+
+/* 11. Debossed Letterpress Typography */
+.deboss-light {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.deboss-dark {
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* 12. Tactile Hardware Cards */
+.skeuo-card {
+  background-color: #ffffff;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #cbd5e1;
+  box-shadow: 
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 8px 24px -6px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 #ffffff,
+    inset 0 -2px 0 rgba(203, 213, 225, 0.4);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skeuo-card:hover {
+  transform: translateY(-3px);
+  border-color: #94a3b8;
+  box-shadow: 
+    0 2px 4px rgba(15, 23, 42, 0.06),
+    0 16px 36px -8px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 #ffffff;
+}
+
+/* Tactile push button for standard triggers */
+.skeuo-push-btn {
+  background: linear-gradient(160deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
+  border: 1px solid #cbd5e1;
+  box-shadow: 
+    0 2px 4px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 #ffffff,
+    inset 0 -2px 0 rgba(100, 116, 139, 0.12);
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 90ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skeuo-push-btn:hover {
+  background: linear-gradient(160deg, #ffffff 0%, #f8fafc 50%, #e2e8f0 100%);
+  border-color: #94a3b8;
+  box-shadow: 
+    0 3px 6px rgba(15, 23, 42, 0.12),
+    inset 0 1px 0 #ffffff;
+}
+
+.skeuo-push-btn:active {
+  transform: translateY(2px);
+  box-shadow: 
+    inset 0 2px 4px rgba(15, 23, 42, 0.2),
+    0 1px 0 #ffffff;
+}
+
+.skeuo-push-btn.active-dark {
+  transform: translateY(1px);
+  background: linear-gradient(160deg, #334155 0%, #1e293b 50%, #0f172a 100%) !important;
+  color: #ffffff !important;
+  border-color: #020617 !important;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.6),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.15),
+    0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Tactile Hardware Range Slider (Grooved Track + Precision Thumb) */
+input[type='range'].hardware-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  height: 24px;
+}
+
+input[type='range'].hardware-slider:focus {
+  outline: none;
+}
+
+input[type='range'].hardware-slider::-webkit-slider-runnable-track {
+  height: 10px;
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 9999px;
+  border: 1px solid #334155;
+  box-shadow: 
+    inset 0 2px 5px rgba(0, 0, 0, 0.85),
+    0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+input[type='range'].hardware-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 22px;
+  width: 22px;
+  border-radius: 50%;
+  margin-top: -6px;
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #cbd5e1 60%, #94a3b8 100%);
+  border: 1px solid #475569;
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 1),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.35),
+    0 3px 6px rgba(15, 23, 42, 0.35);
+  transition: transform 90ms ease, box-shadow 90ms ease;
+}
+
+input[type='range'].hardware-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.08);
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 1),
+    0 4px 10px rgba(15, 23, 42, 0.45);
+}
+
+input[type='range'].hardware-slider::-webkit-slider-thumb:active {
+  transform: scale(0.96);
+  background: radial-gradient(circle at 35% 30%, #f1f5f9 0%, #94a3b8 60%, #64748b 100%);
+}
+
+/* Seam Line between chassis modules */
+.chassis-seam {
+  height: 1px;
+  background: #c8d4e0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+
