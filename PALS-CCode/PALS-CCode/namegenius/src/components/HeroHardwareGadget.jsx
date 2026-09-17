@@ -496,8 +496,8 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                   <PawPrint weight="fill" className="text-amber-200 text-xs shrink-0" />
                   <span>JUMP</span>
                 </div>
-                <span className="text-[7px] sm:text-[7.5px] font-bold text-amber-200/80 tracking-widest uppercase">
-                  HOP
+                <span className="text-[6.5px] sm:text-[7.5px] font-bold text-amber-200/90 tracking-tight font-mono">
+                  [space]
                 </span>
               </button>
             </div>
@@ -512,14 +512,14 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                   handleShootClick()
                 }}
                 className="key-cap-cobalt w-full py-2 sm:py-2.5 rounded-lg font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg active:scale-95 cursor-pointer select-none"
-                title="Fire blaster at enemies & bosses! (F / X / Enter key)"
+                title="Fire blaster at enemies & bosses! (Left Click / F / X / Enter key)"
               >
                 <div className="flex items-center gap-1 font-black text-[10px] sm:text-[11px] tracking-wide text-white">
                   <Crosshair weight="bold" className="text-cyan-200 text-xs shrink-0" />
                   <span>FIRE</span>
                 </div>
-                <span className="text-[7px] sm:text-[7.5px] font-bold text-cyan-200/80 tracking-widest uppercase">
-                  BLAST
+                <span className="text-[6.5px] sm:text-[7px] font-bold text-cyan-200/90 tracking-tight font-mono">
+                  [left click]
                 </span>
               </button>
             </div>
