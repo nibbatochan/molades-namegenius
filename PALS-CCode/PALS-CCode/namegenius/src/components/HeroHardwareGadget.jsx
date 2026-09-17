@@ -450,14 +450,14 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
               NG-01 TACTILE DECK
             </span>
             <span className="font-mono text-[8px] sm:text-[8.5px] font-bold text-purple-950/80 uppercase tracking-wider">
-              5-KEY HARDWARE CONTROLS
+              4-BAY HARDWARE CONTROLS
             </span>
           </div>
 
-          {/* 5 Precision Mechanical Hardware Keycaps */}
-          <div className="grid grid-cols-5 gap-1 sm:gap-1.5">
+          {/* 4 Precision Mechanical Hardware Sockets */}
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
             {/* Button 1: Mode Switch (AUTO / MANUAL) */}
-            <div className="key-socket-dark !p-0.5 !rounded-xl">
+            <div className="key-socket-dark !p-0.5 !rounded-xl flex">
               <button
                 type="button"
                 onClick={handleToggleMode}
@@ -481,7 +481,7 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
             </div>
 
             {/* Button 2: Primary JUMP Keycap */}
-            <div className="key-socket-dark !p-0.5 !rounded-xl">
+            <div className="key-socket-dark !p-0.5 !rounded-xl flex">
               <button
                 type="button"
                 onClick={handleJumpClick}
@@ -503,7 +503,7 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
             </div>
 
             {/* Button 3: Primary FIRE Keycap */}
-            <div className="key-socket-dark !p-0.5 !rounded-xl">
+            <div className="key-socket-dark !p-0.5 !rounded-xl flex">
               <button
                 type="button"
                 onClick={handleShootClick}
@@ -524,38 +524,31 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
               </button>
             </div>
 
-            {/* Button 4: Game Mode Toggle (CAMPAIGN QUEST / CASUAL) */}
-            <div className="key-socket-dark !p-0.5 !rounded-xl">
+            {/* Socket 4: Split Dual Keycap (Top: Mode/Quest, Bottom: Reset) */}
+            <div className="key-socket-dark !p-0.5 !rounded-xl flex flex-col justify-between gap-1 h-full">
+              {/* Top Half: Game Mode Toggle (QUEST / CASUAL) */}
               <button
                 type="button"
                 onClick={handleToggleGameMode}
-                className="key-cap text-slate-800 font-bold w-full py-2 sm:py-2.5 rounded-lg font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 cursor-pointer select-none"
-                title="Toggle between Campaign (Combat & Bosses) and Casual Mode"
+                className="key-cap text-slate-800 font-bold w-full py-1 sm:py-1.5 rounded-lg font-mono text-center transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer select-none shadow-sm flex-1"
+                title="Toggle Game Mode (Campaign Quest vs Casual Mode)"
               >
-                <div className="flex items-center gap-0.5 font-black text-[9.5px] sm:text-[10px] tracking-tight text-slate-800">
-                  <Sword weight="bold" className={`text-xs shrink-0 ${gameMode === 'campaign' ? 'text-emerald-600' : 'text-purple-600'}`} />
-                  <span>{gameMode === 'campaign' ? 'QUEST' : 'CASUAL'}</span>
-                </div>
-                <span className="text-[7px] sm:text-[7.5px] font-bold text-slate-500 tracking-widest uppercase">
-                  {gameMode === 'campaign' ? 'STORY' : 'RELAX'}
+                <Sword weight="bold" className={`text-[10px] sm:text-xs shrink-0 ${gameMode === 'campaign' ? 'text-emerald-600' : 'text-purple-600'}`} />
+                <span className="font-black text-[8px] sm:text-[9.5px] tracking-tight text-slate-800">
+                  {gameMode === 'campaign' ? 'QUEST' : 'CASUAL'}
                 </span>
               </button>
-            </div>
 
-            {/* Button 5: Dedicated RESET / RETRY Keycap */}
-            <div className="key-socket-dark !p-0.5 !rounded-xl">
+              {/* Bottom Half: Dedicated Reset Button */}
               <button
                 type="button"
                 onClick={handleResetClick}
-                className="key-cap text-slate-800 font-bold w-full py-2 sm:py-2.5 rounded-lg font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 cursor-pointer select-none"
+                className="key-cap text-slate-800 font-bold w-full py-1 sm:py-1.5 rounded-lg font-mono text-center transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer select-none shadow-sm flex-1"
                 title="Restart Run or Reset Game"
               >
-                <div className="flex items-center gap-1 font-black text-[9.5px] sm:text-[10.5px] tracking-tight text-slate-800">
-                  <ArrowClockwise weight="bold" className="text-xs text-sky-600 shrink-0" />
-                  <span>RESET</span>
-                </div>
-                <span className="text-[7px] sm:text-[7.5px] font-bold text-slate-500 tracking-widest uppercase">
-                  RETRY
+                <ArrowClockwise weight="bold" className="text-[10px] sm:text-xs text-sky-600 shrink-0" />
+                <span className="font-black text-[8px] sm:text-[9.5px] tracking-tight text-slate-800">
+                  RESET
                 </span>
               </button>
             </div>
