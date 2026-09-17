@@ -835,6 +835,25 @@ function drawThemedDomainCard(ctx, p, biomeIdx, isFloating) {
     ctx.restore()
   }
 
+  // 0. Subtle Fading Motion Trail Behind Domain Platform Card
+  ctx.save()
+  const trailW = 24
+  const trailGrad = ctx.createLinearGradient(x + w, y, x + w + trailW, y)
+  trailGrad.addColorStop(0, p.color || b.accentColor || 'rgba(56, 189, 248, 0.45)')
+  trailGrad.addColorStop(1, 'rgba(0, 0, 0, 0)')
+  ctx.fillStyle = trailGrad
+  ctx.globalAlpha = 0.32 + Math.sin((p.floatAngle || 0) * 2) * 0.08
+  roundRect(ctx, x + w - 4, y + 4, trailW, h - 8, 4)
+  ctx.fill()
+
+  // Fine fading pixel speed streaks
+  ctx.fillStyle = b.cardAccent || p.color || '#38bdf8'
+  ctx.globalAlpha = 0.26
+  ctx.fillRect(x + w, y + 7, 14, 1.5)
+  ctx.fillRect(x + w + 4, y + 17, 16, 1.5)
+  ctx.fillRect(x + w + 1, y + 27, 11, 1.5)
+  ctx.restore()
+
   // 1. Drop Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.35)'
   roundRect(ctx, x + 2, y + 3, w, h, 6)
@@ -1731,7 +1750,7 @@ function renderZeroDayOverlord(ctx, boss) {
   ctx.fill()
 }
 
-// Unified Boss Sprite Dispatcher
+// Unified Boss Sprite Dispatcher with Action Badges & Telegraphs
 function renderBoss(ctx, boss) {
   if (!boss) return
   ctx.save()
@@ -1745,6 +1764,7 @@ function renderBoss(ctx, boss) {
     return
   }
 
+  // Draw Boss Chassis based on type
   if (boss.type === 'phishing_hydra') {
     renderPhishingHydra(ctx, boss)
   } else if (boss.type === 'ddos_titan') {
@@ -1759,48 +1779,200 @@ function renderBoss(ctx, boss) {
     renderBossMech(ctx, boss)
   }
 
+  // Floating Action State Badge (e.g. [CHARGING LASER], [MISSILE BARRAGE])
+  if (boss.actionState && boss.phase === 'battle') {
+    ctx.save()
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)'
+    roundRect(ctx, -14, -15, boss.w + 28, 13, 3)
+    ctx.fill()
+    ctx.strokeStyle = boss.color || '#ef4444'
+    ctx.lineWidth = 1
+    ctx.stroke()
+    ctx.fillStyle = '#fde047'
+    ctx.font = 'bold 7px "JetBrains Mono", monospace'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(boss.actionState, boss.w / 2, -8.5)
+    ctx.restore()
+  }
+
   ctx.restore()
 
-  // Render Boss Projectiles based on archetype
+  // Render Telegraph Warning Lines (laser aim, sky pillar, mortar reticle)
+  if (boss.telegraph && boss.telegraph.timer > 0) {
+    ctx.save()
+    const tg = boss.telegraph
+    const alpha = (tg.timer % 6 < 3) ? 0.85 : 0.4
+    if (tg.type === 'laser') {
+      // Horizontal charging laser guide
+      ctx.strokeStyle = `rgba(239, 68, 68, ${alpha})`
+      ctx.lineWidth = 2
+      ctx.setLineDash([6, 4])
+      ctx.beginPath()
+      ctx.moveTo(0, tg.y)
+      ctx.lineTo(boss.x, tg.y)
+      ctx.stroke()
+      ctx.setLineDash([])
+      ctx.fillStyle = '#ef4444'
+      ctx.font = 'bold 7.5px "JetBrains Mono", monospace'
+      ctx.fillText('⚠️ DANGER: LASER SWEEP', 15, tg.y - 4)
+    } else if (tg.type === 'pillar') {
+      // Vertical sky judgement pillar
+      ctx.fillStyle = `rgba(251, 191, 36, ${alpha * 0.35})`
+      ctx.fillRect(tg.x - 14, 0, 28, 280)
+      ctx.strokeStyle = '#fbbf24'
+      ctx.lineWidth = 1.5
+      ctx.strokeRect(tg.x - 14, 0, 28, 280)
+      ctx.fillStyle = '#fbbf24'
+      ctx.font = 'bold 7.5px "JetBrains Mono", monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText('⚡ JUDGEMENT ZONE', tg.x, 38)
+    } else if (tg.type === 'mortar') {
+      // Ground landing target reticle
+      ctx.strokeStyle = `rgba(16, 185, 129, ${alpha})`
+      ctx.lineWidth = 1.5
+      ctx.beginPath()
+      ctx.arc(tg.x, tg.y, 10, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(tg.x - 12, tg.y)
+      ctx.lineTo(tg.x + 12, tg.y)
+      ctx.moveTo(tg.x, tg.y - 12)
+      ctx.lineTo(tg.x, tg.y + 12)
+      ctx.stroke()
+    }
+    ctx.restore()
+  }
+
+  // Render Rich Boss Projectiles with Particle Trails
   if (boss.bullets && boss.bullets.length > 0) {
     ctx.save()
     for (let i = 0; i < boss.bullets.length; i++) {
       const b = boss.bullets[i]
       ctx.save()
       ctx.translate(Math.round(b.x), Math.round(b.y))
-      
-      if (b.type === 'venom') {
+
+      if (b.type === 'sawblade') {
+        // Rotating 404 Glitch Sawblade with Spark Trails
+        b.rot = (b.rot || 0) + 0.35
+        ctx.rotate(b.rot)
+        ctx.fillStyle = '#ef4444'
+        ctx.beginPath()
+        ctx.arc(0, 0, b.size + 1, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#fbbf24'
+        for (let t = 0; t < 6; t++) {
+          const a = (t * Math.PI) / 3
+          ctx.fillRect(Math.cos(a) * (b.size - 1) - 1.5, Math.sin(a) * (b.size - 1) - 1.5, 3, 3)
+        }
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(-2, -2, 4, 4)
+      } else if (b.type === 'laser_sweep') {
+        // High-Speed Red Laser Core
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.4)'
+        roundRect(ctx, -14, -4, 28, 8, 3)
+        ctx.fill()
+        ctx.fillStyle = '#ef4444'
+        roundRect(ctx, -10, -2, 20, 4, 2)
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(-7, -1, 14, 2)
+      } else if (b.type === 'venom_wave') {
+        // Weaving Bioluminescent Venom Orb
         ctx.fillStyle = '#10b981'
         ctx.beginPath()
         ctx.arc(0, 0, b.size + 1, 0, Math.PI * 2)
         ctx.fill()
         ctx.fillStyle = '#a7f3d0'
         ctx.fillRect(-2, -2, 4, 4)
+        ctx.fillStyle = '#34d399'
+        ctx.fillRect(2, -1, 3, 2)
+      } else if (b.type === 'mortar') {
+        // Arcing Toxic Slime Mortar
+        ctx.fillStyle = '#065f46'
+        roundRect(ctx, -b.size, -b.size, b.size * 2, b.size * 2, 3)
+        ctx.fill()
+        ctx.fillStyle = '#10b981'
+        ctx.fillRect(-b.size + 2, -b.size + 2, (b.size - 2) * 2, (b.size - 2) * 2)
+        ctx.fillStyle = '#a7f3d0'
+        ctx.fillRect(-1.5, -1.5, 3, 3)
       } else if (b.type === 'rocket') {
+        // Swarm Micro-Rocket with Thruster Flame
         ctx.fillStyle = '#8b5cf6'
-        roundRect(ctx, -b.size, -2, b.size * 2, 5, 2)
+        roundRect(ctx, -b.size, -2.5, b.size * 2, 5, 2)
         ctx.fill()
         ctx.fillStyle = '#fbbf24'
-        ctx.fillRect(-b.size + 2, -1, 3, 3)
+        ctx.fillRect(-b.size + 2, -1.5, 3, 3)
+        ctx.fillStyle = '#f97316'
+        ctx.fillRect(b.size - 1, -1, 4, 2) // flame
+      } else if (b.type === 'shockwave') {
+        // Expanding Hexagonal Shield Nova
+        ctx.strokeStyle = '#c084fc'
+        ctx.lineWidth = 2.5
+        ctx.beginPath()
+        ctx.arc(0, 0, b.size + 2, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.fillStyle = 'rgba(192, 132, 252, 0.25)'
+        ctx.fill()
       } else if (b.type === 'beam') {
+        // Cyan Ion Rail Beam
         ctx.fillStyle = '#06b6d4'
-        roundRect(ctx, -10, -2.5, 20, 5, 2)
+        roundRect(ctx, -12, -3, 24, 6, 2)
         ctx.fill()
         ctx.fillStyle = '#ffffff'
-        ctx.fillRect(-7, -1, 14, 2)
+        ctx.fillRect(-8, -1.5, 16, 3)
+      } else if (b.type === 'gravity_orb') {
+        // Quantum Gravity Singularity
+        ctx.fillStyle = 'rgba(6, 182, 212, 0.35)'
+        ctx.beginPath()
+        ctx.arc(0, 0, b.size + 3, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#06b6d4'
+        ctx.beginPath()
+        ctx.arc(0, 0, b.size, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(-2, -2, 4, 4)
       } else if (b.type === 'spike') {
+        // Fiery Ransomware Spikewall
         ctx.fillStyle = '#ea580c'
-        roundRect(ctx, -4, -4, 8, 8, 2)
+        roundRect(ctx, -5, -5, 10, 10, 2)
         ctx.fill()
         ctx.fillStyle = '#fef08a'
         ctx.fillRect(-2, -2, 4, 4)
+      } else if (b.type === 'mine') {
+        // Floating Ransom Skull Mine
+        ctx.fillStyle = '#090d16'
+        roundRect(ctx, -b.size, -b.size, b.size * 2, b.size * 2, 3)
+        ctx.fill()
+        ctx.strokeStyle = '#ef4444'
+        ctx.lineWidth = 1.2
+        ctx.stroke()
+        ctx.fillStyle = '#ef4444'
+        ctx.fillRect(-1.5, -b.size - 2, 3, 3) // blinking LED
       } else if (b.type === 'star') {
+        // 5-Way Archangel Cosmic Star with Comet Glow
         ctx.fillStyle = '#ec4899'
         ctx.beginPath()
         ctx.arc(0, 0, b.size + 2, 0, Math.PI * 2)
         ctx.fill()
         ctx.fillStyle = '#ffffff'
         ctx.fillRect(-2, -2, 4, 4)
+        ctx.fillStyle = '#fde047'
+        ctx.fillRect(-1, -1, 2, 2)
+      } else if (b.type === 'vortex') {
+        // Black Hole Dual Core Vortex
+        b.rot = (b.rot || 0) + 0.2
+        ctx.rotate(b.rot)
+        ctx.fillStyle = '#581c87'
+        ctx.beginPath()
+        ctx.arc(0, 0, b.size + 2, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#a855f7'
+        for (let v = 0; v < 4; v++) {
+          const va = (v * Math.PI) / 2
+          ctx.fillRect(Math.cos(va) * b.size - 1.5, Math.sin(va) * b.size - 1.5, 3, 3)
+        }
       } else {
         // Standard 404 Glitch Saw Orb
         ctx.fillStyle = 'rgba(239, 68, 68, 0.4)'
@@ -1823,25 +1995,27 @@ function renderBoss(ctx, boss) {
   }
 }
 
-// Boss Health Bar Overlay HUD
+// Boss Health Bar Overlay HUD (with Danger Alert Pulse when Low HP)
 function renderBossHud(ctx, boss, w) {
   if (!boss || boss.hp <= 0) return
-  const barW = 210
-  const barH = 14
+  const barW = 220
+  const barH = 15
   const barX = (w - barW) / 2
   const barY = 28
+
+  const pct = Math.max(0, Math.min(1, boss.hp / boss.maxHp))
+  const isDanger = pct <= 0.30
+  const dangerGlow = isDanger ? (Date.now() % 400 < 200 ? '#ef4444' : '#fbbf24') : (boss.color || '#ef4444')
 
   ctx.save()
   ctx.fillStyle = '#090d16'
   roundRect(ctx, barX - 2, barY - 1, barW + 4, barH + 2, 4)
   ctx.fill()
-  ctx.strokeStyle = boss.color || '#ef4444'
-  ctx.lineWidth = 1.4
+  ctx.strokeStyle = dangerGlow
+  ctx.lineWidth = isDanger ? 2 : 1.4
   ctx.stroke()
 
-  const pct = Math.max(0, Math.min(1, boss.hp / boss.maxHp))
   const fillW = Math.max(0, Math.round((barW - 2) * pct))
-
   const grad = ctx.createLinearGradient(barX, 0, barX + barW, 0)
   grad.addColorStop(0, '#ef4444')
   grad.addColorStop(0.5, '#f59e0b')
@@ -1851,21 +2025,21 @@ function renderBossHud(ctx, boss, w) {
   ctx.fill()
 
   ctx.fillStyle = '#ffffff'
-  ctx.font = 'bold 8px "JetBrains Mono", monospace'
+  ctx.font = 'bold 8.5px "JetBrains Mono", monospace'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText(`☠️ ${boss.name}: ${Math.round(pct * 100)}% [${boss.hp}/${boss.maxHp} HP]`, w / 2, barY + barH / 2)
   ctx.restore()
 }
 
-// Final 6 Progressive Boss Milestones: 1000, 1800, 2500, 3200, 4200, 5000
+// Final 6 Progressive Boss Milestones with Calibrated High HP (55, 85, 120, 165, 220, 300)
 const BOSS_MILESTONES = [
-  { score: 1000, name: 'MEGABYTE SQUATTER', type: 'squatter_mech', hp: 18, reward: 150, color: '#ef4444' },
-  { score: 1800, name: 'PHISHING HYDRA', type: 'phishing_hydra', hp: 28, reward: 200, color: '#10b981' },
-  { score: 2500, name: 'DDoS SWARM TITAN', type: 'ddos_titan', hp: 38, reward: 250, color: '#8b5cf6' },
-  { score: 3200, name: 'DNS HIJACKER PRIME', type: 'dns_saucer', hp: 48, reward: 300, color: '#06b6d4' },
-  { score: 4200, name: 'RANSOMWARE DREADNOUGHT', type: 'ransom_dreadnought', hp: 60, reward: 400, color: '#f59e0b' },
-  { score: 5000, name: 'ZERO-DAY OVERLORD', type: 'zero_day_overlord', hp: 80, reward: 600, color: '#ec4899', isFinal: true },
+  { score: 1000, name: 'MEGABYTE SQUATTER', type: 'squatter_mech', hp: 55, reward: 200, color: '#ef4444' },
+  { score: 1800, name: 'PHISHING HYDRA', type: 'phishing_hydra', hp: 85, reward: 300, color: '#10b981' },
+  { score: 2500, name: 'DDoS SWARM TITAN', type: 'ddos_titan', hp: 120, reward: 400, color: '#8b5cf6' },
+  { score: 3200, name: 'DNS HIJACKER PRIME', type: 'dns_saucer', hp: 165, reward: 500, color: '#06b6d4' },
+  { score: 4200, name: 'RANSOMWARE DREADNOUGHT', type: 'ransom_dreadnought', hp: 220, reward: 650, color: '#f59e0b' },
+  { score: 5000, name: 'ZERO-DAY OVERLORD', type: 'zero_day_overlord', hp: 300, reward: 1000, color: '#ec4899', isFinal: true },
 ]
 
 const DomainGameEngine = forwardRef(function DomainGameEngine(
@@ -2219,6 +2393,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     s.cat.coyoteFrames = 8
     s.powerups = []
     s.particles = []
+    s.floatingTexts = []
     s.bubbleTimer = 0
     s.bubbleText = ''
     s.recentDomains = ['genesis', 'zenith', 'lumina', 'hyper', 'kroma']
@@ -2623,6 +2798,9 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           maxHp: targetBoss.hp,
           floatAngle: 0,
           attackTimer: 0,
+          attackPattern: 0,
+          actionState: '',
+          telegraph: null,
           phase: 'enter',
           hitFlash: 0,
           bullets: [],
@@ -2645,11 +2823,70 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       const boss = s.boss
       if (boss.hitFlash > 0) boss.hitFlash--
 
+      // Process telegraph timers
+      if (boss.telegraph && boss.telegraph.timer > 0) {
+        boss.telegraph.timer--
+        if (boss.telegraph.timer === 0) {
+          const tg = boss.telegraph
+          if (tg.type === 'laser') {
+            boss.bullets.push({
+              x: boss.x - 4,
+              y: tg.y,
+              vx: -7.5,
+              vy: 0,
+              type: 'beam',
+              size: 6,
+              life: 80,
+            })
+            if (soundEnabledRef.current) playLaserShoot('railgun')
+          } else if (tg.type === 'pillar') {
+            if (
+              !cat.inRescueFlight &&
+              s.gameState === 'PLAYING' &&
+              Math.abs(cat.x + cat.w / 2 - tg.x) < 20
+            ) {
+              if (soundEnabledRef.current) playEnemyExplode()
+              if (s.lives > 0) {
+                s.lives = Math.max(0, s.lives - 1)
+                setLives(s.lives)
+                s.bubbleText = s.lives > 0 ? `PILLAR HIT! ❤️ x ${s.lives}` : `0 LIVES LEFT!`
+                s.bubbleTimer = 45
+                setBubbleText(s.bubbleText)
+              }
+            }
+            for (let k = 0; k < 12; k++) {
+              s.particles.push({
+                x: tg.x + (Math.random() - 0.5) * 20,
+                y: Math.random() * 260,
+                vx: (Math.random() - 0.5) * 4,
+                vy: (Math.random() - 0.5) * 4,
+                color: '#fbbf24',
+                life: 20,
+                size: 3,
+              })
+            }
+          } else if (tg.type === 'mortar') {
+            boss.bullets.push({
+              x: tg.x,
+              y: 0,
+              vx: 0,
+              vy: 4.5,
+              type: 'mortar',
+              size: 6,
+              life: 70,
+            })
+            if (soundEnabledRef.current) playLaserShoot('plasma')
+          }
+          boss.telegraph = null
+        }
+      }
+
       if (boss.phase === 'enter') {
         boss.x += (boss.targetX - boss.x) * 0.08
         if (Math.abs(boss.x - boss.targetX) < 4) {
           boss.phase = 'battle'
           boss.attackTimer = 0
+          boss.attackPattern = 0
         }
       } else if (boss.phase === 'battle') {
         boss.floatAngle += 0.04
@@ -2657,87 +2894,190 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
 
         boss.attackTimer++
 
+        // Cycle through 3 multi-attack patterns per boss type
         if (boss.type === 'phishing_hydra') {
-          // Twin undulating venom sparks every 65 frames
           if (boss.attackTimer >= 65) {
             boss.attackTimer = 0
-            boss.bullets.push(
-              { x: boss.x + 4, y: boss.y + 10, vx: -3.2, vy: -0.8, type: 'venom', size: 5, life: 120 },
-              { x: boss.x + 4, y: boss.y + 24, vx: -3.2, vy: 0.8, type: 'venom', size: 5, life: 120 }
-            )
-            if (soundEnabledRef.current) playLaserShoot('plasma')
+            boss.attackPattern = ((boss.attackPattern || 0) + 1) % 3
+            if (boss.attackPattern === 0) {
+              boss.actionState = '🧪 VENOM SPRAY'
+              boss.bullets.push(
+                { x: boss.x + 4, y: boss.y + 10, vx: -3.2, vy: -0.8, type: 'venom', size: 5, life: 120 },
+                { x: boss.x + 4, y: boss.y + 24, vx: -3.2, vy: 0.8, type: 'venom', size: 5, life: 120 }
+              )
+              if (soundEnabledRef.current) playLaserShoot('plasma')
+            } else if (boss.attackPattern === 1) {
+              boss.actionState = '🌊 TOXIC WAVE'
+              for (let a = -1; a <= 1; a++) {
+                boss.bullets.push({
+                  x: boss.x + 4,
+                  y: boss.y + 18,
+                  vx: -3.0,
+                  vy: a * 1.0,
+                  type: 'venom_wave',
+                  size: 6,
+                  life: 110,
+                  hp: 1,
+                  shootable: true,
+                })
+              }
+              if (soundEnabledRef.current) playLaserShoot('plasma')
+            } else {
+              boss.actionState = '🌧️ ACID MORTAR'
+              boss.telegraph = { type: 'mortar', x: cat.x + 25, y: 195, timer: 20 }
+            }
           }
         } else if (boss.type === 'ddos_titan') {
-          // Tri-rocket barrage every 80 frames
-          if (boss.attackTimer >= 80) {
-            boss.attackTimer = 0
-            boss.bullets.push(
-              { x: boss.x + 2, y: boss.y + 10, vx: -3.4, vy: -0.9, type: 'rocket', size: 5, life: 110 },
-              { x: boss.x + 2, y: boss.y + 20, vx: -3.8, vy: 0, type: 'rocket', size: 5, life: 110 },
-              { x: boss.x + 2, y: boss.y + 30, vx: -3.4, vy: 0.9, type: 'rocket', size: 5, life: 110 }
-            )
-            if (soundEnabledRef.current) playLaserShoot('missile')
-          }
-        } else if (boss.type === 'dns_saucer') {
-          // High speed horizontal beam + warp every 60 frames
-          if (boss.attackTimer >= 60) {
-            boss.attackTimer = 0
-            boss.bullets.push({
-              x: boss.x - 2,
-              y: boss.y + boss.h / 2,
-              vx: -5.2,
-              vy: 0,
-              type: 'beam',
-              size: 5,
-              life: 90,
-            })
-            boss.baseY = 60 + Math.random() * 80
-            if (soundEnabledRef.current) playLaserShoot('railgun')
-          }
-        } else if (boss.type === 'ransom_dreadnought') {
-          // Firewall spikes + tracking mine every 70 frames
-          if (boss.attackTimer >= 70) {
-            boss.attackTimer = 0
-            boss.bullets.push(
-              { x: boss.x - 4, y: boss.y + 12, vx: -3.6, vy: -0.6, type: 'spike', size: 6, life: 110 },
-              { x: boss.x - 4, y: boss.y + 28, vx: -3.6, vy: 0.6, type: 'spike', size: 6, life: 110 }
-            )
-            if (soundEnabledRef.current) playLaserShoot('plasma')
-          }
-        } else if (boss.type === 'zero_day_overlord') {
-          // 5-way cosmic star burst every 55 frames
-          if (boss.attackTimer >= 55) {
-            boss.attackTimer = 0
-            for (let a = -2; a <= 2; a++) {
-              boss.bullets.push({
-                x: boss.x,
-                y: boss.y + boss.h / 2,
-                vx: -3.5,
-                vy: a * 1.1,
-                type: 'star',
-                size: 6,
-                life: 110,
-              })
-            }
-            if (soundEnabledRef.current) playLaserShoot('spread')
-          }
-        } else {
-          // Standard Megabyte Squatter 404 Glitch Orb
           if (boss.attackTimer >= 75) {
             boss.attackTimer = 0
-            const dy = (cat.y + cat.h / 2) - (boss.y + 20)
-            const dx = (cat.x + cat.w / 2) - (boss.x + 10)
-            const angle = Math.atan2(dy, dx)
-            boss.bullets.push({
-              x: boss.x + 6,
-              y: boss.y + 20,
-              vx: Math.cos(angle) * 3.4,
-              vy: Math.sin(angle) * 3.4,
-              type: 'glitch_orb',
-              size: 6,
-              life: 110,
-            })
-            if (soundEnabledRef.current) playLaserShoot('plasma')
+            boss.attackPattern = ((boss.attackPattern || 0) + 1) % 3
+            if (boss.attackPattern === 0) {
+              boss.actionState = '🚀 TRI-MISSILE'
+              boss.bullets.push(
+                { x: boss.x + 2, y: boss.y + 8, vx: -3.4, vy: -0.9, type: 'rocket', size: 5, life: 110, hp: 1, shootable: true },
+                { x: boss.x + 2, y: boss.y + 20, vx: -3.8, vy: 0, type: 'rocket', size: 5, life: 110, hp: 1, shootable: true },
+                { x: boss.x + 2, y: boss.y + 32, vx: -3.4, vy: 0.9, type: 'rocket', size: 5, life: 110, hp: 1, shootable: true }
+              )
+              if (soundEnabledRef.current) playLaserShoot('missile')
+            } else if (boss.attackPattern === 1) {
+              boss.actionState = '🛸 SWARM DRONES'
+              boss.bullets.push(
+                { x: boss.x, y: boss.y + 12, vx: -2.2, vy: -0.4, type: 'sawblade', size: 6, life: 120, hp: 2, shootable: true },
+                { x: boss.x, y: boss.y + 28, vx: -2.2, vy: 0.4, type: 'sawblade', size: 6, life: 120, hp: 2, shootable: true }
+              )
+              if (soundEnabledRef.current) playLaserShoot('spread')
+            } else {
+              boss.actionState = '⚡ JUDGEMENT BEAM'
+              boss.telegraph = { type: 'pillar', x: Math.max(30, cat.x), timer: 22 }
+            }
+          }
+        } else if (boss.type === 'dns_saucer') {
+          if (boss.attackTimer >= 60) {
+            boss.attackTimer = 0
+            boss.attackPattern = ((boss.attackPattern || 0) + 1) % 3
+            if (boss.attackPattern === 0) {
+              boss.actionState = '⚡ QUANTUM BEAM'
+              boss.bullets.push({
+                x: boss.x - 2,
+                y: boss.y + boss.h / 2,
+                vx: -5.4,
+                vy: 0,
+                type: 'beam',
+                size: 5,
+                life: 90,
+              })
+              boss.baseY = 60 + Math.random() * 80
+              if (soundEnabledRef.current) playLaserShoot('railgun')
+            } else if (boss.attackPattern === 1) {
+              boss.actionState = '🌌 GRAVITY ORBS'
+              boss.bullets.push(
+                { x: boss.x, y: boss.y + 10, vx: -2.4, vy: -0.5, type: 'gravity_orb', size: 7, life: 120, hp: 2, shootable: true },
+                { x: boss.x, y: boss.y + 26, vx: -2.4, vy: 0.5, type: 'gravity_orb', size: 7, life: 120, hp: 2, shootable: true }
+              )
+              if (soundEnabledRef.current) playLaserShoot('plasma')
+            } else {
+              boss.actionState = '⚠️ LASER SWEEP'
+              boss.telegraph = { type: 'laser', y: boss.y + boss.h / 2, timer: 20 }
+            }
+          }
+        } else if (boss.type === 'ransom_dreadnought') {
+          if (boss.attackTimer >= 68) {
+            boss.attackTimer = 0
+            boss.attackPattern = ((boss.attackPattern || 0) + 1) % 3
+            if (boss.attackPattern === 0) {
+              boss.actionState = '🛡️ FIREWALL SPIKES'
+              boss.bullets.push(
+                { x: boss.x - 4, y: boss.y + 10, vx: -3.8, vy: -0.6, type: 'spike', size: 6, life: 110, hp: 1, shootable: true },
+                { x: boss.x - 4, y: boss.y + 28, vx: -3.8, vy: 0.6, type: 'spike', size: 6, life: 110, hp: 1, shootable: true }
+              )
+              if (soundEnabledRef.current) playLaserShoot('plasma')
+            } else if (boss.attackPattern === 1) {
+              boss.actionState = '💀 SKULL MINES'
+              boss.bullets.push(
+                { x: boss.x - 6, y: boss.y + 14, vx: -1.6, vy: 0.2, type: 'mine', size: 7, life: 140, hp: 2, shootable: true },
+                { x: boss.x - 6, y: boss.y + 26, vx: -1.6, vy: -0.2, type: 'mine', size: 7, life: 140, hp: 2, shootable: true }
+              )
+              if (soundEnabledRef.current) playLaserShoot('plasma')
+            } else {
+              boss.actionState = '💣 QUAD SPREAD'
+              for (let q = -1.5; q <= 1.5; q += 1) {
+                boss.bullets.push({
+                  x: boss.x - 4,
+                  y: boss.y + 20,
+                  vx: -3.2,
+                  vy: q * 0.9,
+                  type: 'sawblade',
+                  size: 6,
+                  life: 100,
+                  hp: 1,
+                  shootable: true,
+                })
+              }
+              if (soundEnabledRef.current) playLaserShoot('spread')
+            }
+          }
+        } else if (boss.type === 'zero_day_overlord') {
+          if (boss.attackTimer >= 52) {
+            boss.attackTimer = 0
+            boss.attackPattern = ((boss.attackPattern || 0) + 1) % 3
+            if (boss.attackPattern === 0) {
+              boss.actionState = '✨ COSMIC STARS'
+              for (let a = -2; a <= 2; a++) {
+                boss.bullets.push({
+                  x: boss.x,
+                  y: boss.y + boss.h / 2,
+                  vx: -3.6,
+                  vy: a * 1.1,
+                  type: 'star',
+                  size: 6,
+                  life: 110,
+                  hp: 1,
+                  shootable: true,
+                })
+              }
+              if (soundEnabledRef.current) playLaserShoot('spread')
+            } else if (boss.attackPattern === 1) {
+              boss.actionState = '🌀 VOID VORTEX'
+              boss.bullets.push(
+                { x: boss.x, y: boss.y + 12, vx: -2.8, vy: -0.4, type: 'vortex', size: 8, life: 130, hp: 3, shootable: true },
+                { x: boss.x, y: boss.y + 28, vx: -2.8, vy: 0.4, type: 'vortex', size: 8, life: 130, hp: 3, shootable: true }
+              )
+              if (soundEnabledRef.current) playLaserShoot('missile')
+            } else {
+              boss.actionState = '⚡ ARCHANGEL SMITE'
+              boss.telegraph = { type: 'pillar', x: Math.max(30, cat.x + 10), timer: 22 }
+            }
+          }
+        } else {
+          // Standard Megabyte Squatter Mecha (1000 pts)
+          if (boss.attackTimer >= 70) {
+            boss.attackTimer = 0
+            boss.attackPattern = ((boss.attackPattern || 0) + 1) % 3
+            if (boss.attackPattern === 0) {
+              boss.actionState = '🪚 SAW DRILL'
+              boss.bullets.push({
+                x: boss.x - 2,
+                y: boss.y + 20,
+                vx: -2.2,
+                vy: 0,
+                type: 'sawblade',
+                size: 7,
+                life: 130,
+                hp: 2,
+                shootable: true,
+              })
+              if (soundEnabledRef.current) playLaserShoot('plasma')
+            } else if (boss.attackPattern === 1) {
+              boss.actionState = '🚀 DUAL ROCKETS'
+              boss.bullets.push(
+                { x: boss.x + 4, y: boss.y + 10, vx: -3.6, vy: -0.7, type: 'rocket', size: 5, life: 110, hp: 1, shootable: true },
+                { x: boss.x + 4, y: boss.y + 26, vx: -3.6, vy: 0.7, type: 'rocket', size: 5, life: 110, hp: 1, shootable: true }
+              )
+              if (soundEnabledRef.current) playLaserShoot('missile')
+            } else {
+              boss.actionState = '🎯 MORTAR SHELL'
+              boss.telegraph = { type: 'mortar', x: Math.max(30, cat.x + 20), y: 195, timer: 20 }
+            }
           }
         }
       } else if (boss.phase === 'death') {
@@ -2966,6 +3306,17 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         ) {
           en.hp -= p.damage
           en.hitFlash = 5
+          if (s.floatingTexts) {
+            s.floatingTexts.push({
+              x: en.x + en.w / 2,
+              y: en.y - 6,
+              text: `-${p.damage}`,
+              color: '#38bdf8',
+              vy: -0.8,
+              life: 20,
+              font: 'bold 8.5px "JetBrains Mono", monospace',
+            })
+          }
           if (en.hp <= 0) {
             if (soundEnabledRef.current) playEnemyExplode()
             const scoreVal = en.scoreVal || (en.type === 'malware_golem' ? 35 : en.type === 'packet_bat' ? 25 : en.type === 'squatter_drone' ? 20 : 10)
@@ -3008,7 +3359,11 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
             p.y < bb.y + bb.size &&
             p.y + p.h > bb.y - bb.size
           ) {
-            s.boss.bullets.splice(k, 1)
+            if (bb.hp && bb.hp > 1) {
+              bb.hp -= p.damage
+            } else {
+              s.boss.bullets.splice(k, 1)
+            }
             if (soundEnabledRef.current) playBossHit()
             for (let m = 0; m < 6; m++) {
               s.particles.push({
@@ -3046,6 +3401,18 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           boss.hp -= p.damage
           boss.hitFlash = 5
           if (soundEnabledRef.current) playBossHit()
+          if (s.floatingTexts) {
+            const isCrit = p.damage > 1
+            s.floatingTexts.push({
+              x: p.x + (Math.random() - 0.5) * 14,
+              y: p.y - 8,
+              text: isCrit ? `CRIT! -${p.damage}` : `-${p.damage}`,
+              color: isCrit ? '#f43f5e' : '#fbbf24',
+              vy: -0.9,
+              life: 24,
+              font: isCrit ? 'bold 10px "JetBrains Mono", monospace' : 'bold 8.5px "JetBrains Mono", monospace',
+            })
+          }
           for (let k = 0; k < 6; k++) {
             s.particles.push({
               x: p.x,
@@ -3309,6 +3676,16 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       if (pt.life <= 0) s.particles.splice(i, 1)
     }
 
+    // Floating Damage Numbers
+    if (s.floatingTexts) {
+      for (let i = s.floatingTexts.length - 1; i >= 0; i--) {
+        const ft = s.floatingTexts[i]
+        ft.y += ft.vy
+        ft.life--
+        if (ft.life <= 0) s.floatingTexts.splice(i, 1)
+      }
+    }
+
     // Distance score increments
     if (cat.isGrounded && cat.frameCounter % 28 === 0) {
       s.score += 1
@@ -3540,6 +3917,23 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       ctx.fillStyle = pt.color || '#facc15'
       const size = pt.size || 2.5
       ctx.fillRect(pt.x, pt.y, size, size)
+    }
+
+    // Floating Damage Numbers & Combat Texts
+    if (s.floatingTexts && s.floatingTexts.length > 0) {
+      for (let i = 0; i < s.floatingTexts.length; i++) {
+        const ft = s.floatingTexts[i]
+        const alpha = Math.min(1, ft.life / 10)
+        ctx.save()
+        ctx.fillStyle = ft.color || '#fbbf24'
+        ctx.font = ft.font || 'bold 8.5px "JetBrains Mono", monospace'
+        ctx.textAlign = 'center'
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)'
+        ctx.shadowBlur = 3
+        ctx.globalAlpha = alpha
+        ctx.fillText(ft.text, ft.x, ft.y)
+        ctx.restore()
+      }
     }
 
     // Handcrafted Rescue Cannon
