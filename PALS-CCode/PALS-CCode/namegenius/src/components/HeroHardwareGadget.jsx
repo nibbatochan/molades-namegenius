@@ -16,6 +16,8 @@ import {
   MusicNotes,
   Crosshair,
   Lightning,
+  Sword,
+  Sparkle,
 } from '@phosphor-icons/react'
 
 // Skeuomorphic Knurled Stadium Toggle Switch (White ON active state + scaled up)
@@ -39,47 +41,36 @@ function SkeuoTactileSwitch({ checked, onChange, label, title }) {
           border: checked ? '1.5px solid #ffffff' : '1.5px solid #334155',
         }}
       >
-        {/* Sliding Knurled Circular Disc Knob */}
+        {/* Recessed slider track */}
         <div
-          className={`w-[19px] sm:w-[21px] h-[19px] sm:h-[21px] rounded-full transition-transform duration-200 ease-out flex items-center justify-center ${
-            checked ? 'translate-x-[20px] sm:translate-x-[22px]' : 'translate-x-0'
-          }`}
+          className="w-full h-full rounded-full relative flex items-center"
           style={{
-            background: 'linear-gradient(145deg, #ffffff 0%, #e2e8f0 45%, #cbd5e1 80%, #94a3b8 100%)',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.5), inset 0 1px 1.5px rgba(255,255,255,0.95), inset 0 -1px 1.5px rgba(0,0,0,0.25)',
-            border: '1px solid #94a3b8',
+            background: checked ? '#f8fafc' : '#090d16',
+            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)',
           }}
         >
-          {/* Diagonal Knurled Grooves Texture */}
-          <svg width="16" height="16" viewBox="0 0 20 20" className="pointer-events-none rounded-full">
-            <defs>
-              <clipPath id={`knurlClip-${label}`}>
-                <circle cx="10" cy="10" r="8.5" />
-              </clipPath>
-            </defs>
-            <g clipPath={`url(#knurlClip-${label})`}>
-              <circle cx="10" cy="10" r="9" fill="#f8fafc" />
-              {/* 45-degree Diagonal Knurled Lines */}
-              {Array.from({ length: 9 }).map((_, i) => {
-                const offset = i * 3 - 3
-                return (
-                  <line
-                    key={i}
-                    x1={offset}
-                    y1="0"
-                    x2={offset + 20}
-                    y2="20"
-                    stroke={checked ? '#1e293b' : '#64748b'}
-                    strokeWidth="1.3"
-                    strokeOpacity={checked ? '0.95' : '0.8'}
-                  />
-                )
-              })}
-            </g>
-          </svg>
+          {/* High-Gloss Anodized Chrome Stadium Slider Knob */}
+          <div
+            className="absolute top-[2px] bottom-[2px] w-[18px] sm:w-[20px] rounded-full transition-all duration-200 flex items-center justify-center shadow-lg"
+            style={{
+              left: checked ? 'calc(100% - 20px)' : '2px',
+              background: checked
+                ? 'linear-gradient(180deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%)'
+                : 'linear-gradient(180deg, #64748b 0%, #334155 60%, #1e293b 100%)',
+              border: '1px solid rgba(255,255,255,0.6)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.9)',
+            }}
+          >
+            {/* Knurled Grip Ridges */}
+            <div className="flex gap-[2px]">
+              <div className={`w-[1px] h-2.5 rounded-full ${checked ? 'bg-slate-400' : 'bg-slate-700'}`} />
+              <div className={`w-[1px] h-2.5 rounded-full ${checked ? 'bg-slate-400' : 'bg-slate-700'}`} />
+            </div>
+          </div>
         </div>
       </button>
-      {/* Label Under Switch */}
+
+      {/* Label under Switch */}
       <span className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-950">
         {label}
       </span>
@@ -87,66 +78,56 @@ function SkeuoTactileSwitch({ checked, onChange, label, title }) {
   )
 }
 
-// Skeuomorphic Rotary Volume Knob (Scalable & Interactive Rotatable)
-function SkeuoVolumeKnob({ volume, onChange }) {
-  const knobRef = useRef(null)
-  const isDraggingRef = useRef(false)
-  const lastClickAngleRef = useRef(0)
-
-  const deg = -135 + volume * 270
+// Skeuomorphic Hardware Rotary Volume Knob (White/Silver + 300° Continuous Rotation)
+function SkeuoVolumeKnob({ volume = 0.75, onChange }) {
+  const isDragging = useRef(false)
+  const startY = useRef(0)
+  const startVol = useRef(volume)
 
   const handlePointerDown = (e) => {
-    e.preventDefault()
-    isDraggingRef.current = true
-    const handleMove = (moveEvt) => {
-      if (!knobRef.current) return
-      const rect = knobRef.current.getBoundingClientRect()
-      const cx = rect.left + rect.width / 2
-      const cy = rect.top + rect.height / 2
-      const dx = moveEvt.clientX - cx
-      const dy = moveEvt.clientY - cy
-      let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90
-      if (angle < -180) angle += 360
-      if (angle > 180) angle -= 360
-      const clamped = Math.max(-135, Math.min(135, angle))
-      const v = (clamped + 135) / 270
-      onChange(Math.max(0, Math.min(1, Math.round(v * 100) / 100)))
-      if (Math.abs(angle - lastClickAngleRef.current) > 25) {
-        playMechanicalClick('dial')
-        lastClickAngleRef.current = angle
-      }
-    }
-    const handleUp = () => {
-      window.removeEventListener('pointermove', handleMove)
-      window.removeEventListener('pointerup', handleUp)
-      setTimeout(() => {
-        isDraggingRef.current = false
-      }, 50)
-    }
-    window.addEventListener('pointermove', handleMove)
-    window.addEventListener('pointerup', handleUp)
+    isDragging.current = true
+    startY.current = e.clientY
+    startVol.current = volume
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
   }
 
-  const handleClick = () => {
-    if (isDraggingRef.current) return
-    const steps = [0.25, 0.5, 0.75, 1.0, 0.0]
-    const currentIdx = steps.findIndex((v) => Math.abs(v - volume) < 0.15)
-    const nextIdx = (currentIdx + 1) % steps.length
-    onChange(steps[nextIdx])
-    playMechanicalClick('dial')
+  const handlePointerMove = (e) => {
+    if (!isDragging.current) return
+    const deltaY = startY.current - e.clientY
+    const newVol = Math.max(0, Math.min(1, startVol.current + deltaY * 0.008))
+    if (onChange) onChange(newVol)
   }
+
+  const handlePointerUp = () => {
+    isDragging.current = false
+    window.removeEventListener('pointermove', handlePointerMove)
+    window.removeEventListener('pointerup', handlePointerUp)
+  }
+
+  const handleClickStep = () => {
+    const nextVol = volume >= 0.9 ? 0 : Math.min(1, Math.round((volume + 0.25) * 100) / 100)
+    if (onChange) onChange(nextVol)
+  }
+
+  // -140° to +140° rotation range
+  const deg = -140 + volume * 280
 
   return (
     <div className="flex flex-col items-center gap-1">
       <div
-        ref={knobRef}
+        role="slider"
+        aria-valuenow={Math.round(volume * 100)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        tabIndex={0}
+        onClick={handleClickStep}
         onPointerDown={handlePointerDown}
-        onClick={handleClick}
-        className="relative w-[26px] sm:w-[28px] h-[26px] sm:h-[28px] rounded-full p-[2px] cursor-grab active:cursor-grabbing select-none group active:scale-95 focus:outline-none shadow-md"
-        title={`Master Volume: ${Math.round(volume * 100)}% (Drag or click to rotate)`}
+        title={`Hardware Volume: ${Math.round(volume * 100)}% (Click to step or drag up/down)`}
+        className="w-[30px] sm:w-[32px] h-[30px] sm:h-[32px] rounded-full p-[2px] cursor-ns-resize select-none relative shadow-md transition-transform active:scale-95"
         style={{
-          background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
-          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.35)',
+          background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 60%, #020617 100%)',
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.3)',
           border: '1.5px solid #334155',
         }}
       >
@@ -175,6 +156,7 @@ function SkeuoVolumeKnob({ volume, onChange }) {
 
 export default function HeroHardwareGadget({ onInteractWithConsole }) {
   const [isAutoMode, setIsAutoMode] = useState(true)
+  const [gameMode, setGameMode] = useState('campaign')
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [musicEnabled, setMusicActive] = useState(false)
   const [volume, setVolume] = useState(() => getMasterVolume() || 0.75)
@@ -213,14 +195,21 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
     setIsAutoMode((prev) => !prev)
   }
 
-  const handleRetryClick = () => {
+  const handleToggleGameMode = () => {
+    if (soundEnabled) playMechanicalClick('switch')
+    setGameMode((prev) => {
+      const next = prev === 'campaign' ? 'casual' : 'campaign'
+      if (engineRef.current && engineRef.current.setGameMode) {
+        engineRef.current.setGameMode(next)
+      }
+      return next
+    })
+  }
+
+  const handleResetClick = () => {
     if (soundEnabled) playMechanicalClick('heavy')
     if (engineRef.current) {
-      if (engineRef.current.nextBiome) {
-        engineRef.current.nextBiome()
-      } else {
-        engineRef.current.restart()
-      }
+      engineRef.current.restart()
     }
   }
 
@@ -307,7 +296,7 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
       <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 h-10 w-4/5 rounded-full bg-black/35 blur-xl pointer-events-none" />
 
       {/* Main Molded Plastic Chassis (Candy Purple) */}
-      <div className="skeuo-chassis-purple relative p-4 sm:p-5 shadow-2xl animate-float-subtle">
+      <div className="skeuo-chassis-purple relative p-3.5 sm:p-5 shadow-2xl animate-float-subtle">
         {/* Left Side: Industrial Woven Flight Ribbon Tag */}
         <div className="absolute -left-4 sm:-left-5 top-1/3 -translate-y-1/2 flex items-center z-20 pointer-events-auto">
           <div className="lanyard-bracket">
@@ -446,36 +435,38 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
           <DomainGameEngine
             ref={engineRef}
             isAutoMode={isAutoMode}
+            gameMode={gameMode}
             onToggleAutoMode={setIsAutoMode}
+            onToggleGameMode={setGameMode}
             soundEnabled={soundEnabled}
             onMilestone={handleMilestone}
           />
         </div>
 
-        {/* Zone 2: 4-Button Physical Hardware Controls Deck */}
+        {/* Zone 2: 5-Button Physical Hardware Controls Deck */}
         <div className="mt-3.5 pt-0.5">
           <div className="flex items-center justify-between mb-2 px-1">
-            <span className="font-mono text-[8.5px] font-bold text-purple-950/70 uppercase tracking-wider">
+            <span className="font-mono text-[8px] sm:text-[8.5px] font-bold text-purple-950/70 uppercase tracking-wider">
               NG-01 TACTILE DECK
             </span>
-            <span className="font-mono text-[8.5px] font-bold text-purple-950/80 uppercase tracking-wider">
-              HARDWARE CONTROLS
+            <span className="font-mono text-[8px] sm:text-[8.5px] font-bold text-purple-950/80 uppercase tracking-wider">
+              5-KEY HARDWARE CONTROLS
             </span>
           </div>
 
-          {/* 4 Precision Mechanical Hardware Keycaps */}
-          <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+          {/* 5 Precision Mechanical Hardware Keycaps */}
+          <div className="grid grid-cols-5 gap-1 sm:gap-1.5">
             {/* Button 1: Mode Switch (AUTO / MANUAL) */}
-            <div className="key-socket-dark !p-0.5 sm:!p-1 !rounded-2xl">
+            <div className="key-socket-dark !p-0.5 !rounded-xl">
               <button
                 type="button"
                 onClick={handleToggleMode}
-                className="key-cap w-full py-2 sm:py-2.5 rounded-xl font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 cursor-pointer select-none"
+                className="key-cap w-full py-2 sm:py-2.5 rounded-lg font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 cursor-pointer select-none"
                 title="Toggle between Auto-Pilot and Manual Control"
               >
-                <div className="flex items-center gap-1 font-black text-[10px] sm:text-[11px] tracking-tight text-slate-800">
+                <div className="flex items-center gap-1 font-black text-[9.5px] sm:text-[10.5px] tracking-tight text-slate-800">
                   <span
-                    className={`inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-colors ${
+                    className={`inline-block w-1.5 h-1.5 rounded-full transition-colors ${
                       isAutoMode
                         ? 'bg-amber-400 shadow-sm border border-amber-500/60'
                         : 'bg-emerald-500 led-glow-emerald border border-emerald-600/60'
@@ -483,14 +474,14 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                   />
                   <span>{isAutoMode ? 'AUTO' : 'MAN'}</span>
                 </div>
-                <span className="text-[7.5px] sm:text-[8px] font-bold text-slate-500 tracking-widest uppercase">
+                <span className="text-[7px] sm:text-[7.5px] font-bold text-slate-500 tracking-widest uppercase">
                   MODE
                 </span>
               </button>
             </div>
 
             {/* Button 2: Primary JUMP Keycap */}
-            <div className="key-socket-dark !p-0.5 sm:!p-1 !rounded-2xl">
+            <div className="key-socket-dark !p-0.5 !rounded-xl">
               <button
                 type="button"
                 onClick={handleJumpClick}
@@ -498,21 +489,21 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                   e.preventDefault()
                   handleJumpClick()
                 }}
-                className="key-cap-terracotta w-full py-2 sm:py-2.5 rounded-xl font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg active:scale-95 cursor-pointer select-none"
+                className="key-cap-terracotta w-full py-2 sm:py-2.5 rounded-lg font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg active:scale-95 cursor-pointer select-none"
                 title="Click to jump! (Spacebar / Up Arrow)"
               >
-                <div className="flex items-center gap-1 font-black text-[11px] sm:text-[12px] tracking-wide text-white">
+                <div className="flex items-center gap-1 font-black text-[10px] sm:text-[11px] tracking-wide text-white">
                   <PawPrint weight="fill" className="text-amber-200 text-xs shrink-0" />
                   <span>JUMP</span>
                 </div>
-                <span className="text-[7.5px] sm:text-[8px] font-bold text-amber-200/80 tracking-widest uppercase">
+                <span className="text-[7px] sm:text-[7.5px] font-bold text-amber-200/80 tracking-widest uppercase">
                   HOP
                 </span>
               </button>
             </div>
 
             {/* Button 3: Primary FIRE Keycap */}
-            <div className="key-socket-dark !p-0.5 sm:!p-1 !rounded-2xl">
+            <div className="key-socket-dark !p-0.5 !rounded-xl">
               <button
                 type="button"
                 onClick={handleShootClick}
@@ -520,33 +511,51 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                   e.preventDefault()
                   handleShootClick()
                 }}
-                className="key-cap-cobalt w-full py-2 sm:py-2.5 rounded-xl font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg active:scale-95 cursor-pointer select-none"
+                className="key-cap-cobalt w-full py-2 sm:py-2.5 rounded-lg font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg active:scale-95 cursor-pointer select-none"
                 title="Fire blaster at enemies & bosses! (F / X / Enter key)"
               >
-                <div className="flex items-center gap-1 font-black text-[11px] sm:text-[12px] tracking-wide text-white">
+                <div className="flex items-center gap-1 font-black text-[10px] sm:text-[11px] tracking-wide text-white">
                   <Crosshair weight="bold" className="text-cyan-200 text-xs shrink-0" />
                   <span>FIRE</span>
                 </div>
-                <span className="text-[7.5px] sm:text-[8px] font-bold text-cyan-200/80 tracking-widest uppercase">
+                <span className="text-[7px] sm:text-[7.5px] font-bold text-cyan-200/80 tracking-widest uppercase">
                   BLAST
                 </span>
               </button>
             </div>
 
-            {/* Button 4: BIOME / RETRY Keycap */}
-            <div className="key-socket-dark !p-0.5 sm:!p-1 !rounded-2xl">
+            {/* Button 4: Game Mode Toggle (CAMPAIGN QUEST / CASUAL) */}
+            <div className="key-socket-dark !p-0.5 !rounded-xl">
               <button
                 type="button"
-                onClick={handleRetryClick}
-                className="key-cap text-slate-800 font-bold w-full py-2 sm:py-2.5 rounded-xl font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 cursor-pointer select-none"
-                title="Skip to Next Biome or Restart Run"
+                onClick={handleToggleGameMode}
+                className="key-cap text-slate-800 font-bold w-full py-2 sm:py-2.5 rounded-lg font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 cursor-pointer select-none"
+                title="Toggle between Campaign (Combat & Bosses) and Casual Mode"
               >
-                <div className="flex items-center gap-1 font-black text-[10px] sm:text-[11px] tracking-tight text-slate-800">
-                  <ArrowClockwise weight="bold" className="text-xs text-sky-600 shrink-0" />
-                  <span>BIOME</span>
+                <div className="flex items-center gap-0.5 font-black text-[9.5px] sm:text-[10px] tracking-tight text-slate-800">
+                  <Sword weight="bold" className={`text-xs shrink-0 ${gameMode === 'campaign' ? 'text-emerald-600' : 'text-purple-600'}`} />
+                  <span>{gameMode === 'campaign' ? 'QUEST' : 'CASUAL'}</span>
                 </div>
-                <span className="text-[7.5px] sm:text-[8px] font-bold text-slate-500 tracking-widest uppercase">
-                  NEXT
+                <span className="text-[7px] sm:text-[7.5px] font-bold text-slate-500 tracking-widest uppercase">
+                  {gameMode === 'campaign' ? 'STORY' : 'RELAX'}
+                </span>
+              </button>
+            </div>
+
+            {/* Button 5: Dedicated RESET / RETRY Keycap */}
+            <div className="key-socket-dark !p-0.5 !rounded-xl">
+              <button
+                type="button"
+                onClick={handleResetClick}
+                className="key-cap text-slate-800 font-bold w-full py-2 sm:py-2.5 rounded-lg font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 cursor-pointer select-none"
+                title="Restart Run or Reset Game"
+              >
+                <div className="flex items-center gap-1 font-black text-[9.5px] sm:text-[10.5px] tracking-tight text-slate-800">
+                  <ArrowClockwise weight="bold" className="text-xs text-sky-600 shrink-0" />
+                  <span>RESET</span>
+                </div>
+                <span className="text-[7px] sm:text-[7.5px] font-bold text-slate-500 tracking-widest uppercase">
+                  RETRY
                 </span>
               </button>
             </div>

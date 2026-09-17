@@ -484,4 +484,46 @@ export function playBossDefeated() {
   } catch (_) {}
 }
 
+// Final Game Grand Victory Fanfare
+export function playVictoryFanfare() {
+  if (typeof window === 'undefined' || soundMuted) return
+  try {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext
+      if (!AudioContext) return
+      audioCtx = new AudioContext()
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+
+    const now = audioCtx.currentTime
+    // Celebratory brass-like chiptune chords
+    const notes = [
+      { f: 523.25, t: 0, d: 0.2 },     // C5
+      { f: 659.25, t: 0.15, d: 0.2 },  // E5
+      { f: 783.99, t: 0.3, d: 0.2 },   // G5
+      { f: 1046.5, t: 0.45, d: 0.35 }, // C6
+      { f: 880.0,  t: 0.8, d: 0.2 },   // A5
+      { f: 987.77, t: 1.0, d: 0.2 },   // B5
+      { f: 1046.5, t: 1.2, d: 0.7 },   // C6 long sustain
+      { f: 1318.5, t: 1.2, d: 0.7 },   // E6 harmony
+      { f: 1567.98, t: 1.2, d: 0.7 },  // G6 high sparkle
+    ]
+
+    notes.forEach((n) => {
+      const osc = audioCtx.createOscillator()
+      const gain = audioCtx.createGain()
+      const start = now + n.t
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(n.f, start)
+      gain.gain.setValueAtTime(0.14 * masterVolume, start)
+      gain.gain.exponentialRampToValueAtTime(0.001, start + n.d)
+      osc.connect(gain)
+      gain.connect(audioCtx.destination)
+      osc.start(start)
+      osc.stop(start + n.d + 0.05)
+    })
+  } catch (_) {}
+}
+
+
 

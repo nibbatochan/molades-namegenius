@@ -10,6 +10,7 @@ import {
   playBossWarning,
   playBossHit,
   playBossDefeated,
+  playVictoryFanfare,
 } from '../utils/audio'
 
 // Curated list of 160+ high-quality brandable domain platforms
@@ -1144,7 +1145,7 @@ function renderProjectiles(ctx, projectiles) {
   ctx.restore()
 }
 
-// 2. 404 Glitch Bug Sprite
+// 2. 404 Glitch Bug Sprite (Ground Crawler - 1 HP, +10 pts)
 function renderGlitchBug(ctx, bug) {
   ctx.save()
   ctx.translate(Math.round(bug.x), Math.round(bug.y))
@@ -1189,7 +1190,7 @@ function renderGlitchBug(ctx, bug) {
   ctx.restore()
 }
 
-// 3. Squatter Drone Sprite
+// 3. Squatter Drone Sprite (Gap Hoverer - 2 HP, +20 pts)
 function renderSquatterDrone(ctx, drone) {
   ctx.save()
   ctx.translate(Math.round(drone.x), Math.round(drone.y))
@@ -1240,20 +1241,95 @@ function renderSquatterDrone(ctx, drone) {
   ctx.restore()
 }
 
-// 4. Epic Boss: Megabyte Squatter Mecha
-function renderBossMech(ctx, boss) {
-  if (!boss) return
+// 4. Cyber Packet Bat Sprite (Airborne Swooper - 2 HP, +25 pts)
+function renderPacketBat(ctx, bat) {
   ctx.save()
-  ctx.translate(Math.round(boss.x), Math.round(boss.y))
+  ctx.translate(Math.round(bat.x), Math.round(bat.y))
 
-  if (boss.hitFlash > 0) {
+  if (bat.hitFlash > 0) {
     ctx.fillStyle = '#ffffff'
-    roundRect(ctx, 0, 0, boss.w, boss.h, 6)
+    roundRect(ctx, 0, 0, bat.w, bat.h, 3)
     ctx.fill()
     ctx.restore()
     return
   }
 
+  const wingFlap = Math.sin((bat.frame || 0) * 0.35) * 6
+  // Flapping Cyber Wings
+  ctx.fillStyle = '#7c3aed'
+  ctx.beginPath()
+  ctx.moveTo(bat.w / 2, 8)
+  ctx.lineTo(-4, 4 - wingFlap)
+  ctx.lineTo(-2, 12)
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.moveTo(bat.w / 2, 8)
+  ctx.lineTo(bat.w + 4, 4 - wingFlap)
+  ctx.lineTo(bat.w + 2, 12)
+  ctx.fill()
+
+  // Bat Body
+  ctx.fillStyle = '#2e1065'
+  roundRect(ctx, 3, 3, bat.w - 6, bat.h - 6, 3)
+  ctx.fill()
+  ctx.strokeStyle = '#a855f7'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  // Glowing Cyan Eyes & Radar Dish
+  ctx.fillStyle = '#06b6d4'
+  ctx.fillRect(5, 5, 2, 2)
+  ctx.fillRect(bat.w - 7, 5, 2, 2)
+  ctx.fillStyle = '#ec4899'
+  ctx.fillRect(bat.w / 2 - 1, 1, 2, 3)
+
+  ctx.restore()
+}
+
+// 5. Malware Golem Sprite (Heavy Armored Walker - 3 HP, +35 pts)
+function renderMalwareGolem(ctx, golem) {
+  ctx.save()
+  ctx.translate(Math.round(golem.x), Math.round(golem.y))
+
+  if (golem.hitFlash > 0) {
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, 0, 0, golem.w, golem.h, 4)
+    ctx.fill()
+    ctx.restore()
+    return
+  }
+
+  // Stomping hydraulic legs
+  const legOffset = Math.sin((golem.frame || 0) * 0.25) * 2
+  ctx.fillStyle = '#334155'
+  ctx.fillRect(2, golem.h - 4 + legOffset, 5, 5)
+  ctx.fillRect(golem.w - 7, golem.h - 4 - legOffset, 5, 5)
+
+  // Obsidian Armored Torso
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, 1, 2, golem.w - 2, golem.h - 6, 4)
+  ctx.fill()
+  ctx.strokeStyle = '#ef4444'
+  ctx.lineWidth = 1.2
+  ctx.stroke()
+
+  // Red Thermal Core & Eye Slot
+  ctx.fillStyle = '#ef4444'
+  ctx.fillRect(4, 5, golem.w - 8, 3)
+  ctx.fillStyle = '#f59e0b'
+  ctx.fillRect(golem.w / 2 - 2, 10, 4, 4)
+
+  // Steel Shoulder Spikes
+  ctx.fillStyle = '#94a3b8'
+  ctx.fillRect(0, 1, 3, 3)
+  ctx.fillRect(golem.w - 3, 1, 3, 3)
+
+  ctx.restore()
+}
+
+// 6. Boss 1: Megabyte Squatter Mecha (1000 pts - Tier 1)
+function renderBossMech(ctx, boss) {
   // Animated Twin Rocket Jet Exhaust
   const flameLen = 6 + Math.random() * 8
   ctx.fillStyle = '#f97316'
@@ -1314,40 +1390,285 @@ function renderBossMech(ctx, boss) {
   for (let gy = 26; gy <= 32; gy += 3) {
     ctx.fillRect(14, gy, boss.w - 28, 1.5)
   }
+}
+
+// 7. Boss 2: Phishing Hydra (1250 pts - Tier 2)
+function renderPhishingHydra(ctx, boss) {
+  const time = Date.now() * 0.005
+  // Undulating 3 Serpentine Heads
+  for (let h = 0; h < 3; h++) {
+    const headOffset = Math.sin(time + h * 1.8) * 8
+    const hx = 6 + h * 16
+    const hy = 12 + headOffset
+
+    // Coiling Serpent Body
+    ctx.fillStyle = '#064e3b'
+    ctx.beginPath()
+    ctx.arc(hx, hy + 18, 7, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Hydra Head
+    ctx.fillStyle = '#10b981'
+    roundRect(ctx, hx - 6, hy, 12, 14, 4)
+    ctx.fill()
+    ctx.strokeStyle = '#022c22'
+    ctx.lineWidth = 1
+    ctx.stroke()
+
+    // Glowing Venom Fangs & Eye
+    ctx.fillStyle = '#a7f3d0'
+    ctx.fillRect(hx - 4, hy + 3, 2, 3)
+    ctx.fillRect(hx + 2, hy + 3, 2, 3)
+    ctx.fillStyle = '#ec4899'
+    ctx.fillRect(hx - 2, hy + 10, 4, 3)
+  }
+
+  // Base Toxic Bio-Generator
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, 2, boss.h - 16, boss.w - 4, 16, 4)
+  ctx.fill()
+  ctx.strokeStyle = '#10b981'
+  ctx.lineWidth = 1.2
+  ctx.stroke()
+}
+
+// 8. Boss 3: DDoS Swarm Titan (1500 pts - Tier 3)
+function renderDDoSTitan(ctx, boss) {
+  // Heavy Hexagonal Juggernaut
+  ctx.fillStyle = '#1e1b4b'
+  roundRect(ctx, 4, 4, boss.w - 8, boss.h - 8, 6)
+  ctx.fill()
+  ctx.strokeStyle = '#8b5cf6'
+  ctx.lineWidth = 1.5
+  ctx.stroke()
+
+  // Rotating Forcefield Shield Grid
+  const shieldRot = (Date.now() * 0.003) % (Math.PI * 2)
+  ctx.strokeStyle = 'rgba(139, 92, 246, 0.65)'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.arc(boss.w / 2, boss.h / 2, boss.w * 0.55, shieldRot, shieldRot + Math.PI)
+  ctx.stroke()
+
+  // Tri-Rocket Battery Tubes
+  ctx.fillStyle = '#6366f1'
+  ctx.fillRect(-3, 8, 8, 6)
+  ctx.fillRect(-3, 18, 8, 6)
+  ctx.fillRect(-3, 28, 8, 6)
+
+  // Central Overload Core
+  ctx.fillStyle = '#a855f7'
+  roundRect(ctx, 16, 12, 16, 18, 3)
+  ctx.fill()
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(20, 16, 8, 10)
+}
+
+// 9. Boss 4: DNS Hijacker Prime (2500 pts - Tier 4)
+function renderDNSSaucer(ctx, boss) {
+  // Teleport Warp Aura
+  const warpPulse = Math.sin(Date.now() * 0.01) * 0.3 + 0.7
+  ctx.strokeStyle = `rgba(6, 182, 212, ${warpPulse})`
+  ctx.lineWidth = 1.5
+  ctx.beginPath()
+  ctx.ellipse(boss.w / 2, boss.h / 2, boss.w * 0.55, boss.h * 0.35, 0, 0, Math.PI * 2)
+  ctx.stroke()
+
+  // Sleek Aerodynamic Flying Saucer
+  ctx.fillStyle = '#0f172a'
+  ctx.beginPath()
+  ctx.ellipse(boss.w / 2, boss.h / 2, boss.w * 0.48, boss.h * 0.28, 0, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.strokeStyle = '#06b6d4'
+  ctx.lineWidth = 1.5
+  ctx.stroke()
+
+  // Cockpit Dome & Scanning Laser
+  ctx.fillStyle = '#06b6d4'
+  ctx.beginPath()
+  ctx.arc(boss.w / 2, boss.h / 2 - 4, 10, Math.PI, 0)
+  ctx.fill()
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(boss.w / 2 - 3, boss.h / 2 - 8, 6, 4)
+
+  // Ventral Laser Emitter
+  ctx.fillStyle = '#38bdf8'
+  ctx.fillRect(boss.w / 2 - 4, boss.h / 2 + 6, 8, 4)
+}
+
+// 10. Boss 5: Ransomware Dreadnought (3500 pts - Tier 5)
+function renderRansomDreadnought(ctx, boss) {
+  // Triple Heavy Thrusters
+  const flameL = 8 + Math.random() * 8
+  ctx.fillStyle = '#f59e0b'
+  ctx.fillRect(boss.w - 6, 8, flameL, 6)
+  ctx.fillRect(boss.w - 6, 18, flameL + 4, 8)
+  ctx.fillRect(boss.w - 6, 28, flameL, 6)
+
+  // Obsidian Armor Battleship Chassis
+  ctx.fillStyle = '#020617'
+  roundRect(ctx, 2, 4, boss.w - 8, boss.h - 8, 6)
+  ctx.fill()
+  ctx.strokeStyle = '#ea580c'
+  ctx.lineWidth = 1.8
+  ctx.stroke()
+
+  // Firewall Grid Cells
+  ctx.fillStyle = '#ea580c'
+  for (let fx = 8; fx < boss.w - 16; fx += 8) {
+    for (let fy = 10; fy < boss.h - 14; fy += 8) {
+      ctx.fillRect(fx, fy, 5, 5)
+    }
+  }
+
+  // Heavy Forward Cannon Nose
+  ctx.fillStyle = '#451a03'
+  ctx.fillRect(-6, boss.h / 2 - 5, 10, 10)
+  ctx.fillStyle = '#f59e0b'
+  ctx.fillRect(-8, boss.h / 2 - 2, 4, 4)
+}
+
+// 11. Boss 6: Zero-Day Overlord (Final Boss - 4500 pts)
+function renderZeroDayOverlord(ctx, boss) {
+  const time = Date.now() * 0.006
+  // Transcendent Neon Wings
+  const wingSpread = Math.sin(time) * 6
+  ctx.fillStyle = 'rgba(236, 72, 153, 0.65)'
+  ctx.beginPath()
+  ctx.moveTo(boss.w / 2, boss.h / 2)
+  ctx.lineTo(-12, -6 - wingSpread)
+  ctx.lineTo(-4, boss.h + 8)
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.moveTo(boss.w / 2, boss.h / 2)
+  ctx.lineTo(boss.w + 12, -6 - wingSpread)
+  ctx.lineTo(boss.w + 4, boss.h + 8)
+  ctx.fill()
+
+  // Halo Ring
+  ctx.strokeStyle = '#fbbf24'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.arc(boss.w / 2, 6, 12, 0, Math.PI * 2)
+  ctx.stroke()
+
+  // Cyber Deity Core
+  ctx.fillStyle = '#090d16'
+  roundRect(ctx, 6, 8, boss.w - 12, boss.h - 12, 8)
+  ctx.fill()
+  ctx.strokeStyle = '#ec4899'
+  ctx.lineWidth = 2
+  ctx.stroke()
+
+  // Blazing Cosmic Eye
+  ctx.fillStyle = '#ec4899'
+  ctx.beginPath()
+  ctx.arc(boss.w / 2, boss.h / 2, 8, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = '#ffffff'
+  ctx.beginPath()
+  ctx.arc(boss.w / 2, boss.h / 2, 4, 0, Math.PI * 2)
+  ctx.fill()
+}
+
+// Unified Boss Sprite Dispatcher
+function renderBoss(ctx, boss) {
+  if (!boss) return
+  ctx.save()
+  ctx.translate(Math.round(boss.x), Math.round(boss.y))
+
+  if (boss.hitFlash > 0) {
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, 0, 0, boss.w, boss.h, 6)
+    ctx.fill()
+    ctx.restore()
+    return
+  }
+
+  if (boss.type === 'phishing_hydra') {
+    renderPhishingHydra(ctx, boss)
+  } else if (boss.type === 'ddos_titan') {
+    renderDDoSTitan(ctx, boss)
+  } else if (boss.type === 'dns_saucer') {
+    renderDNSSaucer(ctx, boss)
+  } else if (boss.type === 'ransom_dreadnought') {
+    renderRansomDreadnought(ctx, boss)
+  } else if (boss.type === 'zero_day_overlord') {
+    renderZeroDayOverlord(ctx, boss)
+  } else {
+    renderBossMech(ctx, boss)
+  }
 
   ctx.restore()
 
-  // Render Boss Projectiles / 404 Glitch Orbs
+  // Render Boss Projectiles based on archetype
   if (boss.bullets && boss.bullets.length > 0) {
     ctx.save()
     for (let i = 0; i < boss.bullets.length; i++) {
       const b = boss.bullets[i]
       ctx.save()
       ctx.translate(Math.round(b.x), Math.round(b.y))
-      ctx.fillStyle = 'rgba(239, 68, 68, 0.35)'
-      ctx.beginPath()
-      ctx.arc(0, 0, b.size + 3, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.fillStyle = '#ef4444'
-      ctx.beginPath()
-      ctx.arc(0, 0, b.size, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.fillStyle = '#ffffff'
-      ctx.font = 'bold 7px monospace'
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillText('404', 0, 0)
+      
+      if (b.type === 'venom') {
+        ctx.fillStyle = '#10b981'
+        ctx.beginPath()
+        ctx.arc(0, 0, b.size + 1, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#a7f3d0'
+        ctx.fillRect(-2, -2, 4, 4)
+      } else if (b.type === 'rocket') {
+        ctx.fillStyle = '#8b5cf6'
+        roundRect(ctx, -b.size, -2, b.size * 2, 5, 2)
+        ctx.fill()
+        ctx.fillStyle = '#fbbf24'
+        ctx.fillRect(-b.size + 2, -1, 3, 3)
+      } else if (b.type === 'beam') {
+        ctx.fillStyle = '#06b6d4'
+        roundRect(ctx, -8, -2, 16, 4, 2)
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(-5, -1, 10, 2)
+      } else if (b.type === 'spike') {
+        ctx.fillStyle = '#ea580c'
+        roundRect(ctx, -4, -4, 8, 8, 2)
+        ctx.fill()
+        ctx.fillStyle = '#fef08a'
+        ctx.fillRect(-2, -2, 4, 4)
+      } else if (b.type === 'star') {
+        ctx.fillStyle = '#ec4899'
+        ctx.beginPath()
+        ctx.arc(0, 0, b.size + 2, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(-2, -2, 4, 4)
+      } else {
+        // Standard 404 Glitch Orb
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.35)'
+        ctx.beginPath()
+        ctx.arc(0, 0, b.size + 3, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#ef4444'
+        ctx.beginPath()
+        ctx.arc(0, 0, b.size, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.font = 'bold 7px monospace'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('404', 0, 0)
+      }
       ctx.restore()
     }
     ctx.restore()
   }
 }
 
-// 5. Boss Health Bar Overlay HUD
+// Boss Health Bar Overlay HUD
 function renderBossHud(ctx, boss, w) {
   if (!boss || boss.hp <= 0) return
-  const barW = 190
-  const barH = 13
+  const barW = 200
+  const barH = 14
   const barX = (w - barW) / 2
   const barY = 28
 
@@ -1355,8 +1676,8 @@ function renderBossHud(ctx, boss, w) {
   ctx.fillStyle = '#090d16'
   roundRect(ctx, barX - 2, barY - 1, barW + 4, barH + 2, 4)
   ctx.fill()
-  ctx.strokeStyle = '#ef4444'
-  ctx.lineWidth = 1.2
+  ctx.strokeStyle = boss.color || '#ef4444'
+  ctx.lineWidth = 1.4
   ctx.stroke()
 
   const pct = Math.max(0, Math.min(1, boss.hp / boss.maxHp))
@@ -1378,10 +1699,21 @@ function renderBossHud(ctx, boss, w) {
   ctx.restore()
 }
 
+const BOSS_MILESTONES = [
+  { score: 1000, name: 'MEGABYTE SQUATTER', type: 'squatter_mech', hp: 16, reward: 100, color: '#ef4444' },
+  { score: 1250, name: 'PHISHING HYDRA', type: 'phishing_hydra', hp: 24, reward: 125, color: '#10b981' },
+  { score: 1500, name: 'DDoS SWARM TITAN', type: 'ddos_titan', hp: 32, reward: 150, color: '#8b5cf6' },
+  { score: 2500, name: 'DNS HIJACKER PRIME', type: 'dns_saucer', hp: 42, reward: 200, color: '#06b6d4' },
+  { score: 3500, name: 'RANSOMWARE DREADNOUGHT', type: 'ransom_dreadnought', hp: 54, reward: 250, color: '#f59e0b' },
+  { score: 4500, name: 'ZERO-DAY OVERLORD', type: 'zero_day_overlord', hp: 70, reward: 500, color: '#ec4899', isFinal: true },
+]
+
 const DomainGameEngine = forwardRef(function DomainGameEngine(
   {
     isAutoMode = true,
+    gameMode = 'campaign',
     onToggleAutoMode,
+    onToggleGameMode,
     soundEnabled = true,
     onMilestone,
   },
@@ -1411,12 +1743,15 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
 
   // Curated list of 160+ high-quality brandable domain platforms
   const BASE_SPEED = 1.35
-  const BIOME_DURATION_MS = 20000 // Exactly 20.000 seconds per biome (slower, relaxed panorama)
-  const PAN_DURATION_MS = 18000   // 18.0 seconds to pan the full 2016px panorama
-  const TRANSITION_DURATION_MS = 2000 // 2.0 seconds smooth velvet crossfade
+  const BIOME_DURATION_MS = 28000 // In Campaign mode, 28.000s slow cinematic panorama (20.000s in Casual)
+  const PAN_DURATION_MS = 25500
+  const TRANSITION_DURATION_MS = 2500
 
   const stateRef = useRef({
     gameState: isAutoMode ? 'PLAYING' : 'COUNTDOWN',
+    gameMode: gameMode || 'campaign',
+    bossIndex: 0,
+    bossesDefeated: 0,
     countdown: 3,
     countdownTimer: 60,
     score: 0,
@@ -2013,8 +2348,8 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         cracks: generateCracks(width, 42),
       })
 
-      // Floating Domain Extension Life Badge / Weapon Pickup (32% spawn rate)
-      if (Math.random() < 0.32 && s.powerups.length < 2) {
+      // Floating Domain Extension Life Badge / Weapon Pickup (30% spawn rate)
+      if (Math.random() < 0.30 && s.powerups.length < 2) {
         const pwr = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)]
         s.powerups.push({
           x: spawnX + width / 2 - 18,
@@ -2030,73 +2365,117 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         })
       }
 
-      // 24% chance of 404 Glitch Bug crawling on platform (when no boss)
-      if (!s.boss && Math.random() < 0.24 && s.enemies.length < 3) {
-        s.enemies.push({
-          type: 'glitch_bug',
-          x: spawnX + width * 0.4,
-          y: targetBaseY - 14,
-          w: 16,
-          h: 12,
-          vx: 0.6,
-          patrolLeft: spawnX + 8,
-          patrolRight: spawnX + width - 18,
-          hp: 1,
-          maxHp: 1,
-          frame: Math.random() * 20,
-          hitFlash: 0,
-        })
-      }
-
-      // 16% chance of Squatter Drone hovering in gap (when no boss)
-      if (!s.boss && Math.random() < 0.16 && s.enemies.length < 3) {
-        s.enemies.push({
-          type: 'squatter_drone',
-          x: spawnX - gap * 0.5,
-          y: targetBaseY - 45 - Math.random() * 20,
-          w: 18,
-          h: 18,
-          vx: 0,
-          vy: 0,
-          baseY: targetBaseY - 45,
-          bobAngle: Math.random() * Math.PI * 2,
-          hp: 2,
-          maxHp: 2,
-          frame: 0,
-          hitFlash: 0,
-        })
+      // In Campaign mode: spawn 4 common enemy archetypes (when no boss)
+      if (s.gameMode === 'campaign' && !s.boss && s.enemies.length < 3) {
+        const rand = Math.random()
+        if (rand < 0.22) {
+          // 1. 404 Glitch Bug (1 HP, +10 pts)
+          s.enemies.push({
+            type: 'glitch_bug',
+            x: spawnX + width * 0.4,
+            y: targetBaseY - 14,
+            w: 16,
+            h: 12,
+            vx: 0.6,
+            patrolLeft: spawnX + 8,
+            patrolRight: spawnX + width - 18,
+            hp: 1,
+            maxHp: 1,
+            scoreVal: 10,
+            frame: Math.random() * 20,
+            hitFlash: 0,
+          })
+        } else if (rand < 0.36) {
+          // 2. Squatter Drone (2 HP, +20 pts)
+          s.enemies.push({
+            type: 'squatter_drone',
+            x: spawnX - gap * 0.5,
+            y: targetBaseY - 45 - Math.random() * 20,
+            w: 18,
+            h: 18,
+            vx: 0,
+            vy: 0,
+            baseY: targetBaseY - 45,
+            bobAngle: Math.random() * Math.PI * 2,
+            hp: 2,
+            maxHp: 2,
+            scoreVal: 20,
+            frame: 0,
+            hitFlash: 0,
+          })
+        } else if (rand < 0.48) {
+          // 3. Cyber Packet Bat (2 HP, +25 pts)
+          s.enemies.push({
+            type: 'packet_bat',
+            x: spawnX + width * 0.5,
+            y: 65 + Math.random() * 30,
+            w: 20,
+            h: 14,
+            vx: -0.8,
+            baseY: 65 + Math.random() * 30,
+            hp: 2,
+            maxHp: 2,
+            scoreVal: 25,
+            frame: Math.random() * 20,
+            hitFlash: 0,
+          })
+        } else if (rand < 0.58) {
+          // 4. Malware Golem (3 HP, +35 pts)
+          s.enemies.push({
+            type: 'malware_golem',
+            x: spawnX + width * 0.5,
+            y: targetBaseY - 20,
+            w: 22,
+            h: 20,
+            vx: -0.35,
+            patrolLeft: spawnX + 8,
+            patrolRight: spawnX + width - 24,
+            hp: 3,
+            maxHp: 3,
+            scoreVal: 35,
+            frame: 0,
+            hitFlash: 0,
+          })
+        }
       }
     }
 
     // Weapon cooldown decrement
     if (s.shootCooldown > 0) s.shootCooldown--
 
-    // Boss Encounter trigger every 200 score (at score 200, 400, 600...)
-    if (s.score >= 200 && Math.floor(s.score / 200) > s.lastBossMilestone && !s.boss) {
-      s.lastBossMilestone = Math.floor(s.score / 200)
-      const bossHp = 16 + Math.min(24, s.lastBossMilestone * 4)
-      s.boss = {
-        active: true,
-        name: 'MEGABYTE SQUATTER',
-        x: 395,
-        targetX: 285,
-        y: 95,
-        baseY: 95,
-        w: 48,
-        h: 44,
-        hp: bossHp,
-        maxHp: bossHp,
-        floatAngle: 0,
-        attackTimer: 0,
-        phase: 'enter',
-        hitFlash: 0,
-        bullets: [],
-        deathTimer: 0,
+    // Boss Encounter trigger from progressive milestones (1000, 1250, 1500, 2500, 3500, 4500)
+    if (s.gameMode === 'campaign' && !s.boss && (s.bossIndex ?? 0) < BOSS_MILESTONES.length) {
+      const targetBoss = BOSS_MILESTONES[s.bossIndex ?? 0]
+      if (s.score >= targetBoss.score) {
+        s.boss = {
+          active: true,
+          name: targetBoss.name,
+          type: targetBoss.type,
+          x: 395,
+          targetX: 275,
+          y: 95,
+          baseY: 95,
+          w: 48,
+          h: 44,
+          hp: targetBoss.hp,
+          maxHp: targetBoss.hp,
+          floatAngle: 0,
+          attackTimer: 0,
+          phase: 'enter',
+          hitFlash: 0,
+          bullets: [],
+          deathTimer: 0,
+          reward: targetBoss.reward,
+          isFinal: Boolean(targetBoss.isFinal),
+          color: targetBoss.color,
+          teleportTimer: 0,
+        }
+        s.bossIndex = (s.bossIndex ?? 0) + 1
+        if (soundEnabledRef.current) playBossWarning()
+        s.bubbleText = `⚠️ BOSS ALERT: ${targetBoss.name}!`
+        s.bubbleTimer = 90
+        setBubbleText(s.bubbleText)
       }
-      if (soundEnabledRef.current) playBossWarning()
-      s.bubbleText = '⚠️ BOSS ALERT: MEGABYTE SQUATTER!'
-      s.bubbleTimer = 90
-      setBubbleText(s.bubbleText)
     }
 
     // Boss State Machine
@@ -2112,62 +2491,151 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         }
       } else if (boss.phase === 'battle') {
         boss.floatAngle += 0.04
-        boss.y = boss.baseY + Math.sin(boss.floatAngle) * 20
+        boss.y = boss.baseY + Math.sin(boss.floatAngle) * 18
 
         boss.attackTimer++
-        if (boss.attackTimer >= 75) {
-          boss.attackTimer = 0
-          // Fire 404 Glitch Bullet towards player
-          const dy = (cat.y + cat.h / 2) - (boss.y + 20)
-          const dx = (cat.x + cat.w / 2) - (boss.x + 10)
-          const angle = Math.atan2(dy, dx)
-          boss.bullets.push({
-            x: boss.x + 6,
-            y: boss.y + 20,
-            vx: Math.cos(angle) * 3.4,
-            vy: Math.sin(angle) * 3.4,
-            size: 6,
-            life: 110,
-          })
-          if (soundEnabledRef.current) playLaserShoot('plasma')
+
+        if (boss.type === 'phishing_hydra') {
+          // Twin undulating venom sparks every 65 frames
+          if (boss.attackTimer >= 65) {
+            boss.attackTimer = 0
+            boss.bullets.push(
+              { x: boss.x + 4, y: boss.y + 10, vx: -3.2, vy: -0.8, type: 'venom', size: 5, life: 120 },
+              { x: boss.x + 4, y: boss.y + 24, vx: -3.2, vy: 0.8, type: 'venom', size: 5, life: 120 }
+            )
+            if (soundEnabledRef.current) playLaserShoot('plasma')
+          }
+        } else if (boss.type === 'ddos_titan') {
+          // Tri-rocket barrage every 80 frames
+          if (boss.attackTimer >= 80) {
+            boss.attackTimer = 0
+            boss.bullets.push(
+              { x: boss.x + 2, y: boss.y + 10, vx: -3.4, vy: -0.9, type: 'rocket', size: 5, life: 110 },
+              { x: boss.x + 2, y: boss.y + 20, vx: -3.8, vy: 0, type: 'rocket', size: 5, life: 110 },
+              { x: boss.x + 2, y: boss.y + 30, vx: -3.4, vy: 0.9, type: 'rocket', size: 5, life: 110 }
+            )
+            if (soundEnabledRef.current) playLaserShoot('missile')
+          }
+        } else if (boss.type === 'dns_saucer') {
+          // High speed horizontal beam + warp every 60 frames
+          if (boss.attackTimer >= 60) {
+            boss.attackTimer = 0
+            boss.bullets.push({
+              x: boss.x - 2,
+              y: boss.y + boss.h / 2,
+              vx: -5.2,
+              vy: 0,
+              type: 'beam',
+              size: 5,
+              life: 90,
+            })
+            boss.baseY = 60 + Math.random() * 80
+            if (soundEnabledRef.current) playLaserShoot('railgun')
+          }
+        } else if (boss.type === 'ransom_dreadnought') {
+          // Firewall spikes + tracking mine every 70 frames
+          if (boss.attackTimer >= 70) {
+            boss.attackTimer = 0
+            boss.bullets.push(
+              { x: boss.x - 4, y: boss.y + 12, vx: -3.6, vy: -0.6, type: 'spike', size: 6, life: 110 },
+              { x: boss.x - 4, y: boss.y + 28, vx: -3.6, vy: 0.6, type: 'spike', size: 6, life: 110 }
+            )
+            if (soundEnabledRef.current) playLaserShoot('plasma')
+          }
+        } else if (boss.type === 'zero_day_overlord') {
+          // 5-way cosmic star burst every 55 frames
+          if (boss.attackTimer >= 55) {
+            boss.attackTimer = 0
+            for (let a = -2; a <= 2; a++) {
+              boss.bullets.push({
+                x: boss.x,
+                y: boss.y + boss.h / 2,
+                vx: -3.5,
+                vy: a * 1.1,
+                type: 'star',
+                size: 6,
+                life: 110,
+              })
+            }
+            if (soundEnabledRef.current) playLaserShoot('spread')
+          }
+        } else {
+          // Standard Megabyte Squatter 404 Glitch Orb
+          if (boss.attackTimer >= 75) {
+            boss.attackTimer = 0
+            const dy = (cat.y + cat.h / 2) - (boss.y + 20)
+            const dx = (cat.x + cat.w / 2) - (boss.x + 10)
+            const angle = Math.atan2(dy, dx)
+            boss.bullets.push({
+              x: boss.x + 6,
+              y: boss.y + 20,
+              vx: Math.cos(angle) * 3.4,
+              vy: Math.sin(angle) * 3.4,
+              type: 'glitch_orb',
+              size: 6,
+              life: 110,
+            })
+            if (soundEnabledRef.current) playLaserShoot('plasma')
+          }
         }
       } else if (boss.phase === 'death') {
         boss.deathTimer++
         s.screenshake = 4
         if (boss.deathTimer % 3 === 0) {
-          for (let k = 0; k < 6; k++) {
+          for (let k = 0; k < 7; k++) {
             s.particles.push({
               x: boss.x + Math.random() * boss.w,
               y: boss.y + Math.random() * boss.h,
-              vx: (Math.random() - 0.5) * 5,
-              vy: (Math.random() - 0.5) * 5 - 1.5,
-              color: ['#fbbf24', '#f97316', '#ef4444', '#06b6d4'][k % 4],
-              life: 25,
+              vx: (Math.random() - 0.5) * 6,
+              vy: (Math.random() - 0.5) * 6 - 1.5,
+              color: ['#fbbf24', '#f97316', '#ef4444', '#06b6d4', '#ec4899'][k % 5],
+              life: 28,
               size: 3.5,
             })
           }
         }
         if (boss.deathTimer >= 35) {
-          if (soundEnabledRef.current) playBossDefeated()
-          s.score += 100
-          setScore(s.score)
-          // Guaranteed life badge drop!
-          s.powerups.push({
-            x: Math.min(220, boss.x - 30),
-            y: 140,
-            w: 36,
-            h: 22,
-            label: '.COM',
-            color: '#ea580c',
-            score: 100,
-            weapon: null,
-            bobAngle: 0,
-          })
-          s.bubbleText = '🏆 BOSS DESTROYED! +100 PTS!'
-          s.bubbleTimer = 90
-          setBubbleText(s.bubbleText)
-          s.boss = null
-          s.screenshake = 0
+          if (boss.isFinal) {
+            // Final Boss Overlord Defeated -> VICTORY!
+            if (soundEnabledRef.current) playVictoryFanfare()
+            s.gameState = 'VICTORY'
+            s.boss = null
+            s.screenshake = 0
+            s.bossesDefeated = 6
+            s.score += boss.reward
+            setScore(s.score)
+            if (s.score > s.highScore) {
+              s.highScore = s.score
+              setHighScore(s.highScore)
+              try {
+                localStorage.setItem('ng_tamagotchi_highscore', s.score.toString())
+              } catch (_) {}
+            }
+            if (onMilestone) onMilestone(s.score)
+          } else {
+            // Progressive Boss Defeated
+            if (soundEnabledRef.current) playBossDefeated()
+            s.score += boss.reward
+            setScore(s.score)
+            s.bossesDefeated = (s.bossesDefeated || 0) + 1
+            // Guaranteed life badge drop!
+            s.powerups.push({
+              x: Math.min(220, boss.x - 30),
+              y: 140,
+              w: 36,
+              h: 22,
+              label: '.COM',
+              color: '#ea580c',
+              score: 100,
+              weapon: null,
+              bobAngle: 0,
+            })
+            s.bubbleText = `🏆 ${boss.name} DESTROYED! +${boss.reward} PTS!`
+            s.bubbleTimer = 90
+            setBubbleText(s.bubbleText)
+            s.boss = null
+            s.screenshake = 0
+          }
         }
       }
 
@@ -2236,6 +2704,18 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         en.x -= s.speed
         en.bobAngle = (en.bobAngle || 0) + 0.05
         en.y = en.baseY + Math.sin(en.bobAngle) * 8
+      } else if (en.type === 'packet_bat') {
+        en.x += en.vx - s.speed * 0.5
+        en.y = en.baseY + Math.sin(en.frame * 0.1) * 14
+      } else if (en.type === 'malware_golem') {
+        en.x += en.vx - s.speed
+        en.patrolLeft -= s.speed
+        en.patrolRight -= s.speed
+        if (en.x <= en.patrolLeft) {
+          en.vx = Math.abs(en.vx)
+        } else if (en.x >= en.patrolRight) {
+          en.vx = -Math.abs(en.vx)
+        }
       }
 
       if (en.x < -30) {
@@ -2253,10 +2733,11 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         cat.y + cat.h > en.y
       ) {
         // If cat landed on top of bug -> stomp defeat!
-        if (cat.vy > 0 && cat.y + cat.h - cat.vy <= en.y + 6) {
+        if (cat.vy > 0 && cat.y + cat.h - cat.vy <= en.y + 7) {
           cat.vy = -6.5
           if (soundEnabledRef.current) playEnemyExplode()
-          s.score += 20
+          const scoreAdd = en.scoreVal || (en.type === 'malware_golem' ? 35 : en.type === 'packet_bat' ? 25 : en.type === 'squatter_drone' ? 20 : 10)
+          s.score += scoreAdd
           setScore(s.score)
           for (let k = 0; k < 12; k++) {
             s.particles.push({
@@ -2325,7 +2806,8 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           en.hitFlash = 5
           if (en.hp <= 0) {
             if (soundEnabledRef.current) playEnemyExplode()
-            s.score += en.type === 'squatter_drone' ? 30 : 15
+            const scoreVal = en.scoreVal || (en.type === 'malware_golem' ? 35 : en.type === 'packet_bat' ? 25 : en.type === 'squatter_drone' ? 20 : 10)
+            s.score += scoreVal
             setScore(s.score)
             for (let k = 0; k < 14; k++) {
               s.particles.push({
@@ -2333,7 +2815,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
                 y: en.y + en.h / 2,
                 vx: (Math.random() - 0.5) * 4.5,
                 vy: (Math.random() - 0.5) * 4.5,
-                color: en.type === 'squatter_drone' ? '#38bdf8' : '#34d399',
+                color: en.type === 'malware_golem' ? '#ef4444' : en.type === 'packet_bat' ? '#a855f7' : en.type === 'squatter_drone' ? '#38bdf8' : '#34d399',
                 life: 20,
                 size: 2.8,
               })
@@ -2839,7 +3321,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       drawThemedDomainCard(ctx, s.platforms[i], currentBiomeIdx, s.platforms[i].isFloating)
     }
 
-    // Enemies (404 Glitch Bugs & Squatter Drones)
+    // Enemies (404 Glitch Bugs, Squatter Drones, Packet Bats, Malware Golems)
     if (s.enemies && s.enemies.length > 0) {
       for (let i = 0; i < s.enemies.length; i++) {
         const en = s.enemies[i]
@@ -2847,13 +3329,17 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           renderGlitchBug(ctx, en)
         } else if (en.type === 'squatter_drone') {
           renderSquatterDrone(ctx, en)
+        } else if (en.type === 'packet_bat') {
+          renderPacketBat(ctx, en)
+        } else if (en.type === 'malware_golem') {
+          renderMalwareGolem(ctx, en)
         }
       }
     }
 
-    // Epic Boss Mech
+    // Epic Progressive Boss
     if (s.boss && s.boss.active) {
-      renderBossMech(ctx, s.boss)
+      renderBoss(ctx, s.boss)
     }
 
     // Floating Gear & Weapon Badges
@@ -2939,21 +3425,21 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
 
     // 1. High Score
     ctx.fillStyle = '#38bdf8'
-    ctx.font = 'bold 10px "JetBrains Mono", monospace'
+    ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
     ctx.textAlign = 'start'
     ctx.textBaseline = 'alphabetic'
-    ctx.fillText(`★ HI:${s.highScore}`, 7, 17)
+    ctx.fillText(`★HI:${s.highScore}`, 6, 17)
 
     // 2. Current Score
     ctx.fillStyle = '#facc15'
-    ctx.font = 'bold 10.5px "JetBrains Mono", monospace'
-    ctx.fillText(`SCORE:${s.score}`, 80, 17)
+    ctx.font = 'bold 10px "JetBrains Mono", monospace'
+    ctx.fillText(`PTS:${s.score}`, 72, 17)
 
     // 3. Lives Counter
     const curLives = Math.max(0, s.lives ?? 1)
     ctx.fillStyle = curLives > 1 ? '#f43f5e' : curLives === 1 ? '#fb923c' : '#94a3b8'
-    ctx.font = 'bold 10px "JetBrains Mono", monospace'
-    ctx.fillText(`❤️x${curLives}`, 164, 17)
+    ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
+    ctx.fillText(`❤️x${curLives}`, 148, 17)
 
     // 4. Equipped Weapon Indicator
     const weaponBadge =
@@ -2973,14 +3459,20 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         ? '#f97316'
         : '#94a3b8'
     ctx.fillStyle = weaponCol
-    ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
-    ctx.fillText(`${weaponBadge}`, 214, 17)
+    ctx.font = 'bold 9px "JetBrains Mono", monospace'
+    ctx.fillText(`${weaponBadge}`, 192, 17)
 
-    // 5. Biome Badge
+    // 5. Mode Badge (Campaign / Casual)
+    const isCamp = s.gameMode === 'campaign'
+    ctx.fillStyle = isCamp ? '#10b981' : '#a855f7'
+    ctx.font = 'bold 8.5px "JetBrains Mono", monospace'
+    ctx.fillText(isCamp ? 'QUEST' : 'CASUAL', 242, 17)
+
+    // 6. Biome Badge
     ctx.fillStyle = '#a78bfa'
-    ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
+    ctx.font = 'bold 9px "JetBrains Mono", monospace'
     ctx.textAlign = 'end'
-    ctx.fillText(`${b.badgeText || 'BIOME'}`, w - 8, 17)
+    ctx.fillText(`${b.badgeText || 'BIOME'}`, w - 6, 17)
     ctx.textAlign = 'start'
 
     // Boss Health Bar HUD
@@ -3107,6 +3599,110 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       ctx.textAlign = 'start'
       ctx.textBaseline = 'alphabetic'
     }
+
+    // Final Grand Victory Ending Overlay (All 6 Overlords Defeated)
+    if (s.gameState === 'VICTORY') {
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.94)'
+      ctx.fillRect(0, 0, w, h)
+
+      const boxW = 316
+      const boxH = 224
+      const boxX = (w - boxW) / 2
+      const boxY = (h - boxH) / 2
+
+      // Golden Trophy Plaque
+      ctx.save()
+      const goldGrad = ctx.createLinearGradient(boxX, boxY, boxX, boxY + boxH)
+      goldGrad.addColorStop(0, '#1e1b4b')
+      goldGrad.addColorStop(0.5, '#0f172a')
+      goldGrad.addColorStop(1, '#020617')
+      ctx.fillStyle = goldGrad
+      roundRect(ctx, boxX, boxY, boxW, boxH, 14)
+      ctx.fill()
+      ctx.strokeStyle = '#fbbf24'
+      ctx.lineWidth = 2.5
+      ctx.stroke()
+
+      // 4 Brass Rivets
+      ctx.fillStyle = '#f59e0b'
+      ctx.fillRect(boxX + 6, boxY + 6, 3, 3)
+      ctx.fillRect(boxX + boxW - 9, boxY + 6, 3, 3)
+      ctx.fillRect(boxX + 6, boxY + boxH - 9, 3, 3)
+      ctx.fillRect(boxX + boxW - 9, boxY + boxH - 9, 3, 3)
+
+      // Gold Trophy Icon
+      const tX = w / 2
+      const tY = boxY + 28
+      ctx.fillStyle = '#f59e0b'
+      roundRect(ctx, tX - 10, tY - 10, 20, 14, 2)
+      ctx.fill()
+      ctx.fillStyle = '#fbbf24'
+      ctx.fillRect(tX - 4, tY + 4, 8, 5)
+      ctx.fillRect(tX - 9, tY + 9, 18, 4)
+      ctx.strokeStyle = '#f59e0b'
+      ctx.lineWidth = 2
+      ctx.strokeRect(tX - 14, tY - 8, 4, 8)
+      ctx.strokeRect(tX + 10, tY - 8, 4, 8)
+
+      // Headline
+      ctx.fillStyle = '#fbbf24'
+      ctx.font = '800 13px "JetBrains Mono", monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText('★ VICTORY ACHIEVED! ★', w / 2, boxY + 60)
+
+      ctx.fillStyle = '#38bdf8'
+      ctx.font = '700 9.5px "JetBrains Mono", monospace'
+      ctx.fillText('THE DOMAIN METAVERSE IS SAVED!', w / 2, boxY + 74)
+
+      // Thank You Note in styled typography
+      ctx.fillStyle = '#f1f5f9'
+      ctx.font = '500 8.5px "JetBrains Mono", monospace'
+      ctx.fillText('All 6 Cyber Overlords Defeated.', w / 2, boxY + 92)
+      ctx.fillStyle = '#a78bfa'
+      ctx.font = 'italic 8px "JetBrains Mono", monospace'
+      ctx.fillText('Thank you for playing Arabella’s Domain Odyssey!', w / 2, boxY + 105)
+
+      // Run Stats Box
+      ctx.fillStyle = '#090d16'
+      roundRect(ctx, boxX + 16, boxY + 116, boxW - 32, 42, 6)
+      ctx.fill()
+      ctx.strokeStyle = '#334155'
+      ctx.lineWidth = 1
+      ctx.stroke()
+
+      ctx.font = 'bold 9px "JetBrains Mono", monospace'
+      ctx.textAlign = 'start'
+      ctx.fillStyle = '#94a3b8'
+      ctx.fillText('FINAL SCORE:', boxX + 26, boxY + 132)
+      ctx.textAlign = 'end'
+      ctx.fillStyle = '#fbbf24'
+      ctx.fillText(`${s.score} PTS`, boxX + boxW - 26, boxY + 132)
+
+      ctx.textAlign = 'start'
+      ctx.fillStyle = '#94a3b8'
+      ctx.fillText('OVERLORDS SLAIN:', boxX + 26, boxY + 148)
+      ctx.textAlign = 'end'
+      ctx.fillStyle = '#10b981'
+      ctx.fillText('6 / 6 [100%]', boxX + boxW - 26, boxY + 148)
+
+      // Play Again Action Button
+      ctx.fillStyle = '#059669'
+      roundRect(ctx, w / 2 - 75, boxY + 168, 150, 28, 6)
+      ctx.fill()
+      ctx.strokeStyle = '#34d399'
+      ctx.lineWidth = 1.5
+      ctx.stroke()
+
+      ctx.fillStyle = '#ffffff'
+      ctx.font = '700 11px "JetBrains Mono", monospace'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('★ PLAY AGAIN ★', w / 2, boxY + 182)
+
+      ctx.textAlign = 'start'
+      ctx.textBaseline = 'alphabetic'
+      ctx.restore()
+    }
   }
 
   useEffect(() => {
@@ -3131,11 +3727,14 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       if (delta > 200) delta = 200
       if (delta < 0) delta = 0
 
-      // Exact real-world millisecond timing for biomes (immune to 120Hz/144Hz/240Hz monitor rate)
+      // Dynamic millisecond timing for biomes based on mode (28s Campaign, 20s Casual)
+      const isCamp = stateRef.current.gameMode === 'campaign'
+      const curBiomeDur = isCamp ? 28000 : 20000
+
       stateRef.current.bgTimeMs =
-        (stateRef.current.bgTimeMs + delta) % (BIOME_DURATION_MS * BIOMES.length)
+        (stateRef.current.bgTimeMs + delta) % (curBiomeDur * BIOMES.length)
       stateRef.current.currentBiome =
-        Math.floor(stateRef.current.bgTimeMs / BIOME_DURATION_MS) % BIOMES.length
+        Math.floor(stateRef.current.bgTimeMs / curBiomeDur) % BIOMES.length
 
       // Fixed 60Hz physics accumulator
       physicsAccumulator += delta
@@ -3163,7 +3762,11 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         if (e.code === 'Space' || e.code === 'ArrowUp') {
           e.preventDefault()
         }
-        executeJump(true)
+        if (stateRef.current.gameState === 'GAMEOVER' || stateRef.current.gameState === 'VICTORY') {
+          resetGame(true)
+        } else {
+          executeJump(true)
+        }
       } else if (
         e.code === 'KeyF' ||
         e.code === 'KeyX' ||
@@ -3173,7 +3776,11 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         e.code === 'ShiftLeft' ||
         e.code === 'ShiftRight'
       ) {
-        executeShoot(true)
+        if (stateRef.current.gameState === 'GAMEOVER' || stateRef.current.gameState === 'VICTORY') {
+          resetGame(true)
+        } else {
+          executeShoot(true)
+        }
       }
     }
 
@@ -3190,10 +3797,14 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     <div
       onPointerDown={(e) => {
         e.preventDefault()
-        executeJump(true)
+        if (stateRef.current.gameState === 'GAMEOVER' || stateRef.current.gameState === 'VICTORY') {
+          resetGame(true)
+        } else {
+          executeJump(true)
+        }
       }}
       className="relative w-full overflow-hidden rounded-xl border border-slate-700 shadow-inner cursor-pointer select-none group"
-      title="Click anywhere to jump or switch to manual! (1-click mouse control)"
+      title="Click anywhere to jump, shoot, or restart! (1-click mouse control)"
     >
       <canvas
         ref={canvasRef}
