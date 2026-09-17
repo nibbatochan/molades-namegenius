@@ -201,6 +201,13 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
     }
   }
 
+  const handleShootClick = () => {
+    if (soundEnabled) playMechanicalClick('click')
+    if (engineRef.current && engineRef.current.shoot) {
+      engineRef.current.shoot()
+    }
+  }
+
   const handleToggleMode = () => {
     if (soundEnabled) playMechanicalClick('switch')
     setIsAutoMode((prev) => !prev)
