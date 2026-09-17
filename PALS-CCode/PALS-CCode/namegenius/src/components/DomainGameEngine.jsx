@@ -1145,7 +1145,7 @@ function renderProjectiles(ctx, projectiles) {
   ctx.restore()
 }
 
-// 2. 404 Glitch Bug Sprite (Ground Crawler - 1 HP, +10 pts)
+// 2. 404 Glitch Bug Sprite (Ground Crawler - 1 HP, +10 pts - Animated 6-Leg Scuttle & Antennae Sparks)
 function renderGlitchBug(ctx, bug) {
   ctx.save()
   ctx.translate(Math.round(bug.x), Math.round(bug.y))
@@ -1158,39 +1158,67 @@ function renderGlitchBug(ctx, bug) {
     return
   }
 
-  // Bug crawling legs
-  const legWiggle = Math.sin((bug.frame || 0) * 0.4) * 2.5
-  ctx.strokeStyle = '#064e3b'
-  ctx.lineWidth = 1.2
+  const frame = bug.frame || 0
+  const isFacingRight = (bug.vx || 0) > 0
+
+  // 6 Scuttling Multijointed Legs with Phase Offsets
+  ctx.strokeStyle = '#022c22'
+  ctx.lineWidth = 1.3
   ;[3, 8, 13].forEach((lx, idx) => {
-    const offset = idx % 2 === 0 ? legWiggle : -legWiggle
+    const legPhase = frame * 0.35 + idx * 1.2
+    const legLift = Math.sin(legPhase) * 3
+    const legSweep = Math.cos(legPhase) * 2.5
     ctx.beginPath()
-    ctx.moveTo(lx, 10)
-    ctx.lineTo(lx - 2, 13 + offset)
+    ctx.moveTo(lx, 8)
+    ctx.lineTo(lx + legSweep, 11)
+    ctx.lineTo(lx + legSweep + (idx === 0 ? -2 : idx === 2 ? 2 : 0), 14 + legLift)
     ctx.stroke()
   })
 
-  // Dark emerald/purple carapace body
-  ctx.fillStyle = '#065f46'
-  roundRect(ctx, 1, 2, bug.w - 2, bug.h - 3, 3)
+  // Multilayered Carapace Body (Deep Emerald & Neon Cyan Matrix)
+  ctx.fillStyle = '#064e3b'
+  roundRect(ctx, 1, 1, bug.w - 2, bug.h - 2, 3)
   ctx.fill()
-  ctx.strokeStyle = '#022c22'
+  ctx.fillStyle = '#047857'
+  roundRect(ctx, 2, 2, bug.w - 4, bug.h - 5, 2)
+  ctx.fill()
+  ctx.strokeStyle = '#10b981'
   ctx.lineWidth = 1
   ctx.stroke()
 
-  // Glowing Visor / Eyes
-  ctx.fillStyle = '#ef4444'
-  ctx.fillRect(bug.vx > 0 ? bug.w - 5 : 2, 4, 3, 2)
+  // Wiggling Dual Antennae with Electric Tip Sparks
+  const antWiggle = Math.sin(frame * 0.4) * 2
+  const antRootX = isFacingRight ? bug.w - 3 : 3
+  ctx.strokeStyle = '#34d399'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(antRootX, 2)
+  ctx.lineTo(antRootX + (isFacingRight ? 3 : -3) + antWiggle, -3)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(antRootX, 2)
+  ctx.lineTo(antRootX + (isFacingRight ? 1 : -1) - antWiggle, -4)
+  ctx.stroke()
 
-  // 404 text micro badge
+  // Electric Antenna Spark Point
+  ctx.fillStyle = '#6ee7b7'
+  ctx.fillRect(antRootX + (isFacingRight ? 3 : -3) + antWiggle - 1, -4, 2, 2)
+
+  // Glowing Compound Ruby Eyes
+  ctx.fillStyle = '#ef4444'
+  ctx.fillRect(isFacingRight ? bug.w - 4 : 1.5, 3.5, 3, 2.5)
+  ctx.fillStyle = '#fca5a5'
+  ctx.fillRect(isFacingRight ? bug.w - 3 : 2, 4, 1.5, 1.5)
+
+  // Animated 404 Glitch Text Core
   ctx.fillStyle = '#a7f3d0'
-  ctx.font = 'bold 6px monospace'
-  ctx.fillText('404', 3, 8.5)
+  ctx.font = 'bold 6.5px monospace'
+  ctx.fillText('404', 2.5, 8.5)
 
   ctx.restore()
 }
 
-// 3. Squatter Drone Sprite (Gap Hoverer - 2 HP, +20 pts)
+// 3. Squatter Drone Sprite (Gap Hoverer - 2 HP, +20 pts - Animated Quad-Rotor & Surveillance Scanner)
 function renderSquatterDrone(ctx, drone) {
   ctx.save()
   ctx.translate(Math.round(drone.x), Math.round(drone.y))
@@ -1203,45 +1231,66 @@ function renderSquatterDrone(ctx, drone) {
     return
   }
 
-  // Spinning top rotor blade
-  const rPhase = ((drone.frame || 0) * 0.6) % Math.PI
-  ctx.strokeStyle = '#38bdf8'
-  ctx.lineWidth = 1.5
+  const frame = drone.frame || 0
+
+  // Spinning Top Dual-Rotor Blades with Motion Blur
+  const rPhase = (frame * 0.7) % (Math.PI * 2)
+  const bladeSpan = Math.cos(rPhase) * 10
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.9)'
+  ctx.lineWidth = 1.6
   ctx.beginPath()
-  ctx.moveTo(drone.w / 2 - Math.cos(rPhase) * 8, -2)
-  ctx.lineTo(drone.w / 2 + Math.cos(rPhase) * 8, -2)
+  ctx.moveTo(drone.w / 2 - bladeSpan, -3)
+  ctx.lineTo(drone.w / 2 + bladeSpan, -3)
   ctx.stroke()
 
-  // Rotor mast
-  ctx.fillStyle = '#64748b'
-  ctx.fillRect(drone.w / 2 - 1, -2, 2, 3)
+  // Rotor Hub & Mast
+  ctx.fillStyle = '#94a3b8'
+  ctx.fillRect(drone.w / 2 - 1, -3, 2, 4)
 
-  // Drone Sphere Chassis
-  ctx.fillStyle = '#1e293b'
-  roundRect(ctx, 1, 1, drone.w - 2, drone.h - 2, 4)
+  // Sweeping Ground Surveillance Light Cone
+  const scanSweep = Math.sin(frame * 0.1) * 6
+  ctx.save()
+  ctx.fillStyle = 'rgba(6, 182, 212, 0.16)'
+  ctx.beginPath()
+  ctx.moveTo(drone.w / 2, drone.h)
+  ctx.lineTo(drone.w / 2 - 8 + scanSweep, drone.h + 16)
+  ctx.lineTo(drone.w / 2 + 8 + scanSweep, drone.h + 16)
+  ctx.closePath()
   ctx.fill()
-  ctx.strokeStyle = '#475569'
-  ctx.lineWidth = 1.2
+  ctx.restore()
+
+  // Spherical Gunmetal Chassis
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, 1, 1, drone.w - 2, drone.h - 2, 5)
+  ctx.fill()
+  ctx.strokeStyle = '#38bdf8'
+  ctx.lineWidth = 1.3
   ctx.stroke()
 
-  // Golden Padlock Icon
+  // Golden Padlock Icon with Glint
   ctx.fillStyle = '#f59e0b'
-  roundRect(ctx, 5, 6, 8, 7, 2)
+  roundRect(ctx, 4.5, 5.5, 9, 8, 2)
   ctx.fill()
   ctx.strokeStyle = '#d97706'
   ctx.lineWidth = 1
+  ctx.stroke()
   ctx.beginPath()
-  ctx.arc(9, 6, 2.5, Math.PI, 0)
+  ctx.arc(9, 5.5, 3, Math.PI, 0)
   ctx.stroke()
 
-  // Jet spark underneath
+  // Keyhole Dot
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(8.5, 8.5, 1.5, 2.5)
+
+  // Pulsing Jet Thrust Exhaust
+  const jetLen = 2 + Math.sin(frame * 0.5) * 2
   ctx.fillStyle = '#06b6d4'
-  ctx.fillRect(drone.w / 2 - 1.5, drone.h - 1, 3, 2)
+  ctx.fillRect(drone.w / 2 - 2, drone.h - 1, 4, jetLen)
 
   ctx.restore()
 }
 
-// 4. Cyber Packet Bat Sprite (Airborne Swooper - 2 HP, +25 pts)
+// 4. Cyber Packet Bat Sprite (Airborne Swooper - 2 HP, +25 pts - 4-Frame Flapping Wings & Sonar Pulse)
 function renderPacketBat(ctx, bat) {
   ctx.save()
   ctx.translate(Math.round(bat.x), Math.round(bat.y))
@@ -1254,40 +1303,66 @@ function renderPacketBat(ctx, bat) {
     return
   }
 
-  const wingFlap = Math.sin((bat.frame || 0) * 0.35) * 6
-  // Flapping Cyber Wings
+  const frame = bat.frame || 0
+  const wingFlap = Math.sin(frame * 0.35) * 7
+
+  // Expanding Sonar Radar Echo Rings
+  if (frame % 16 < 8) {
+    ctx.strokeStyle = 'rgba(168, 85, 247, 0.4)'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.arc(bat.w / 2 - 4, bat.h / 2, 10 + (frame % 8) * 1.5, Math.PI * 0.7, Math.PI * 1.3)
+    ctx.stroke()
+  }
+
+  // Left & Right Flapping Cyber Wings with Circuit Veins
   ctx.fillStyle = '#7c3aed'
   ctx.beginPath()
-  ctx.moveTo(bat.w / 2, 8)
-  ctx.lineTo(-4, 4 - wingFlap)
-  ctx.lineTo(-2, 12)
+  ctx.moveTo(bat.w / 2, 7)
+  ctx.lineTo(-6, 3 - wingFlap)
+  ctx.lineTo(-2, 13)
   ctx.fill()
 
   ctx.beginPath()
-  ctx.moveTo(bat.w / 2, 8)
-  ctx.lineTo(bat.w + 4, 4 - wingFlap)
-  ctx.lineTo(bat.w + 2, 12)
+  ctx.moveTo(bat.w / 2, 7)
+  ctx.lineTo(bat.w + 6, 3 - wingFlap)
+  ctx.lineTo(bat.w + 2, 13)
   ctx.fill()
 
-  // Bat Body
-  ctx.fillStyle = '#2e1065'
-  roundRect(ctx, 3, 3, bat.w - 6, bat.h - 6, 3)
+  // Wing Neon Edges
+  ctx.strokeStyle = '#c084fc'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(bat.w / 2, 7)
+  ctx.lineTo(-6, 3 - wingFlap)
+  ctx.lineTo(-2, 13)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(bat.w / 2, 7)
+  ctx.lineTo(bat.w + 6, 3 - wingFlap)
+  ctx.lineTo(bat.w + 2, 13)
+  ctx.stroke()
+
+  // Aerodynamic Stealth Body
+  ctx.fillStyle = '#1e1b4b'
+  roundRect(ctx, 3, 2, bat.w - 6, bat.h - 4, 3)
   ctx.fill()
-  ctx.strokeStyle = '#a855f7'
+  ctx.strokeStyle = '#8b5cf6'
   ctx.lineWidth = 1
   ctx.stroke()
 
-  // Glowing Cyan Eyes & Radar Dish
+  // Glowing Cyan Sensor Visors & Cyber Fangs
   ctx.fillStyle = '#06b6d4'
-  ctx.fillRect(5, 5, 2, 2)
-  ctx.fillRect(bat.w - 7, 5, 2, 2)
-  ctx.fillStyle = '#ec4899'
-  ctx.fillRect(bat.w / 2 - 1, 1, 2, 3)
+  ctx.fillRect(4.5, 4.5, 2.5, 2.5)
+  ctx.fillRect(bat.w - 7, 4.5, 2.5, 2.5)
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(6, 9.5, 1.5, 2)
+  ctx.fillRect(bat.w - 7.5, 9.5, 1.5, 2)
 
   ctx.restore()
 }
 
-// 5. Malware Golem Sprite (Heavy Armored Walker - 3 HP, +35 pts)
+// 5. Malware Golem Sprite (Heavy Armored Walker - 3 HP, +35 pts - Hydraulic Stomp & Heat Core)
 function renderMalwareGolem(ctx, golem) {
   ctx.save()
   ctx.translate(Math.round(golem.x), Math.round(golem.y))
@@ -1300,260 +1375,344 @@ function renderMalwareGolem(ctx, golem) {
     return
   }
 
-  // Stomping hydraulic legs
-  const legOffset = Math.sin((golem.frame || 0) * 0.25) * 2
-  ctx.fillStyle = '#334155'
-  ctx.fillRect(2, golem.h - 4 + legOffset, 5, 5)
-  ctx.fillRect(golem.w - 7, golem.h - 4 - legOffset, 5, 5)
+  const frame = golem.frame || 0
+  const legOffset = Math.sin(frame * 0.25) * 2.5
 
-  // Obsidian Armored Torso
-  ctx.fillStyle = '#0f172a'
-  roundRect(ctx, 1, 2, golem.w - 2, golem.h - 6, 4)
+  // Heavy Hydraulic Piston Legs
+  ctx.fillStyle = '#334155'
+  ctx.fillRect(2, golem.h - 5 + legOffset, 6, 6)
+  ctx.fillRect(golem.w - 8, golem.h - 5 - legOffset, 6, 6)
+  ctx.fillStyle = '#94a3b8'
+  ctx.fillRect(3, golem.h - 7 + legOffset, 4, 3)
+  ctx.fillRect(golem.w - 7, golem.h - 7 - legOffset, 4, 3)
+
+  // Heavy Armored Obsidian Torso
+  ctx.fillStyle = '#090d16'
+  roundRect(ctx, 1, 2, golem.w - 2, golem.h - 7, 4)
   ctx.fill()
   ctx.strokeStyle = '#ef4444'
-  ctx.lineWidth = 1.2
+  ctx.lineWidth = 1.3
   ctx.stroke()
 
-  // Red Thermal Core & Eye Slot
-  ctx.fillStyle = '#ef4444'
-  ctx.fillRect(4, 5, golem.w - 8, 3)
-  ctx.fillStyle = '#f59e0b'
-  ctx.fillRect(golem.w / 2 - 2, 10, 4, 4)
+  // Pulsing Magma Energy Reactor Core
+  const corePulse = Math.sin(frame * 0.15) * 0.4 + 0.6
+  ctx.fillStyle = `rgba(239, 68, 68, ${corePulse})`
+  ctx.fillRect(golem.w / 2 - 3, 9, 6, 5)
+  ctx.fillStyle = '#fbbf24'
+  ctx.fillRect(golem.w / 2 - 1.5, 10.5, 3, 2.5)
 
-  // Steel Shoulder Spikes
-  ctx.fillStyle = '#94a3b8'
-  ctx.fillRect(0, 1, 3, 3)
-  ctx.fillRect(golem.w - 3, 1, 3, 3)
+  // Sweeping Thermal Visor Slit
+  ctx.fillStyle = '#ef4444'
+  ctx.fillRect(3.5, 4.5, golem.w - 7, 2.5)
+  ctx.fillStyle = '#ffffff'
+  const visorX = 4 + Math.sin(frame * 0.2) * (golem.w - 11) * 0.5 + (golem.w - 11) * 0.5
+  ctx.fillRect(visorX, 4.5, 2.5, 2.5)
+
+  // Spiked Steel Shoulder Pauldrons
+  ctx.fillStyle = '#64748b'
+  ctx.fillRect(0, 0, 4, 4)
+  ctx.fillRect(golem.w - 4, 0, 4, 4)
+  ctx.fillStyle = '#cbd5e1'
+  ctx.fillRect(1, -2, 2, 2)
+  ctx.fillRect(golem.w - 3, -2, 2, 2)
 
   ctx.restore()
 }
 
-// 6. Boss 1: Megabyte Squatter Mecha (1000 pts - Tier 1)
+// 6. Boss 1: Megabyte Squatter Mecha (1000 pts - Animated Sawblade Drill & Thrusters)
 function renderBossMech(ctx, boss) {
-  // Animated Twin Rocket Jet Exhaust
-  const flameLen = 6 + Math.random() * 8
+  const frame = Date.now() * 0.008
+
+  // Dual Thruster Exhaust Afterburners
+  const flameLen = 8 + Math.sin(frame * 3) * 6
   ctx.fillStyle = '#f97316'
   ctx.beginPath()
   ctx.moveTo(8, boss.h - 4)
   ctx.lineTo(13, boss.h + flameLen)
   ctx.lineTo(18, boss.h - 4)
   ctx.fill()
-
   ctx.beginPath()
   ctx.moveTo(boss.w - 18, boss.h - 4)
   ctx.lineTo(boss.w - 13, boss.h + flameLen)
   ctx.lineTo(boss.w - 8, boss.h - 4)
   ctx.fill()
-
   ctx.fillStyle = '#fef08a'
   ctx.fillRect(10, boss.h - 3, 6, flameLen * 0.5)
   ctx.fillRect(boss.w - 16, boss.h - 3, 6, flameLen * 0.5)
 
-  // Heavy Armored Hull
+  // Heavy Armored Gunmetal Chassis
   ctx.fillStyle = '#0f172a'
   roundRect(ctx, 4, 4, boss.w - 8, boss.h - 8, 6)
   ctx.fill()
-  ctx.strokeStyle = '#334155'
-  ctx.lineWidth = 1.5
+  ctx.strokeStyle = '#ef4444'
+  ctx.lineWidth = 1.6
   ctx.stroke()
 
-  // Gunmetal Armor Plates
-  ctx.fillStyle = '#1e293b'
-  roundRect(ctx, 8, 8, boss.w - 16, 14, 3)
+  // Rotating Diamond-Tipped Sawblade Arm on Forward Mount
+  const sawAngle = frame * 4
+  ctx.save()
+  ctx.translate(-2, boss.h / 2)
+  ctx.rotate(sawAngle)
+  ctx.fillStyle = '#94a3b8'
+  ctx.beginPath()
+  ctx.arc(0, 0, 8, 0, Math.PI * 2)
   ctx.fill()
-  roundRect(ctx, 10, 24, boss.w - 20, 10, 2)
-  ctx.fill()
-
-  // Brass Plating Trim
-  ctx.fillStyle = '#d97706'
-  ctx.fillRect(6, 6, 4, boss.h - 12)
-  ctx.fillRect(boss.w - 10, 6, 4, boss.h - 12)
-
-  // Dual Plasma Blaster Barrels
-  ctx.fillStyle = '#475569'
-  ctx.fillRect(-4, 16, 8, 5)
-  ctx.fillRect(-4, 26, 8, 5)
   ctx.fillStyle = '#ef4444'
-  ctx.fillRect(-5, 17, 2, 3)
-  ctx.fillRect(-5, 27, 2, 3)
+  for (let t = 0; t < 6; t++) {
+    const a = (t * Math.PI) / 3
+    ctx.fillRect(Math.cos(a) * 6 - 1.5, Math.sin(a) * 6 - 1.5, 3, 3)
+  }
+  ctx.restore()
 
-  // Pulsing Cyclops Visor Eye
-  const eyePulse = Math.sin(Date.now() * 0.008) * 0.5 + 0.5
-  ctx.fillStyle = `rgb(239, 68, 68)`
-  roundRect(ctx, 14, 11, boss.w - 28, 7, 2)
+  // Heavy Armor Plates & Brass Trim
+  ctx.fillStyle = '#1e293b'
+  roundRect(ctx, 8, 7, boss.w - 16, 15, 3)
   ctx.fill()
-  ctx.fillStyle = '#ffffff'
-  ctx.fillRect(18 + Math.round(eyePulse * 8), 12, 4, 5)
+  ctx.fillStyle = '#d97706'
+  ctx.fillRect(6, 6, 3, boss.h - 12)
+  ctx.fillRect(boss.w - 9, 6, 3, boss.h - 12)
 
-  // Segmented Chest Grill
+  // Central 404 Digital Skull Visor with Scanning Reticle
   ctx.fillStyle = '#020617'
-  for (let gy = 26; gy <= 32; gy += 3) {
+  roundRect(ctx, 12, 10, boss.w - 24, 9, 2)
+  ctx.fill()
+  ctx.fillStyle = '#ef4444'
+  ctx.font = 'bold 7px monospace'
+  ctx.textAlign = 'center'
+  ctx.fillText('404', boss.w / 2, 17)
+  ctx.textAlign = 'start'
+
+  // Segmented Chest Air Vent Grilles
+  ctx.fillStyle = '#334155'
+  for (let gy = 26; gy <= 33; gy += 3) {
     ctx.fillRect(14, gy, boss.w - 28, 1.5)
   }
 }
 
-// 7. Boss 2: Phishing Hydra (1250 pts - Tier 2)
+// 7. Boss 2: Phishing Hydra (1800 pts - 3 Writhing Cyber Serpent Heads & Bioluminescent Scales)
 function renderPhishingHydra(ctx, boss) {
-  const time = Date.now() * 0.005
-  // Undulating 3 Serpentine Heads
-  for (let h = 0; h < 3; h++) {
-    const headOffset = Math.sin(time + h * 1.8) * 8
-    const hx = 6 + h * 16
-    const hy = 12 + headOffset
+  const time = Date.now() * 0.006
 
-    // Coiling Serpent Body
+  // Undulating 3 Serpentine Heads with Independent Motion
+  for (let h = 0; h < 3; h++) {
+    const headOffset = Math.sin(time * 1.5 + h * 2.1) * 10
+    const hx = 8 + h * 16
+    const hy = 11 + headOffset
+
+    // Coiling Serpent Neck
     ctx.fillStyle = '#064e3b'
     ctx.beginPath()
     ctx.arc(hx, hy + 18, 7, 0, Math.PI * 2)
     ctx.fill()
+    ctx.fillStyle = '#047857'
+    ctx.fillRect(hx - 4, hy + 10, 8, 12)
 
-    // Hydra Head
+    // Hydra Head with Glowing Scales
     ctx.fillStyle = '#10b981'
-    roundRect(ctx, hx - 6, hy, 12, 14, 4)
+    roundRect(ctx, hx - 7, hy - 2, 14, 15, 4)
     ctx.fill()
     ctx.strokeStyle = '#022c22'
-    ctx.lineWidth = 1
+    ctx.lineWidth = 1.2
     ctx.stroke()
 
-    // Glowing Venom Fangs & Eye
+    // Dripping Venom Fangs & Piercing Magenta Eyes
     ctx.fillStyle = '#a7f3d0'
-    ctx.fillRect(hx - 4, hy + 3, 2, 3)
-    ctx.fillRect(hx + 2, hy + 3, 2, 3)
+    ctx.fillRect(hx - 5, hy + 2, 2.5, 3)
+    ctx.fillRect(hx + 2.5, hy + 2, 2.5, 3)
     ctx.fillStyle = '#ec4899'
-    ctx.fillRect(hx - 2, hy + 10, 4, 3)
+    ctx.fillRect(hx - 3, hy + 9, 6, 3.5)
+    ctx.fillStyle = '#34d399'
+    ctx.fillRect(hx - 1, hy + 13, 2, 3) // dripping venom drop
   }
 
-  // Base Toxic Bio-Generator
-  ctx.fillStyle = '#0f172a'
+  // Base Toxic Chemical Generator Tank
+  ctx.fillStyle = '#090d16'
   roundRect(ctx, 2, boss.h - 16, boss.w - 4, 16, 4)
   ctx.fill()
   ctx.strokeStyle = '#10b981'
-  ctx.lineWidth = 1.2
+  ctx.lineWidth = 1.5
   ctx.stroke()
+
+  // Glowing Chemical Liquid Bubble
+  ctx.fillStyle = 'rgba(16, 185, 129, 0.4)'
+  roundRect(ctx, 6, boss.h - 13, boss.w - 12, 10, 2)
+  ctx.fill()
 }
 
-// 8. Boss 3: DDoS Swarm Titan (1500 pts - Tier 3)
+// 8. Boss 3: DDoS Swarm Titan (2500 pts - Heavy Carrier, Minigun Turrets & Energy Shield)
 function renderDDoSTitan(ctx, boss) {
-  // Heavy Hexagonal Juggernaut
+  const time = Date.now() * 0.005
+
+  // Pulsing Hexagonal Deflector Shield Bubble
+  const shieldPulse = Math.sin(time * 2) * 0.25 + 0.55
+  ctx.strokeStyle = `rgba(139, 92, 246, ${shieldPulse})`
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.arc(boss.w / 2, boss.h / 2, boss.w * 0.58, 0, Math.PI * 2)
+  ctx.stroke()
+
+  // Shield Hex Lattice Dots
+  ctx.fillStyle = `rgba(192, 132, 252, ${shieldPulse * 0.5})`
+  for (let a = 0; a < 6; a++) {
+    const ang = (a * Math.PI) / 3 + time
+    ctx.beginPath()
+    ctx.arc(boss.w / 2 + Math.cos(ang) * (boss.w * 0.55), boss.h / 2 + Math.sin(ang) * (boss.w * 0.55), 2.5, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // Heavy Battleship Carrier Chassis
   ctx.fillStyle = '#1e1b4b'
   roundRect(ctx, 4, 4, boss.w - 8, boss.h - 8, 6)
   ctx.fill()
   ctx.strokeStyle = '#8b5cf6'
-  ctx.lineWidth = 1.5
+  ctx.lineWidth = 1.6
   ctx.stroke()
 
-  // Rotating Forcefield Shield Grid
-  const shieldRot = (Date.now() * 0.003) % (Math.PI * 2)
-  ctx.strokeStyle = 'rgba(139, 92, 246, 0.65)'
-  ctx.lineWidth = 2
-  ctx.beginPath()
-  ctx.arc(boss.w / 2, boss.h / 2, boss.w * 0.55, shieldRot, shieldRot + Math.PI)
-  ctx.stroke()
+  // Dual Rotating Minigun Pods on Top and Bottom
+  ctx.fillStyle = '#475569'
+  ctx.fillRect(-4, 9, 8, 6)
+  ctx.fillRect(-4, boss.h - 15, 8, 6)
+  ctx.fillStyle = '#fbbf24'
+  ctx.fillRect(-6, 11, 3, 2)
+  ctx.fillRect(-6, boss.h - 13, 3, 2)
 
-  // Tri-Rocket Battery Tubes
-  ctx.fillStyle = '#6366f1'
-  ctx.fillRect(-3, 8, 8, 6)
-  ctx.fillRect(-3, 18, 8, 6)
-  ctx.fillRect(-3, 28, 8, 6)
-
-  // Central Overload Core
+  // Command Bridge & Central Flux Core
   ctx.fillStyle = '#a855f7'
-  roundRect(ctx, 16, 12, 16, 18, 3)
+  roundRect(ctx, 16, 12, boss.w - 32, boss.h - 24, 4)
   ctx.fill()
   ctx.fillStyle = '#ffffff'
-  ctx.fillRect(20, 16, 8, 10)
+  ctx.fillRect(boss.w / 2 - 4, boss.h / 2 - 4, 8, 8)
 }
 
-// 9. Boss 4: DNS Hijacker Prime (2500 pts - Tier 4)
+// 9. Boss 4: DNS Hijacker Prime (3200 pts - Iridescent Quantum Saucer & Warp Telegraph)
 function renderDNSSaucer(ctx, boss) {
-  // Teleport Warp Aura
-  const warpPulse = Math.sin(Date.now() * 0.01) * 0.3 + 0.7
-  ctx.strokeStyle = `rgba(6, 182, 212, ${warpPulse})`
+  const time = Date.now() * 0.007
+
+  // Quantum Phase-Shift Warp Afterimages
+  const warpPulse = Math.sin(time * 3) * 0.3 + 0.7
+  ctx.strokeStyle = `rgba(6, 182, 212, ${warpPulse * 0.7})`
   ctx.lineWidth = 1.5
   ctx.beginPath()
-  ctx.ellipse(boss.w / 2, boss.h / 2, boss.w * 0.55, boss.h * 0.35, 0, 0, Math.PI * 2)
+  ctx.ellipse(boss.w / 2, boss.h / 2, boss.w * 0.56, boss.h * 0.36, 0, 0, Math.PI * 2)
   ctx.stroke()
 
-  // Sleek Aerodynamic Flying Saucer
-  ctx.fillStyle = '#0f172a'
+  // Iridescent Alien Saucer Hull
+  ctx.fillStyle = '#090d16'
   ctx.beginPath()
   ctx.ellipse(boss.w / 2, boss.h / 2, boss.w * 0.48, boss.h * 0.28, 0, 0, Math.PI * 2)
   ctx.fill()
   ctx.strokeStyle = '#06b6d4'
-  ctx.lineWidth = 1.5
+  ctx.lineWidth = 1.6
   ctx.stroke()
 
-  // Cockpit Dome & Scanning Laser
+  // Rotating Quantum Gyro Rings
+  ctx.strokeStyle = '#38bdf8'
+  ctx.lineWidth = 1.2
+  ctx.beginPath()
+  ctx.ellipse(boss.w / 2, boss.h / 2, boss.w * 0.38, boss.h * 0.16, time * 2, 0, Math.PI * 2)
+  ctx.stroke()
+
+  // Cockpit Scanning Dome
   ctx.fillStyle = '#06b6d4'
   ctx.beginPath()
-  ctx.arc(boss.w / 2, boss.h / 2 - 4, 10, Math.PI, 0)
+  ctx.arc(boss.w / 2, boss.h / 2 - 5, 11, Math.PI, 0)
   ctx.fill()
   ctx.fillStyle = '#ffffff'
-  ctx.fillRect(boss.w / 2 - 3, boss.h / 2 - 8, 6, 4)
+  ctx.fillRect(boss.w / 2 - 4, boss.h / 2 - 10, 8, 5)
 
-  // Ventral Laser Emitter
+  // Ventral Charging Ion Emitter
   ctx.fillStyle = '#38bdf8'
-  ctx.fillRect(boss.w / 2 - 4, boss.h / 2 + 6, 8, 4)
+  ctx.fillRect(boss.w / 2 - 5, boss.h / 2 + 7, 10, 5)
 }
 
-// 10. Boss 5: Ransomware Dreadnought (3500 pts - Tier 5)
+// 10. Boss 5: Ransomware Dreadnought (4200 pts - Obsidian Fortress, Grinder & Encrypted Lock)
 function renderRansomDreadnought(ctx, boss) {
-  // Triple Heavy Thrusters
-  const flameL = 8 + Math.random() * 8
+  const time = Date.now() * 0.008
+
+  // Triple Fiery Exhaust Engines
+  const flameL = 8 + Math.sin(time * 4) * 6
   ctx.fillStyle = '#f59e0b'
   ctx.fillRect(boss.w - 6, 8, flameL, 6)
-  ctx.fillRect(boss.w - 6, 18, flameL + 4, 8)
-  ctx.fillRect(boss.w - 6, 28, flameL, 6)
+  ctx.fillRect(boss.w - 6, 19, flameL + 5, 8)
+  ctx.fillRect(boss.w - 6, 30, flameL, 6)
 
-  // Obsidian Armor Battleship Chassis
+  // Obsidian Battleship Chassis
   ctx.fillStyle = '#020617'
   roundRect(ctx, 2, 4, boss.w - 8, boss.h - 8, 6)
   ctx.fill()
   ctx.strokeStyle = '#ea580c'
-  ctx.lineWidth = 1.8
+  ctx.lineWidth = 2
   ctx.stroke()
 
-  // Firewall Grid Cells
+  // Encrypted Firewall Grid Cells
   ctx.fillStyle = '#ea580c'
-  for (let fx = 8; fx < boss.w - 16; fx += 8) {
-    for (let fy = 10; fy < boss.h - 14; fy += 8) {
+  for (let fx = 9; fx < boss.w - 18; fx += 8) {
+    for (let fy = 11; fy < boss.h - 15; fy += 8) {
       ctx.fillRect(fx, fy, 5, 5)
     }
   }
 
-  // Heavy Forward Cannon Nose
-  ctx.fillStyle = '#451a03'
-  ctx.fillRect(-6, boss.h / 2 - 5, 10, 10)
-  ctx.fillStyle = '#f59e0b'
-  ctx.fillRect(-8, boss.h / 2 - 2, 4, 4)
+  // Heavy Forward Grinder Jaw / Spikes
+  ctx.fillStyle = '#78350f'
+  ctx.fillRect(-8, boss.h / 2 - 6, 12, 12)
+  ctx.fillStyle = '#f97316'
+  ctx.fillRect(-10, boss.h / 2 - 3, 4, 6)
+
+  // Pulsing Crimson Encrypted Lock Center
+  ctx.fillStyle = '#ef4444'
+  roundRect(ctx, boss.w / 2 - 6, boss.h / 2 - 7, 12, 14, 2)
+  ctx.fill()
+  ctx.fillStyle = '#fef08a'
+  ctx.fillRect(boss.w / 2 - 1.5, boss.h / 2 - 2, 3, 4)
 }
 
-// 11. Boss 6: Zero-Day Overlord (Final Boss - 4500 pts)
+// 11. Boss 6: Zero-Day Overlord (Final Boss - 5000 pts - 6-Winged Cyber Archangel Deity)
 function renderZeroDayOverlord(ctx, boss) {
   const time = Date.now() * 0.006
-  // Transcendent Neon Wings
-  const wingSpread = Math.sin(time) * 6
-  ctx.fillStyle = 'rgba(236, 72, 153, 0.65)'
-  ctx.beginPath()
-  ctx.moveTo(boss.w / 2, boss.h / 2)
-  ctx.lineTo(-12, -6 - wingSpread)
-  ctx.lineTo(-4, boss.h + 8)
-  ctx.fill()
+  const wingSpread = Math.sin(time) * 7
 
-  ctx.beginPath()
-  ctx.moveTo(boss.w / 2, boss.h / 2)
-  ctx.lineTo(boss.w + 12, -6 - wingSpread)
-  ctx.lineTo(boss.w + 4, boss.h + 8)
-  ctx.fill()
+  // 6 Transcendent Neon Archangel Wings (Upper, Middle, Lower pairs)
+  ;[-1, 1].forEach((dir) => {
+    // Upper Wings
+    ctx.fillStyle = 'rgba(236, 72, 153, 0.75)'
+    ctx.beginPath()
+    ctx.moveTo(boss.w / 2, boss.h / 2)
+    ctx.lineTo(boss.w / 2 + dir * (boss.w * 0.75), -10 - wingSpread)
+    ctx.lineTo(boss.w / 2 + dir * (boss.w * 0.4), boss.h * 0.3)
+    ctx.fill()
 
-  // Halo Ring
+    // Middle Wings
+    ctx.fillStyle = 'rgba(168, 85, 247, 0.75)'
+    ctx.beginPath()
+    ctx.moveTo(boss.w / 2, boss.h / 2)
+    ctx.lineTo(boss.w / 2 + dir * (boss.w * 0.85), boss.h * 0.5 + wingSpread * 0.5)
+    ctx.lineTo(boss.w / 2 + dir * (boss.w * 0.45), boss.h * 0.7)
+    ctx.fill()
+
+    // Lower Wings
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.75)'
+    ctx.beginPath()
+    ctx.moveTo(boss.w / 2, boss.h / 2)
+    ctx.lineTo(boss.w / 2 + dir * (boss.w * 0.7), boss.h + 12 + wingSpread)
+    ctx.lineTo(boss.w / 2 + dir * (boss.w * 0.3), boss.h * 0.8)
+    ctx.fill()
+  })
+
+  // Floating Golden Corona Halo Ring
   ctx.strokeStyle = '#fbbf24'
-  ctx.lineWidth = 2
+  ctx.lineWidth = 2.2
   ctx.beginPath()
-  ctx.arc(boss.w / 2, 6, 12, 0, Math.PI * 2)
+  ctx.arc(boss.w / 2, 4, 14, 0, Math.PI * 2)
   ctx.stroke()
 
-  // Cyber Deity Core
+  // Radiating Star Dust Particles
+  ctx.fillStyle = '#ffffff'
+  for (let s = 0; s < 4; s++) {
+    const sAng = (s * Math.PI) / 2 + time * 2
+    ctx.fillRect(boss.w / 2 + Math.cos(sAng) * 16 - 1, 4 + Math.sin(sAng) * 16 - 1, 2, 2)
+  }
+
+  // Cyber Deity Core Body
   ctx.fillStyle = '#090d16'
   roundRect(ctx, 6, 8, boss.w - 12, boss.h - 12, 8)
   ctx.fill()
@@ -1561,14 +1720,14 @@ function renderZeroDayOverlord(ctx, boss) {
   ctx.lineWidth = 2
   ctx.stroke()
 
-  // Blazing Cosmic Eye
+  // Blazing Cosmic Prismatic Eye Core
   ctx.fillStyle = '#ec4899'
   ctx.beginPath()
-  ctx.arc(boss.w / 2, boss.h / 2, 8, 0, Math.PI * 2)
+  ctx.arc(boss.w / 2, boss.h / 2, 9, 0, Math.PI * 2)
   ctx.fill()
   ctx.fillStyle = '#ffffff'
   ctx.beginPath()
-  ctx.arc(boss.w / 2, boss.h / 2, 4, 0, Math.PI * 2)
+  ctx.arc(boss.w / 2, boss.h / 2, 4.5, 0, Math.PI * 2)
   ctx.fill()
 }
 
@@ -1625,10 +1784,10 @@ function renderBoss(ctx, boss) {
         ctx.fillRect(-b.size + 2, -1, 3, 3)
       } else if (b.type === 'beam') {
         ctx.fillStyle = '#06b6d4'
-        roundRect(ctx, -8, -2, 16, 4, 2)
+        roundRect(ctx, -10, -2.5, 20, 5, 2)
         ctx.fill()
         ctx.fillStyle = '#ffffff'
-        ctx.fillRect(-5, -1, 10, 2)
+        ctx.fillRect(-7, -1, 14, 2)
       } else if (b.type === 'spike') {
         ctx.fillStyle = '#ea580c'
         roundRect(ctx, -4, -4, 8, 8, 2)
@@ -1643,8 +1802,8 @@ function renderBoss(ctx, boss) {
         ctx.fillStyle = '#ffffff'
         ctx.fillRect(-2, -2, 4, 4)
       } else {
-        // Standard 404 Glitch Orb
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.35)'
+        // Standard 404 Glitch Saw Orb
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.4)'
         ctx.beginPath()
         ctx.arc(0, 0, b.size + 3, 0, Math.PI * 2)
         ctx.fill()
@@ -1667,7 +1826,7 @@ function renderBoss(ctx, boss) {
 // Boss Health Bar Overlay HUD
 function renderBossHud(ctx, boss, w) {
   if (!boss || boss.hp <= 0) return
-  const barW = 200
+  const barW = 210
   const barH = 14
   const barX = (w - barW) / 2
   const barY = 28
@@ -1695,17 +1854,18 @@ function renderBossHud(ctx, boss, w) {
   ctx.font = 'bold 8px "JetBrains Mono", monospace'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText(`☠️ ${boss.name}: ${Math.round(pct * 100)}%`, w / 2, barY + barH / 2)
+  ctx.fillText(`☠️ ${boss.name}: ${Math.round(pct * 100)}% [${boss.hp}/${boss.maxHp} HP]`, w / 2, barY + barH / 2)
   ctx.restore()
 }
 
+// Final 6 Progressive Boss Milestones: 1000, 1800, 2500, 3200, 4200, 5000
 const BOSS_MILESTONES = [
-  { score: 1000, name: 'MEGABYTE SQUATTER', type: 'squatter_mech', hp: 16, reward: 100, color: '#ef4444' },
-  { score: 1250, name: 'PHISHING HYDRA', type: 'phishing_hydra', hp: 24, reward: 125, color: '#10b981' },
-  { score: 1500, name: 'DDoS SWARM TITAN', type: 'ddos_titan', hp: 32, reward: 150, color: '#8b5cf6' },
-  { score: 2500, name: 'DNS HIJACKER PRIME', type: 'dns_saucer', hp: 42, reward: 200, color: '#06b6d4' },
-  { score: 3500, name: 'RANSOMWARE DREADNOUGHT', type: 'ransom_dreadnought', hp: 54, reward: 250, color: '#f59e0b' },
-  { score: 4500, name: 'ZERO-DAY OVERLORD', type: 'zero_day_overlord', hp: 70, reward: 500, color: '#ec4899', isFinal: true },
+  { score: 1000, name: 'MEGABYTE SQUATTER', type: 'squatter_mech', hp: 18, reward: 150, color: '#ef4444' },
+  { score: 1800, name: 'PHISHING HYDRA', type: 'phishing_hydra', hp: 28, reward: 200, color: '#10b981' },
+  { score: 2500, name: 'DDoS SWARM TITAN', type: 'ddos_titan', hp: 38, reward: 250, color: '#8b5cf6' },
+  { score: 3200, name: 'DNS HIJACKER PRIME', type: 'dns_saucer', hp: 48, reward: 300, color: '#06b6d4' },
+  { score: 4200, name: 'RANSOMWARE DREADNOUGHT', type: 'ransom_dreadnought', hp: 60, reward: 400, color: '#f59e0b' },
+  { score: 5000, name: 'ZERO-DAY OVERLORD', type: 'zero_day_overlord', hp: 80, reward: 600, color: '#ec4899', isFinal: true },
 ]
 
 const DomainGameEngine = forwardRef(function DomainGameEngine(
@@ -1743,9 +1903,9 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
 
   // Curated list of 160+ high-quality brandable domain platforms
   const BASE_SPEED = 1.35
-  const BIOME_DURATION_MS = 28000 // In Campaign mode, 28.000s slow cinematic panorama (20.000s in Casual)
-  const PAN_DURATION_MS = 25500
-  const TRANSITION_DURATION_MS = 2500
+  const BIOME_DURATION_MS = 55000 // Slow cinematic panorama: 55.000s in Campaign (45.000s in Casual)
+  const PAN_DURATION_MS = 50000
+  const TRANSITION_DURATION_MS = 5000
 
   const stateRef = useRef({
     gameState: isAutoMode ? 'PLAYING' : 'COUNTDOWN',
@@ -2034,6 +2194,8 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     s.projectiles = []
     s.enemies = []
     s.boss = null
+    s.bossIndex = 0
+    s.bossesDefeated = 0
     s.lastBossMilestone = 0
     s.screenshake = 0
     s.cannon = {
@@ -2313,9 +2475,9 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     ) {
       const prevP = s.platforms[s.platforms.length - 1]
       const currentRightmost = prevP.x + prevP.w
-      const tierSteps = [-20, -12, 0, 12, 20]
+      const tierSteps = [-34, -22, -12, 0, 14, 24, 34]
       const step = tierSteps[Math.floor(Math.random() * tierSteps.length)]
-      const targetBaseY = Math.max(158, Math.min(218, (prevP ? prevP.baseY : 190) + step))
+      const targetBaseY = Math.max(136, Math.min(218, (prevP ? prevP.baseY : 185) + step))
 
       const gap = 50 + Math.random() * 24
       const spawnX = currentRightmost + gap
@@ -3186,10 +3348,15 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     const w = 380
     const h = 280
 
-    // Exact 15.000s real-world time per biome cycle (independent of 60Hz/120Hz/144Hz screen refresh rate)
-    const currentBiomeIdx = Math.floor(s.bgTimeMs / BIOME_DURATION_MS) % BIOMES.length
+    // Dynamic duration: 55.0s Campaign (slow gliding panorama), 45.0s Casual
+    const isCamp = s.gameMode === 'campaign'
+    const curBiomeDur = isCamp ? 55000 : 45000
+    const panDuration = curBiomeDur - 5000
+    const transitionDuration = 5000
+
+    const currentBiomeIdx = Math.floor(s.bgTimeMs / curBiomeDur) % BIOMES.length
     const nextBiomeIdx = (currentBiomeIdx + 1) % BIOMES.length
-    const elapsedInBiome = s.bgTimeMs % BIOME_DURATION_MS
+    const elapsedInBiome = s.bgTimeMs % curBiomeDur
 
     ctx.imageSmoothingEnabled = false
 
@@ -3203,28 +3370,23 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     const currentImg = BIOME_IMAGES[currentBiomeIdx]
     const nextImg = BIOME_IMAGES[nextBiomeIdx]
 
-    // Complete panoramic right-to-left move takes exactly 13.5 real seconds.
-    // The image starts touching left edge at x = 0 and pans across its full width,
-    // reaching the far right edge at 13.5 seconds.
-    // From 13.5s to 15.0s (the final 1.5 seconds), the smooth crossfade transition into the next biome occurs.
+    // Slow atmospheric panorama pan across full width
     if (currentImg && currentImg.complete && currentImg.naturalWidth && currentImg.naturalHeight) {
       const scaleA = h / currentImg.naturalHeight
       const scaledW_A = Math.round(currentImg.naturalWidth * scaleA)
       const maxScrollA = Math.max(0, scaledW_A - w)
       
-      // Pan smoothly from 0% to 100% of the panorama over 0.0s -> 13.5s
-      const panProgress = Math.min(1.0, elapsedInBiome / PAN_DURATION_MS)
+      const panProgress = Math.min(1.0, elapsedInBiome / panDuration)
       const xA = -Math.round(panProgress * maxScrollA)
       ctx.drawImage(currentImg, xA, 0, scaledW_A, h)
 
-      // Smooth seamless crossfade transition starts at 13.5s and completes at 15.0s
-      if (elapsedInBiome > PAN_DURATION_MS && nextImg && nextImg.complete && nextImg.naturalWidth && nextImg.naturalHeight) {
-        const blendAlpha = (elapsedInBiome - PAN_DURATION_MS) / TRANSITION_DURATION_MS
+      // Smooth crossfade into next biome in last 5 seconds
+      if (elapsedInBiome > panDuration && nextImg && nextImg.complete && nextImg.naturalWidth && nextImg.naturalHeight) {
+        const blendAlpha = (elapsedInBiome - panDuration) / transitionDuration
         const scaleB = h / nextImg.naturalHeight
         const scaledW_B = Math.round(nextImg.naturalWidth * scaleB)
         ctx.save()
         ctx.globalAlpha = blendAlpha
-        // Next biome starts cleanly at x = 0 (left edge)
         ctx.drawImage(nextImg, 0, 0, scaledW_B, h)
         ctx.restore()
       }
@@ -3423,87 +3585,129 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     ctx.lineTo(w, 26.5)
     ctx.stroke()
 
-    // 1. High Score
-    ctx.fillStyle = '#38bdf8'
-    ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
-    ctx.textAlign = 'start'
-    ctx.textBaseline = 'alphabetic'
-    ctx.fillText(`★HI:${s.highScore}`, 6, 17)
+    if (s.isAuto) {
+      // IN AUTO MODE: No score or hazard metrics! Just hopping & accessories!
+      ctx.fillStyle = '#10b981'
+      roundRect(ctx, 6, 4.5, 84, 17, 4)
+      ctx.fill()
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 8.5px "JetBrains Mono", monospace'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('🐾 AUTO TOUR', 48, 13)
 
-    // 2. Current Score
-    ctx.fillStyle = '#facc15'
-    ctx.font = 'bold 10px "JetBrains Mono", monospace'
-    ctx.fillText(`PTS:${s.score}`, 72, 17)
+      const accLabel = ACCESSORY_NAMES[s.cat.accessory] || 'DEFAULT'
+      ctx.fillStyle = '#0284c7'
+      roundRect(ctx, 96, 4.5, 140, 17, 4)
+      ctx.fill()
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 8px "JetBrains Mono", monospace'
+      ctx.fillText(`GEAR: ${accLabel}`, 166, 13)
 
-    // 3. Lives Counter
-    const curLives = Math.max(0, s.lives ?? 1)
-    ctx.fillStyle = curLives > 1 ? '#f43f5e' : curLives === 1 ? '#fb923c' : '#94a3b8'
-    ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
-    ctx.fillText(`❤️x${curLives}`, 148, 17)
+      // Biome Badge
+      ctx.fillStyle = '#a78bfa'
+      ctx.font = 'bold 9px "JetBrains Mono", monospace'
+      ctx.textAlign = 'end'
+      ctx.textBaseline = 'alphabetic'
+      ctx.fillText(`${b.badgeText || 'BIOME'}`, w - 6, 17)
+      ctx.textAlign = 'start'
+    } else {
+      // IN MANUAL / COMBAT MODE:
+      // 1. High Score
+      ctx.fillStyle = '#38bdf8'
+      ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
+      ctx.textAlign = 'start'
+      ctx.textBaseline = 'alphabetic'
+      ctx.fillText(`★HI:${s.highScore}`, 6, 17)
 
-    // 4. Equipped Weapon Indicator
-    const weaponBadge =
-      s.weapon === 'railgun'
-        ? '⚡.AI'
-        : s.weapon === 'spread'
-        ? '💥.IO'
-        : s.weapon === 'missile'
-        ? '🚀.GG'
-        : '🔫PEW'
-    const weaponCol =
-      s.weapon === 'railgun'
-        ? '#06b6d4'
-        : s.weapon === 'spread'
-        ? '#c084fc'
-        : s.weapon === 'missile'
-        ? '#f97316'
-        : '#94a3b8'
-    ctx.fillStyle = weaponCol
-    ctx.font = 'bold 9px "JetBrains Mono", monospace'
-    ctx.fillText(`${weaponBadge}`, 192, 17)
+      // 2. Current Score
+      ctx.fillStyle = '#facc15'
+      ctx.font = 'bold 10px "JetBrains Mono", monospace'
+      ctx.fillText(`PTS:${s.score}`, 72, 17)
 
-    // 5. Mode Badge (Campaign / Casual)
-    const isCamp = s.gameMode === 'campaign'
-    ctx.fillStyle = isCamp ? '#10b981' : '#a855f7'
-    ctx.font = 'bold 8.5px "JetBrains Mono", monospace'
-    ctx.fillText(isCamp ? 'QUEST' : 'CASUAL', 242, 17)
+      // 3. Lives Counter
+      const curLives = Math.max(0, s.lives ?? 1)
+      ctx.fillStyle = curLives > 1 ? '#f43f5e' : curLives === 1 ? '#fb923c' : '#94a3b8'
+      ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
+      ctx.fillText(`❤️x${curLives}`, 148, 17)
 
-    // 6. Biome Badge
-    ctx.fillStyle = '#a78bfa'
-    ctx.font = 'bold 9px "JetBrains Mono", monospace'
-    ctx.textAlign = 'end'
-    ctx.fillText(`${b.badgeText || 'BIOME'}`, w - 6, 17)
-    ctx.textAlign = 'start'
+      // 4. Equipped Weapon Indicator
+      const weaponBadge =
+        s.weapon === 'railgun'
+          ? '⚡.AI'
+          : s.weapon === 'spread'
+          ? '💥.IO'
+          : s.weapon === 'missile'
+          ? '🚀.GG'
+          : '🔫PEW'
+      const weaponCol =
+        s.weapon === 'railgun'
+          ? '#06b6d4'
+          : s.weapon === 'spread'
+          ? '#c084fc'
+          : s.weapon === 'missile'
+          ? '#f97316'
+          : '#94a3b8'
+      ctx.fillStyle = weaponCol
+      ctx.font = 'bold 9px "JetBrains Mono", monospace'
+      ctx.fillText(`${weaponBadge}`, 192, 17)
+
+      // 5. Mode Badge (Campaign / Casual)
+      const isCampMode = s.gameMode === 'campaign'
+      ctx.fillStyle = isCampMode ? '#10b981' : '#a855f7'
+      ctx.font = 'bold 8.5px "JetBrains Mono", monospace'
+      ctx.fillText(isCampMode ? 'QUEST' : 'CASUAL', 242, 17)
+
+      // 6. Biome Badge
+      ctx.fillStyle = '#a78bfa'
+      ctx.font = 'bold 9px "JetBrains Mono", monospace'
+      ctx.textAlign = 'end'
+      ctx.fillText(`${b.badgeText || 'BIOME'}`, w - 6, 17)
+      ctx.textAlign = 'start'
+    }
 
     // Boss Health Bar HUD
     if (s.boss && s.boss.active && s.boss.hp > 0) {
       renderBossHud(ctx, s.boss, w)
     }
 
-    // Speech bubble
+    // Dynamic Floating Affirmation / Speech Bubble (Responsive Width - Zero Clipping)
     if (s.bubbleText && s.bubbleTimer > 0) {
       ctx.save()
-      const bx = Math.min(w - 150, Math.max(10, s.cat.x + 24))
-      const by = Math.max(32, s.cat.y - 20)
+      ctx.font = 'bold 9px "JetBrains Mono", monospace'
+      const textW = ctx.measureText(s.bubbleText).width
+      const padX = 10
+      const bubbleW = Math.min(w - 24, Math.max(110, textW + padX * 2))
+      const bubbleH = 22
+      const bx = Math.min(w - bubbleW - 10, Math.max(10, s.cat.x + 16))
+      const by = Math.max(30, Math.min(h - bubbleH - 12, s.cat.y - 24))
+
+      // Drop shadow
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)'
+      roundRect(ctx, bx + 1.5, by + 2, bubbleW, bubbleH, 6)
+      ctx.fill()
+
+      // Main pill
       ctx.fillStyle = '#ffffff'
-      roundRect(ctx, bx, by, 140, 22, 6)
+      roundRect(ctx, bx, by, bubbleW, bubbleH, 6)
       ctx.fill()
       ctx.strokeStyle = '#0f172a'
-      ctx.lineWidth = 1.5
+      ctx.lineWidth = 1.4
       ctx.stroke()
 
+      // Pointer Tail pointing down-left toward Arabella
       ctx.fillStyle = '#ffffff'
       ctx.beginPath()
-      ctx.moveTo(bx - 4, by + 13)
-      ctx.lineTo(bx + 3, by + 10)
-      ctx.lineTo(bx + 3, by + 16)
+      ctx.moveTo(bx + 6, by + bubbleH)
+      ctx.lineTo(bx + 14, by + bubbleH)
+      ctx.lineTo(bx + 2, by + bubbleH + 4)
+      ctx.closePath()
       ctx.fill()
 
       ctx.fillStyle = '#0f172a'
-      ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
-      ctx.textAlign = 'start'
-      ctx.textBaseline = 'alphabetic'
-      ctx.fillText(s.bubbleText, bx + 6, by + 15)
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(s.bubbleText, bx + bubbleW / 2, by + bubbleH / 2)
       ctx.restore()
     }
 
@@ -3727,9 +3931,9 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       if (delta > 200) delta = 200
       if (delta < 0) delta = 0
 
-      // Dynamic millisecond timing for biomes based on mode (28s Campaign, 20s Casual)
+      // Dynamic millisecond timing for biomes based on mode (55s Campaign, 45s Casual)
       const isCamp = stateRef.current.gameMode === 'campaign'
-      const curBiomeDur = isCamp ? 28000 : 20000
+      const curBiomeDur = isCamp ? 55000 : 45000
 
       stateRef.current.bgTimeMs =
         (stateRef.current.bgTimeMs + delta) % (curBiomeDur * BIOMES.length)
