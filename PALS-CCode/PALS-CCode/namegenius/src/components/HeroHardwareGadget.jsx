@@ -20,8 +20,8 @@ import {
   Sparkle,
 } from '@phosphor-icons/react'
 
-// Skeuomorphic Knurled Stadium Toggle Switch (White ON active state + scaled up)
-function SkeuoTactileSwitch({ checked, onChange, label, title }) {
+// Skeuomorphic Knurled Stadium Toggle Switch (Vibrant Emerald LED ON state + High-contrast status badge)
+function SkeuoTactileSwitch({ checked, onChange, label, title, icon: Icon, mutedIcon: MutedIcon }) {
   return (
     <div className="flex flex-col items-center gap-1">
       <button
@@ -30,25 +30,38 @@ function SkeuoTactileSwitch({ checked, onChange, label, title }) {
         aria-checked={checked}
         onClick={onChange}
         title={title}
-        className="relative w-[44px] sm:w-[48px] h-[24px] sm:h-[26px] rounded-full p-[2px] cursor-pointer select-none transition-all active:scale-95 focus:outline-none flex items-center shadow-md"
+        className="relative w-[46px] sm:w-[50px] h-[24px] sm:h-[26px] rounded-full p-[2px] cursor-pointer select-none transition-all active:scale-95 focus:outline-none flex items-center shadow-md group"
         style={{
           background: checked
-            ? 'linear-gradient(180deg, #ffffff 0%, #f1f5f9 45%, #cbd5e1 100%)'
+            ? 'linear-gradient(180deg, #10b981 0%, #059669 45%, #047857 100%)'
             : 'linear-gradient(180deg, #1e293b 0%, #0f172a 60%, #020617 100%)',
           boxShadow: checked
-            ? 'inset 0 1.5px 3px rgba(0,0,0,0.35), inset 0 -1.5px 2px rgba(255,255,255,0.9), 0 0 10px rgba(255,255,255,0.7), 0 1px 3px rgba(0,0,0,0.3)'
+            ? 'inset 0 1.5px 3px rgba(0,0,0,0.35), inset 0 -1px 2px rgba(255,255,255,0.6), 0 0 10px rgba(16,185,129,0.55), 0 1px 3px rgba(0,0,0,0.3)'
             : 'inset 0 2px 4px rgba(0,0,0,0.85), inset 0 -1px 1px rgba(255,255,255,0.08), 0 1px 3px rgba(0,0,0,0.3)',
-          border: checked ? '1.5px solid #ffffff' : '1.5px solid #334155',
+          border: checked ? '1.5px solid #34d399' : '1.5px solid #334155',
         }}
       >
         {/* Recessed slider track */}
         <div
-          className="w-full h-full rounded-full relative flex items-center"
+          className="w-full h-full rounded-full relative flex items-center overflow-hidden"
           style={{
-            background: checked ? '#f8fafc' : '#090d16',
-            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)',
+            background: checked ? '#064e3b' : '#090d16',
+            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.6)',
           }}
         >
+          {/* Active LED power glow streak */}
+          {checked && (
+            <div className="absolute left-1.5 flex items-center gap-0.5 pointer-events-none">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 led-glow-emerald" />
+              <span className="font-mono text-[7px] font-black text-emerald-300 tracking-tighter">ON</span>
+            </div>
+          )}
+          {!checked && (
+            <div className="absolute right-1.5 flex items-center pointer-events-none">
+              <span className="font-mono text-[6.5px] font-black text-slate-500 tracking-tighter">OFF</span>
+            </div>
+          )}
+
           {/* High-Gloss Anodized Chrome Stadium Slider Knob */}
           <div
             className="absolute top-[2px] bottom-[2px] w-[18px] sm:w-[20px] rounded-full transition-all duration-200 flex items-center justify-center shadow-lg"
@@ -57,23 +70,37 @@ function SkeuoTactileSwitch({ checked, onChange, label, title }) {
               background: checked
                 ? 'linear-gradient(180deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%)'
                 : 'linear-gradient(180deg, #64748b 0%, #334155 60%, #1e293b 100%)',
-              border: '1px solid rgba(255,255,255,0.6)',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.9)',
+              border: checked ? '1px solid rgba(255,255,255,0.9)' : '1px solid rgba(255,255,255,0.3)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.45), inset 0 1px 1px rgba(255,255,255,0.9)',
             }}
           >
-            {/* Knurled Grip Ridges */}
-            <div className="flex gap-[2px]">
-              <div className={`w-[1px] h-2.5 rounded-full ${checked ? 'bg-slate-400' : 'bg-slate-700'}`} />
-              <div className={`w-[1px] h-2.5 rounded-full ${checked ? 'bg-slate-400' : 'bg-slate-700'}`} />
-            </div>
+            {/* Center LED Dot on knob */}
+            <div
+              className={`w-1.5 h-1.5 rounded-full ${
+                checked
+                  ? 'bg-emerald-500 led-glow-emerald border border-emerald-300'
+                  : 'bg-slate-700 border border-slate-600'
+              }`}
+            />
           </div>
         </div>
       </button>
 
-      {/* Label under Switch */}
-      <span className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-950">
-        {label}
-      </span>
+      {/* Label and Status Pill under Switch */}
+      <div className="flex items-center gap-1">
+        <span className="font-mono text-[9px] sm:text-[9.5px] font-black uppercase tracking-wider text-slate-950">
+          {label}
+        </span>
+        <span
+          className={`font-mono text-[7px] sm:text-[7.5px] font-black px-1 py-[0.5px] rounded tracking-tight ${
+            checked
+              ? 'bg-emerald-500/20 text-emerald-950 border border-emerald-600/40'
+              : 'bg-slate-900/10 text-slate-600 border border-slate-700/30'
+          }`}
+        >
+          {checked ? 'ON' : 'OFF'}
+        </span>
+      </div>
     </div>
   )
 }
@@ -147,9 +174,14 @@ function SkeuoVolumeKnob({ volume = 0.75, onChange }) {
           <div className="w-2 h-2 rounded-full bg-slate-800/80 border border-slate-600/60 shadow-inner" />
         </div>
       </div>
-      <span className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-950">
-        VOL
-      </span>
+      <div className="flex items-center gap-0.5">
+        <span className="font-mono text-[9px] sm:text-[9.5px] font-black uppercase tracking-wider text-slate-950">
+          VOL
+        </span>
+        <span className="font-mono text-[7px] sm:text-[7.5px] font-black px-1 py-[0.5px] rounded bg-slate-900/10 text-slate-800 border border-slate-700/30">
+          {Math.round(volume * 100)}%
+        </span>
+      </div>
     </div>
   )
 }
@@ -457,11 +489,11 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
           {/* 4 Precision Mechanical Hardware Sockets */}
           <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
             {/* Button 1: Mode Switch (AUTO / MANUAL) */}
-            <div className="key-socket-dark !p-0.5 !rounded-xl flex">
+            <div className="key-socket-dark !p-[3px] !rounded-[14px] flex">
               <button
                 type="button"
                 onClick={handleToggleMode}
-                className="key-cap w-full py-2 sm:py-2.5 rounded-lg font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 cursor-pointer select-none"
+                className="key-cap w-full py-2 sm:py-2.5 !rounded-[10px] font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 active:scale-95 cursor-pointer select-none"
                 title="Toggle between Auto-Pilot and Manual Control"
               >
                 <div className="flex items-center gap-1 font-black text-[9.5px] sm:text-[10.5px] tracking-tight text-slate-800">
@@ -481,7 +513,7 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
             </div>
 
             {/* Button 2: Primary JUMP Keycap */}
-            <div className="key-socket-dark !p-0.5 !rounded-xl flex">
+            <div className="key-socket-dark !p-[3px] !rounded-[14px] flex">
               <button
                 type="button"
                 onClick={handleJumpClick}
@@ -489,7 +521,7 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                   e.preventDefault()
                   handleJumpClick()
                 }}
-                className="key-cap-terracotta w-full py-2 sm:py-2.5 rounded-lg font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg active:scale-95 cursor-pointer select-none"
+                className="key-cap-terracotta w-full py-2 sm:py-2.5 !rounded-[10px] font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg active:scale-95 cursor-pointer select-none"
                 title="Click to jump! (Spacebar / Up Arrow)"
               >
                 <div className="flex items-center gap-1 font-black text-[10px] sm:text-[11px] tracking-wide text-white">
@@ -503,7 +535,7 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
             </div>
 
             {/* Button 3: Primary FIRE Keycap */}
-            <div className="key-socket-dark !p-0.5 !rounded-xl flex">
+            <div className="key-socket-dark !p-[3px] !rounded-[14px] flex">
               <button
                 type="button"
                 onClick={handleShootClick}
@@ -511,7 +543,7 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                   e.preventDefault()
                   handleShootClick()
                 }}
-                className="key-cap-cobalt w-full py-2 sm:py-2.5 rounded-lg font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg active:scale-95 cursor-pointer select-none"
+                className="key-cap-cobalt w-full py-2 sm:py-2.5 !rounded-[10px] font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg active:scale-95 cursor-pointer select-none"
                 title="Fire blaster at enemies & bosses! (Left Click / F / X / Enter key)"
               >
                 <div className="flex items-center gap-1 font-black text-[10px] sm:text-[11px] tracking-wide text-white">
@@ -525,12 +557,12 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
             </div>
 
             {/* Socket 4: Split Dual Keycap (Top: Mode/Quest, Bottom: Reset) */}
-            <div className="key-socket-dark !p-0.5 !rounded-xl flex flex-col justify-between gap-1 h-full">
+            <div className="key-socket-dark !p-[3px] !rounded-[14px] flex flex-col justify-between gap-[3px] h-full">
               {/* Top Half: Game Mode Toggle (QUEST / CASUAL) */}
               <button
                 type="button"
                 onClick={handleToggleGameMode}
-                className="key-cap text-slate-800 font-bold w-full py-1 sm:py-1.5 rounded-lg font-mono text-center transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer select-none shadow-sm flex-1"
+                className="key-cap text-slate-800 font-bold w-full py-1 sm:py-1.5 !rounded-t-[10px] !rounded-b-[4px] font-mono text-center transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer select-none shadow-sm flex-1"
                 title="Toggle Game Mode (Campaign Quest vs Casual Mode)"
               >
                 <Sword weight="bold" className={`text-[10px] sm:text-xs shrink-0 ${gameMode === 'campaign' ? 'text-emerald-600' : 'text-purple-600'}`} />
@@ -543,7 +575,7 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
               <button
                 type="button"
                 onClick={handleResetClick}
-                className="key-cap text-slate-800 font-bold w-full py-1 sm:py-1.5 rounded-lg font-mono text-center transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer select-none shadow-sm flex-1"
+                className="key-cap text-slate-800 font-bold w-full py-1 sm:py-1.5 !rounded-b-[10px] !rounded-t-[4px] font-mono text-center transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer select-none shadow-sm flex-1"
                 title="Restart Run or Reset Game"
               >
                 <ArrowClockwise weight="bold" className="text-[10px] sm:text-xs text-sky-600 shrink-0" />

@@ -253,8 +253,8 @@ body, p, input, textarea, button, select,
 }
 
 .key-socket-dark {
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-  border-radius: 18px;
+  background: linear-gradient(180deg, #090d16 0%, #1e293b 100%);
+  border-radius: 14px;
   padding: 3px;
   box-shadow: 
     inset 0 3px 7px rgba(0, 0, 0, 0.6),
@@ -265,7 +265,7 @@ body, p, input, textarea, button, select,
 /* 4. Raised Mechanical Keycaps (Clean Precision Molded Keys) */
 .key-cap {
   background: linear-gradient(160deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
-  border-radius: 15px;
+  border-radius: 10px;
   border: 1px solid rgba(203, 213, 225, 0.85);
   box-shadow: 
     inset 0 2px 0 rgba(255, 255, 255, 0.95),   /* top bevel highlight */

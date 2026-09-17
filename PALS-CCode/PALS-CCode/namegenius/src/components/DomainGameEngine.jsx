@@ -1819,10 +1819,10 @@ function renderBoss(ctx, boss) {
     } else if (tg.type === 'pillar') {
       // Vertical sky judgement pillar
       ctx.fillStyle = `rgba(251, 191, 36, ${alpha * 0.35})`
-      ctx.fillRect(tg.x - 14, 0, 28, 280)
+      ctx.fillRect(tg.x - 14, 0, 28, 330)
       ctx.strokeStyle = '#fbbf24'
       ctx.lineWidth = 1.5
-      ctx.strokeRect(tg.x - 14, 0, 28, 280)
+      ctx.strokeRect(tg.x - 14, 0, 28, 330)
       ctx.fillStyle = '#fbbf24'
       ctx.font = 'bold 7.5px "JetBrains Mono", monospace'
       ctx.textAlign = 'center'
@@ -2399,11 +2399,11 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     s.recentDomains = ['genesis', 'zenith', 'lumina', 'hyper', 'kroma']
 
     s.platforms = [
-      { x: 15, y: 198, baseY: 198, w: 130, h: 42, text: 'genesis.com', tld: '.com', color: '#ea580c', cracks: [] },
-      { x: 200, y: 182, baseY: 182, w: 125, h: 42, text: 'zenith.ai', tld: '.ai', color: '#0284c7', cracks: generateCracks(125, 42) },
-      { x: 382, y: 204, baseY: 204, w: 125, h: 42, text: 'lumina.io', tld: '.io', color: '#7c3aed', cracks: [] },
-      { x: 565, y: 180, baseY: 180, w: 125, h: 42, text: 'hyper.co', tld: '.co', color: '#059669', cracks: generateCracks(125, 42), isFloating: true, floatAngle: 0, floatAmp: 14, floatSpeed: 0.04 },
-      { x: 748, y: 198, baseY: 198, w: 125, h: 42, text: 'kroma.app', tld: '.app', color: '#d97706', cracks: [] },
+      { x: 15, y: 236, baseY: 236, w: 130, h: 42, text: 'genesis.com', tld: '.com', color: '#ea580c', cracks: [] },
+      { x: 200, y: 220, baseY: 220, w: 125, h: 42, text: 'zenith.ai', tld: '.ai', color: '#0284c7', cracks: generateCracks(125, 42) },
+      { x: 382, y: 244, baseY: 244, w: 125, h: 42, text: 'lumina.io', tld: '.io', color: '#7c3aed', cracks: [] },
+      { x: 565, y: 216, baseY: 216, w: 125, h: 42, text: 'hyper.co', tld: '.co', color: '#059669', cracks: generateCracks(125, 42), isFloating: true, floatAngle: 0, floatAmp: 14, floatSpeed: 0.04 },
+      { x: 748, y: 236, baseY: 236, w: 125, h: 42, text: 'kroma.app', tld: '.app', color: '#d97706', cracks: [] },
     ]
 
     setGameOver(false)
@@ -2452,7 +2452,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         w.wobblePhase += 0.04
         if (w.x + w.len < -20) {
           w.x = 380 + Math.random() * 40
-          w.y = 15 + Math.random() * 180
+          w.y = 15 + Math.random() * 220
           w.len = 6 + Math.random() * 14
           w.speed = 2.2 + Math.random() * 1.8
         }
@@ -2466,7 +2466,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         m.phase += m.phaseSpeed
         if (m.x < -10) {
           m.x = 390
-          m.baseY = 25 + Math.random() * 200
+          m.baseY = 25 + Math.random() * 240
         }
       }
     }
@@ -2485,7 +2485,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           p.y += p.vy
         }
         p.swayPhase += 0.05
-        if (p.y > 280 || p.x < -20 || p.x > 400) {
+        if (p.y > 330 || p.x < -20 || p.x > 400) {
           p.y = -10
           p.x = Math.random() * 410
         }
@@ -2514,7 +2514,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         cat.x = Math.max(25, curPlat.x + 14)
         cat.y = curPlat.y - cat.h
       } else {
-        cat.y = 158
+        cat.y = 196
       }
       cat.frameCounter++
       return
@@ -2524,7 +2524,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     if (s.cannon && s.cannon.active) {
       s.cannon.timer++
       if (s.cannon.phase === 'aim') {
-        s.cannon.y = 246
+        s.cannon.y = 286
         cat.x = s.cannon.x + 6
         cat.y = s.cannon.y - 6
         cat.vy = 0
@@ -2580,7 +2580,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           const destX = targetPlat
             ? Math.max(38, Math.min(68, targetPlat.x + 20))
             : 48
-          const destY = targetPlat ? targetPlat.y - cat.h : 170
+          const destY = targetPlat ? targetPlat.y - cat.h : 210
 
           cat.x = startX
           cat.y = startY
@@ -2604,7 +2604,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         }
       } else if (s.cannon.phase === 'lower') {
         s.cannon.y += 2.5
-        if (s.cannon.y > 310) {
+        if (s.cannon.y > 350) {
           s.cannon.active = false
         }
       }
@@ -2632,8 +2632,8 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     if (s.platforms.length === 0) {
       s.platforms.push({
         x: 20,
-        y: 200,
-        baseY: 200,
+        y: 236,
+        baseY: 236,
         w: 130,
         h: 42,
         text: 'genesis.com',
@@ -2652,7 +2652,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       const currentRightmost = prevP.x + prevP.w
       const tierSteps = [-34, -22, -12, 0, 14, 24, 34]
       const step = tierSteps[Math.floor(Math.random() * tierSteps.length)]
-      const targetBaseY = Math.max(136, Math.min(218, (prevP ? prevP.baseY : 185) + step))
+      const targetBaseY = Math.max(172, Math.min(256, (prevP ? prevP.baseY : 228) + step))
 
       const gap = 50 + Math.random() * 24
       const spawnX = currentRightmost + gap
@@ -2745,11 +2745,11 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           s.enemies.push({
             type: 'packet_bat',
             x: spawnX + width * 0.5,
-            y: 65 + Math.random() * 30,
+            y: 75 + Math.random() * 35,
             w: 20,
             h: 14,
             vx: -0.8,
-            baseY: 65 + Math.random() * 30,
+            baseY: 75 + Math.random() * 35,
             hp: 2,
             maxHp: 2,
             scoreVal: 25,
@@ -2790,8 +2790,8 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           type: targetBoss.type,
           x: 395,
           targetX: 275,
-          y: 95,
-          baseY: 95,
+          y: 105,
+          baseY: 105,
           w: 48,
           h: 44,
           hp: targetBoss.hp,
@@ -3617,7 +3617,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     }
 
     // Falling Down -> Cannon Rescue Sequence or Game Over
-    if (cat.y > 230 && !cat.inRescueFlight) {
+    if (cat.y > 275 && !cat.inRescueFlight) {
       if (s.gameState !== 'CANNON_RESCUE' && ((s.lives && s.lives > 0) || s.isAuto)) {
         s.gameState = 'CANNON_RESCUE'
         if (s.isAuto) {
@@ -3632,20 +3632,20 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           s.platforms.find((p) => p.x + p.w > 40 && p.x < 130) ||
           s.platforms.find((p) => p.x >= 0 && p.x < 180) ||
           s.platforms[0] ||
-          { x: 20, y: 195, w: 120 }
+          { x: 20, y: 236, w: 120 }
         const cannonX = 20
         const targetX = Math.max(38, Math.min(68, safePlat ? safePlat.x + 20 : 48))
-        const targetY = safePlat ? safePlat.y - cat.h : 170
+        const targetY = safePlat ? safePlat.y - cat.h : 210
         const dx = targetX - (cannonX + 20)
-        const dy = targetY - 260
+        const dy = targetY - 305
         const angleDeg = Math.max(-75, Math.min(-35, Math.atan2(dy, dx) * (180 / Math.PI)))
 
         s.cannon = {
           active: true,
           phase: 'aim',
           x: cannonX,
-          y: 246,
-          targetY: 246,
+          y: 286,
+          targetY: 286,
           timer: 0,
           barrelAngle: angleDeg,
           recoil: 0,
@@ -3655,11 +3655,11 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           targetY,
         }
         cat.x = cannonX + 6
-        cat.y = 246
+        cat.y = 286
         cat.vy = 0
         cat.vx = 0
         cat.inRescueFlight = false
-      } else if (!s.isAuto && (!s.lives || s.lives <= 0) && cat.y > 260 && s.gameState !== 'CANNON_RESCUE' && (!s.cannon || !s.cannon.active)) {
+      } else if (!s.isAuto && (!s.lives || s.lives <= 0) && cat.y > 310 && s.gameState !== 'CANNON_RESCUE' && (!s.cannon || !s.cannon.active)) {
         s.gameState = 'GAMEOVER'
         s.gameOver = true
         setGameOver(true)
@@ -3723,7 +3723,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
   const renderGame = (ctx) => {
     const s = stateRef.current
     const w = 380
-    const h = 280
+    const h = 330
 
     // Dynamic duration: 55.0s Campaign (slow gliding panorama), 45.0s Casual
     const isCamp = s.gameMode === 'campaign'
@@ -4407,7 +4407,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       <canvas
         ref={canvasRef}
         width={380}
-        height={280}
+        height={330}
         className="w-full h-auto block object-contain"
         style={{ imageRendering: 'pixelated' }}
       />
