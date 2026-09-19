@@ -95,7 +95,7 @@ body, p, input, textarea, button, select,
   }
 
   body {
-    background-color: #fae127;
+    background-color: #f5f5f4;
     background-image: url('/grain.png');
     background-repeat: repeat;
     background-size: 96px 96px;
@@ -198,32 +198,38 @@ body, p, input, textarea, button, select,
 
 /* === Neo-Skeuomorphic Hardware Surface & Component System === */
 
-/* 1. Page Background Canvas (Acid Yellow Neo-Pop Canvas with Visible Tactile Paper Grain & Studio Vignette) */
+/* 1. Page Background Canvas (Off-White Industrial Workshop Panel Canvas with Subtle Soft Grain) */
 .bg-hardware-canvas {
-  background-color: #fae127;
+  background-color: #f4f4f3;
   background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"),
     url('/grain.png'),
-    radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.4) 0%, rgba(250, 225, 39, 0) 65%),
-    radial-gradient(ellipse at 85% 85%, rgba(234, 179, 8, 0.18) 0%, transparent 60%);
-  background-repeat: repeat, no-repeat, no-repeat;
-  background-size: 96px 96px, cover, cover;
-  background-attachment: fixed, fixed, fixed;
+    radial-gradient(ellipse at 50% 15%, rgba(255, 255, 255, 0.9) 0%, rgba(244, 244, 243, 0) 65%),
+    radial-gradient(ellipse at 85% 85%, rgba(212, 212, 216, 0.45) 0%, transparent 60%);
+  background-repeat: repeat, repeat, no-repeat, no-repeat;
+  background-size: 160px 160px, 96px 96px, cover, cover;
+  background-attachment: fixed, fixed, fixed, fixed;
+  position: relative;
 }
 
-/* 2. Device Chassis (Molded Plastic Unibody matching Reference Image 2) */
+/* 2. Device Chassis (Vibrant Molded Purple Unibody with Balanced Tactile Grain) */
 .skeuo-chassis,
 .skeuo-chassis-purple {
-  background-color: #be8bf6;
+  background-color: #6b21a8;
   background-image: 
-    radial-gradient(120% 90% at 20% 12%, rgba(255, 255, 255, 0.5) 0%, transparent 45%),
-    linear-gradient(160deg, #d3a4fa 0%, #b873f4 45%, #9240e4 100%);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  border-radius: 44px;
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseChassis'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.15 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseChassis)'/%3E%3C/svg%3E"),
+    url('/grain.png'),
+    radial-gradient(120% 90% at 20% 10%, rgba(233, 213, 255, 0.45) 0%, transparent 45%),
+    linear-gradient(160deg, #7e22ce 0%, #6b21a8 45%, #4c1d95 100%);
+  background-repeat: repeat, repeat, no-repeat, no-repeat;
+  background-size: 140px 140px, 80px 80px, auto, auto;
+  border: 1px solid rgba(216, 180, 254, 0.42);
+  border-radius: 38px;
   box-shadow:
-    inset 0 3px 2px rgba(255, 255, 255, 0.75),   /* top edge specular light */
-    inset 0 -8px 14px rgba(60, 10, 100, 0.35),  /* bottom occlusion shadow */
-    0 4px 8px rgba(0, 0, 0, 0.18),
-    0 36px 70px -12px rgba(45, 12, 70, 0.55);   /* ambient lifted shadow */
+    inset 0 2px 2px rgba(255, 255, 255, 0.55),   /* top edge specular light */
+    inset 0 -8px 14px rgba(45, 10, 80, 0.55),     /* bottom occlusion shadow */
+    0 4px 10px rgba(0, 0, 0, 0.25),
+    0 24px 50px -10px rgba(45, 10, 80, 0.55);     /* ambient lifted shadow */
   position: relative;
 }
 
@@ -262,20 +268,29 @@ body, p, input, textarea, button, select,
     0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-/* 4. Raised Mechanical Keycaps (Clean Precision Molded Keys) */
+/* 4. Raised Mechanical Keycaps (Light-Interacting Directional Micro-Grain) */
 .key-cap {
-  background: linear-gradient(160deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
+  background-color: #f1f5f9;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='kng'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.90' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.10 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23kng)'/%3E%3C/svg%3E"),
+    radial-gradient(100% 60% at 25% 15%, rgba(255, 255, 255, 0.95) 0%, transparent 60%),
+    linear-gradient(160deg, #ffffff 0%, #f1f5f9 50%, #cbd5e1 100%);
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-size: 80px 80px, auto, auto;
   border-radius: 10px;
   border: 1px solid rgba(203, 213, 225, 0.85);
   box-shadow: 
     inset 0 2px 0 rgba(255, 255, 255, 0.95),   /* top bevel highlight */
-    inset 0 -4px 6px rgba(15, 23, 42, 0.12),    /* bottom occlusion */
+    inset 0 -4px 6px rgba(15, 23, 42, 0.14),    /* bottom occlusion */
     0 3px 6px rgba(15, 23, 42, 0.14);           /* cast shadow onto socket floor */
   transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 90ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .key-cap:hover {
-  background: linear-gradient(160deg, #ffffff 0%, #f8fafc 50%, #e2e8f0 100%);
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='kng'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.90' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.10 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23kng)'/%3E%3C/svg%3E"),
+    radial-gradient(100% 60% at 25% 15%, rgba(255, 255, 255, 1) 0%, transparent 60%),
+    linear-gradient(160deg, #ffffff 0%, #f8fafc 50%, #cbd5e1 100%);
   box-shadow: 
     inset 0 2px 0 rgba(255, 255, 255, 1),
     inset 0 -4px 6px rgba(15, 23, 42, 0.12),
@@ -308,9 +323,15 @@ body, p, input, textarea, button, select,
     0 1px 2px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Terracotta Keycap (Image 1 & 3) */
+/* Terracotta Keycap (Light-Interacting Micro-Grain) */
 .key-cap-terracotta {
-  background: linear-gradient(155deg, #f97316 0%, #ea580c 50%, #9a3412 100%) !important;
+  background-color: #ea580c;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='knt'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.14 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23knt)'/%3E%3C/svg%3E"),
+    radial-gradient(100% 60% at 25% 15%, rgba(255, 255, 255, 0.45) 0%, transparent 60%),
+    linear-gradient(155deg, #f97316 0%, #ea580c 50%, #9a3412 100%) !important;
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-size: 80px 80px, auto, auto;
   color: #ffffff !important;
   border: 1px solid #7c2d12 !important;
   box-shadow: 
@@ -320,7 +341,10 @@ body, p, input, textarea, button, select,
 }
 
 .key-cap-terracotta:hover {
-  background: linear-gradient(155deg, #fb923c 0%, #ea580c 50%, #7c2d12 100%) !important;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='knt'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.14 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23knt)'/%3E%3C/svg%3E"),
+    radial-gradient(100% 60% at 25% 15%, rgba(255, 255, 255, 0.55) 0%, transparent 60%),
+    linear-gradient(155deg, #fb923c 0%, #ea580c 50%, #7c2d12 100%) !important;
 }
 
 .key-cap-terracotta:active {
@@ -330,9 +354,15 @@ body, p, input, textarea, button, select,
     0 1px 2px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Cobalt Keycap (Image 2) */
+/* Cobalt Keycap (Light-Interacting Micro-Grain) */
 .key-cap-cobalt {
-  background: linear-gradient(155deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%) !important;
+  background-color: #2563eb;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='knc'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.14 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23knc)'/%3E%3C/svg%3E"),
+    radial-gradient(100% 60% at 25% 15%, rgba(255, 255, 255, 0.5) 0%, transparent 60%),
+    linear-gradient(155deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%) !important;
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-size: 80px 80px, auto, auto;
   color: #ffffff !important;
   border: 1px solid #1e40af !important;
   box-shadow: 
@@ -342,7 +372,10 @@ body, p, input, textarea, button, select,
 }
 
 .key-cap-cobalt:hover {
-  background: linear-gradient(155deg, #60a5fa 0%, #2563eb 50%, #1e40af 100%) !important;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='knc'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.14 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23knc)'/%3E%3C/svg%3E"),
+    radial-gradient(100% 60% at 25% 15%, rgba(255, 255, 255, 0.6) 0%, transparent 60%),
+    linear-gradient(155deg, #60a5fa 0%, #2563eb 50%, #1e40af 100%) !important;
 }
 
 .key-cap-cobalt:active {

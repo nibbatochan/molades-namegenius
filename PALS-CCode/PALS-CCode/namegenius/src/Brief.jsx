@@ -20,7 +20,7 @@ export default function Brief({
   onNavigate,
 }) {
   const [showModal, setShowModal] = useState(false)
-  const [soundEnabled, setSoundEnabled] = useState(true)
+  const [soundEnabled, setSoundEnabled] = useState(false)
 
   const handleScrollToConsole = () => {
     playMechanicalClick('heavy')
@@ -36,11 +36,21 @@ export default function Brief({
   }
 
   return (
-    <div className="min-h-screen bg-hardware-canvas text-slate-950 selection:bg-slate-950 selection:text-[#fae127]">
+    <div className="min-h-screen bg-hardware-canvas text-slate-950 selection:bg-slate-950 selection:text-[#fae127] relative">
+      {/* Background Dark Grain Texture Layer (Behind Header & Container UI) */}
+      <div 
+        className="fixed inset-0 pointer-events-none z-0 opacity-[0.14] mix-blend-multiply"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseGrain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.80' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0.12 0 0 0 0  0 0.12 0 0 0  0 0 0.12 0 0  0 0 0 1.2 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseGrain)'/%3E%3C/svg%3E"), url('/grain.png')`,
+          backgroundSize: '160px 160px, 96px 96px',
+          backgroundRepeat: 'repeat',
+        }}
+      />
+
       {/* FULL-SCREEN 100vh HERO SECTION ON LOAD */}
-      <section className="relative min-h-[100dvh] h-screen flex flex-col justify-between pt-3 sm:pt-4 pb-4 px-4 sm:px-6 lg:px-8 overflow-hidden select-none">
-        {/* Top Navigation Bar: Tactile Hardware Control Strip */}
-        <header className="z-20 w-full max-w-7xl mx-auto flex items-center justify-between shrink-0 mb-1 sm:mb-3">
+      <section className="relative min-h-[100dvh] h-screen flex flex-col justify-between pt-2 sm:pt-3 pb-2 sm:pb-3 px-4 sm:px-6 lg:px-8 overflow-visible select-none">
+        {/* Top Navigation Bar: Header Bar with Vibrant Yellow Tactile Finish */}
+        <header className="z-20 w-full max-w-7xl mx-auto flex items-center justify-between shrink-0 mb-1 sm:mb-2 bg-[#fae127] border-2 border-slate-950 p-1.5 sm:p-2 rounded-2xl shadow-md">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-950 text-sm font-black text-white shadow-md border border-slate-800">
@@ -50,9 +60,6 @@ export default function Brief({
                 NameGenius
               </span>
             </div>
-            <span className="hidden rounded-lg bg-slate-950/10 px-2 py-0.5 font-mono text-[11px] font-black text-slate-900 sm:inline-block border border-slate-950/20">
-              HARDWARE EDITION
-            </span>
           </div>
 
           {/* Sunk-in Tactile Navigation Cluster */}
@@ -76,16 +83,25 @@ export default function Brief({
                 <button
                   type="button"
                   onClick={() => handleNavClick('shortlist')}
-                  className="relative rounded-full px-3.5 py-1.5 font-mono text-xs font-bold text-slate-900 transition-all hover:bg-slate-950/10 active:scale-95"
+                  className="relative rounded-full px-3.5 py-1.5 font-mono text-xs font-bold text-slate-900 transition-all hover:bg-slate-950/10 active:scale-95 cursor-pointer"
                 >
                   SAVED {saved.length > 0 && <span className="ml-1 font-black text-amber-700">({saved.length})</span>}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleNavClick('compare')}
-                  className="rounded-full px-3.5 py-1.5 font-mono text-xs font-bold text-slate-900 transition-all hover:bg-slate-950/10 active:scale-95"
+                  className="rounded-full px-3.5 py-1.5 font-mono text-xs font-bold text-slate-900 transition-all hover:bg-slate-950/10 active:scale-95 cursor-pointer"
                 >
                   COMPARE {compareSel.length > 0 && <span className="ml-1 font-black text-blue-700">({compareSel.length})</span>}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleNavClick('lab')}
+                  className="rounded-full px-3.5 py-1.5 font-mono text-xs font-black text-purple-950 bg-purple-200/80 hover:bg-purple-300 transition-all active:scale-95 border border-purple-400/60 cursor-pointer flex items-center gap-1"
+                  title="Open Sprite & Boss Testing Lab"
+                >
+                  <span>🧪</span>
+                  <span>SPRITE LAB</span>
                 </button>
               </>
             )}
@@ -131,7 +147,7 @@ export default function Brief({
         </header>
 
         {/* Hero Center Stage: Neo-Pop Typography Left + Hardware Gadget Right */}
-        <div className="w-full max-w-6xl mx-auto my-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-center py-2">
+        <div className="w-full max-w-6xl mx-auto my-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-center py-0.5 sm:py-1">
           {/* Left Column: Bold Neo-Pop Headline with Zentarch Font */}
           <div className="lg:col-span-7 flex flex-col justify-center text-left">
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-950/30 bg-slate-950/10 px-4 py-1.5 font-mono text-xs font-black text-slate-900 mb-4 backdrop-blur-xs w-fit">

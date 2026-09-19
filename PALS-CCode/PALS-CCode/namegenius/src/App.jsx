@@ -3,6 +3,7 @@ import { Agentation } from 'agentation'
 import Brief from './Brief'
 import Results from './Results'
 import { Shortlist, Compare } from './Screens'
+import TestingLab from './TestingLab'
 
 const DEFAULT_BRIEF = {
   name: '',
@@ -112,6 +113,8 @@ function App() {
             onNavigate={navigate}
           />
         )
+      case 'lab':
+        return <TestingLab onNavigate={navigate} />
       case 'brief':
       default:
         return (

@@ -1,6 +1,6 @@
 // Web Audio API micro-haptics for tactile mechanical switches and knobs
 let audioCtx = null
-let soundMuted = false
+let soundMuted = true
 
 export function setSoundMuted(muted) {
   soundMuted = Boolean(muted)

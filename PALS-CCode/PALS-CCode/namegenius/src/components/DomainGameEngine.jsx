@@ -113,13 +113,23 @@ const DOMAIN_PLATFORMS = [
   { name: 'infinity', tld: '.cloud', color: '#0284c7' },
 ]
 
-const POWERUP_TYPES = [
-  { label: '.AI', color: '#38bdf8', score: 50, weapon: 'railgun', weaponName: 'CYBER RAILGUN' },
-  { label: '.COM', color: '#fb923c', score: 30, weapon: null },
-  { label: '.IO', color: '#a78bfa', score: 40, weapon: 'spread', weaponName: 'TRIPLE SPREAD' },
-  { label: '.GG', color: '#f43f5e', score: 60, weapon: 'missile', weaponName: 'MICRO-MISSILE' },
-  { label: '.DEV', color: '#818cf8', score: 45, weapon: null },
-  { label: '.APP', color: '#fbbf24', score: 35, weapon: null },
+const GUN_TYPES = [
+  { label: '.AI', color: '#06b6d4', score: 60, weapon: 'railgun', weaponName: 'CYBER RAILGUN', icon: '⚡' },
+  { label: '.IO', color: '#c084fc', score: 50, weapon: 'spread', weaponName: 'TRIPLE SPREAD', icon: '💥' },
+  { label: '.GG', color: '#f97316', score: 70, weapon: 'missile', weaponName: 'MICRO-MISSILE', icon: '🚀' },
+]
+
+const DOMAIN_LIFE_TYPES = [
+  { label: '.COM', color: '#ea580c', score: 50, accessory: 'crown' },
+  { label: '.AI', color: '#0284c7', score: 50, accessory: 'vr_visor' },
+  { label: '.IO', color: '#7c3aed', score: 50, accessory: 'sunglasses' },
+  { label: '.CO', color: '#059669', score: 50, accessory: 'viking_helmet' },
+  { label: '.APP', color: '#d97706', score: 50, accessory: 'party_hat' },
+  { label: '.DEV', color: '#4f46e5', score: 50, accessory: 'wizard_hat' },
+  { label: '.XYZ', color: '#db2777', score: 50, accessory: 'flower' },
+  { label: '.GG', color: '#e11d48', score: 50, accessory: 'pirate_hat' },
+  { label: '.TECH', color: '#06b6d4', score: 50, accessory: 'goggles' },
+  { label: '.SPACE', color: '#8b5cf6', score: 50, accessory: 'halo' },
 ]
 
 // 9 Custom Panoramic Landscape Biomes
@@ -392,10 +402,15 @@ const ACCESSORY_NAMES = {
   straw_hat: '🤠 STRAW HAT',
 }
 
-// Handcrafted Feline Walkcycle Sprite with 12 Accessories
-function renderCatSprite(ctx, x, y, isGrounded, vy, frameCounter, isDead, accessory = null) {
+// Handcrafted Feline Walkcycle Sprite with 12 Accessories & Damage I-Frames
+function renderCatSprite(ctx, x, y, isGrounded, vy, frameCounter, isDead, accessory = null, hitFlash = 0) {
   ctx.save()
   ctx.translate(Math.round(x), Math.round(y))
+
+  // I-Frames flash effect when damaged
+  if (hitFlash > 0 && Math.floor(hitFlash / 3) % 2 === 1) {
+    ctx.globalAlpha = 0.4
+  }
 
   const cycle = 32
   const phase = (frameCounter % cycle) / cycle
@@ -1164,590 +1179,2191 @@ function renderProjectiles(ctx, projectiles) {
   ctx.restore()
 }
 
-// 2. 404 Glitch Bug Sprite (Ground Crawler - 1 HP, +10 pts - Animated 6-Leg Scuttle & Antennae Sparks)
-function renderGlitchBug(ctx, bug) {
+// 2. 404 Cyber Drone Sprite (Boxy Chassis, "404" Badge, Gold Halo Rotor, Red Optic / Cyan Laser & Bullet)
+function renderGlitchBug(ctx, drone, customAction = null, customFrame = null) {
   ctx.save()
-  ctx.translate(Math.round(bug.x), Math.round(bug.y))
+  const frame = customFrame !== null ? customFrame : (drone.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    drone.actionState === 'attack' ||
+    (drone.laserTimer && drone.laserTimer > 0)
 
-  if (bug.hitFlash > 0) {
-    ctx.fillStyle = '#ffffff'
-    roundRect(ctx, 0, 0, bug.w, bug.h, 3)
-    ctx.fill()
-    ctx.restore()
-    return
+  // 4-Phase Animation Frames (6 ticks per frame for crisp 16-bit timing)
+  const cycleFrame = Math.floor(frame / 6) % 4
+
+  // Vertical Hover Bob (Frames: 0 -> 0px, 1 -> +2px, 2 -> -2px, 3 -> 0px)
+  let bobY = 0
+  if (!isAttack) {
+    bobY = cycleFrame === 1 ? 2 : cycleFrame === 2 ? -2 : 0
   }
 
-  const frame = bug.frame || 0
-  const isFacingRight = (bug.vx || 0) > 0
-
-  // 6 Scuttling Multijointed Legs with Phase Offsets
-  ctx.strokeStyle = '#022c22'
-  ctx.lineWidth = 1.3
-  ;[3, 8, 13].forEach((lx, idx) => {
-    const legPhase = frame * 0.35 + idx * 1.2
-    const legLift = Math.sin(legPhase) * 3
-    const legSweep = Math.cos(legPhase) * 2.5
-    ctx.beginPath()
-    ctx.moveTo(lx, 8)
-    ctx.lineTo(lx + legSweep, 11)
-    ctx.lineTo(lx + legSweep + (idx === 0 ? -2 : idx === 2 ? 2 : 0), 14 + legLift)
-    ctx.stroke()
-  })
-
-  // Multilayered Carapace Body (Deep Emerald & Neon Cyan Matrix)
-  ctx.fillStyle = '#064e3b'
-  roundRect(ctx, 1, 1, bug.w - 2, bug.h - 2, 3)
-  ctx.fill()
-  ctx.fillStyle = '#047857'
-  roundRect(ctx, 2, 2, bug.w - 4, bug.h - 5, 2)
-  ctx.fill()
-  ctx.strokeStyle = '#10b981'
-  ctx.lineWidth = 1
-  ctx.stroke()
-
-  // Wiggling Dual Antennae with Electric Tip Sparks
-  const antWiggle = Math.sin(frame * 0.4) * 2
-  const antRootX = isFacingRight ? bug.w - 3 : 3
-  ctx.strokeStyle = '#34d399'
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(antRootX, 2)
-  ctx.lineTo(antRootX + (isFacingRight ? 3 : -3) + antWiggle, -3)
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.moveTo(antRootX, 2)
-  ctx.lineTo(antRootX + (isFacingRight ? 1 : -1) - antWiggle, -4)
-  ctx.stroke()
-
-  // Electric Antenna Spark Point
-  ctx.fillStyle = '#6ee7b7'
-  ctx.fillRect(antRootX + (isFacingRight ? 3 : -3) + antWiggle - 1, -4, 2, 2)
-
-  // Glowing Compound Ruby Eyes
-  ctx.fillStyle = '#ef4444'
-  ctx.fillRect(isFacingRight ? bug.w - 4 : 1.5, 3.5, 3, 2.5)
-  ctx.fillStyle = '#fca5a5'
-  ctx.fillRect(isFacingRight ? bug.w - 3 : 2, 4, 1.5, 1.5)
-
-  // Animated 404 Glitch Text Core
-  ctx.fillStyle = '#a7f3d0'
-  ctx.font = 'bold 6.5px monospace'
-  ctx.fillText('404', 2.5, 8.5)
-
-  ctx.restore()
-}
-
-// 3. Squatter Drone Sprite (Gap Hoverer - 2 HP, +20 pts - Animated Quad-Rotor & Surveillance Scanner)
-function renderSquatterDrone(ctx, drone) {
-  ctx.save()
-  ctx.translate(Math.round(drone.x), Math.round(drone.y))
+  ctx.translate(Math.round(drone.x), Math.round(drone.y + bobY))
 
   if (drone.hitFlash > 0) {
     ctx.fillStyle = '#ffffff'
-    roundRect(ctx, 0, 0, drone.w, drone.h, 4)
+    roundRect(ctx, 0, 0, drone.w || 26, drone.h || 24, 5)
     ctx.fill()
     ctx.restore()
     return
   }
 
-  const frame = drone.frame || 0
+  const w = drone.w || 26
+  const h = drone.h || 24
+  const centerX = w / 2
+  const isFacingLeft = (drone.vx || -1) < 0
 
-  // Spinning Top Dual-Rotor Blades with Motion Blur
-  const rPhase = (frame * 0.7) % (Math.PI * 2)
-  const bladeSpan = Math.cos(rPhase) * 10
-  ctx.strokeStyle = 'rgba(56, 189, 248, 0.9)'
-  ctx.lineWidth = 1.6
+  // 1. Top Propeller: Golden-Yellow Halo Ring Rotor (Spins horizontally on central mast)
+  const rAng = isAttack ? frame * 0.4 : cycleFrame * (Math.PI / 2) + frame * 0.18
+  const rSpan = Math.cos(rAng) * 14
+  const rThick = Math.abs(Math.sin(rAng)) * 2 + 2
+
+  // Mast support
+  ctx.fillStyle = '#1e293b'
+  ctx.fillRect(centerX - 1, -4, 2, 5)
+  ctx.fillStyle = '#64748b'
+  ctx.fillRect(centerX - 0.5, -4, 1, 2)
+
+  // Golden halo outer rotor ring
+  ctx.strokeStyle = '#eab308'
+  ctx.lineWidth = rThick
   ctx.beginPath()
-  ctx.moveTo(drone.w / 2 - bladeSpan, -3)
-  ctx.lineTo(drone.w / 2 + bladeSpan, -3)
+  ctx.ellipse(centerX, -4.5, 14, 3, 0, 0, Math.PI * 2)
   ctx.stroke()
 
-  // Rotor Hub & Mast
-  ctx.fillStyle = '#94a3b8'
-  ctx.fillRect(drone.w / 2 - 1, -3, 2, 4)
-
-  // Sweeping Ground Surveillance Light Cone
-  const scanSweep = Math.sin(frame * 0.1) * 6
-  ctx.save()
-  ctx.fillStyle = 'rgba(6, 182, 212, 0.16)'
+  ctx.strokeStyle = '#fef08a'
+  ctx.lineWidth = 1
   ctx.beginPath()
-  ctx.moveTo(drone.w / 2, drone.h)
-  ctx.lineTo(drone.w / 2 - 8 + scanSweep, drone.h + 16)
-  ctx.lineTo(drone.w / 2 + 8 + scanSweep, drone.h + 16)
-  ctx.closePath()
-  ctx.fill()
-  ctx.restore()
+  ctx.ellipse(centerX, -4.5, 13, 2, 0, 0, Math.PI * 2)
+  ctx.stroke()
 
-  // Spherical Gunmetal Chassis
-  ctx.fillStyle = '#0f172a'
-  roundRect(ctx, 1, 1, drone.w - 2, drone.h - 2, 5)
+  // Inner black rotor cross-strut
+  ctx.strokeStyle = '#0f172a'
+  ctx.lineWidth = 1.2
+  ctx.beginPath()
+  ctx.moveTo(centerX - rSpan, -4.5)
+  ctx.lineTo(centerX + rSpan, -4.5)
+  ctx.stroke()
+
+  // Center gold bolt
+  ctx.fillStyle = '#ca8a04'
+  ctx.fillRect(centerX - 1.5, -6, 3, 3)
+
+  // 2. Rear Turbine Exhaust Engine Pod
+  ctx.fillStyle = '#1e293b'
+  roundRect(ctx, 0, 5, 5, 12, 2)
   ctx.fill()
-  ctx.strokeStyle = '#38bdf8'
+  ctx.strokeStyle = '#0f172a'
+  ctx.lineWidth = 1
+  ctx.stroke()
+  ctx.fillStyle = '#475569'
+  ctx.fillRect(1, 7, 3, 8)
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(0.5, 9, 2, 4)
+
+  // 3. Bottom Dual Landing Skids
+  ctx.fillStyle = '#334155'
+  ctx.fillRect(4, h - 3, 4, 3)
+  ctx.fillRect(w - 7, h - 3, 4, 3)
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, 3, h - 1.5, 7, 2, 1)
+  ctx.fill()
+  roundRect(ctx, w - 8, h - 1.5, 7, 2, 1)
+  ctx.fill()
+
+  // 4. Main Boxy Industrial Chassis
+  const grad = ctx.createLinearGradient(centerX, 0, centerX, h)
+  grad.addColorStop(0, '#475569')
+  grad.addColorStop(0.3, '#334155')
+  grad.addColorStop(0.7, '#1e293b')
+  grad.addColorStop(1, '#0f172a')
+  ctx.fillStyle = grad
+  roundRect(ctx, 4, 1, w - 6, h - 4, 5)
+  ctx.fill()
+  ctx.strokeStyle = '#020617'
   ctx.lineWidth = 1.3
   ctx.stroke()
 
-  // Golden Padlock Icon with Glint
-  ctx.fillStyle = '#f59e0b'
-  roundRect(ctx, 4.5, 5.5, 9, 8, 2)
+  // Top metallic brow highlight
+  ctx.fillStyle = '#64748b'
+  ctx.fillRect(centerX - 5, 2, 10, 1.6)
+
+  // 5. Side Panel Plate with Bold "404" Stencil Text
+  ctx.fillStyle = '#1e293b'
+  roundRect(ctx, 6, 6, 11, 10, 2)
   ctx.fill()
-  ctx.strokeStyle = '#d97706'
+  ctx.strokeStyle = '#0f172a'
+  ctx.lineWidth = 0.9
+  ctx.stroke()
+
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 6.5px "JetBrains Mono", monospace'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('404', 11.5, 11.5)
+
+  // 6. Front Cyclops Optic Core
+  const eyeX = w - 6.5
+  const eyeY = 11.5
+  const eyeR = 4.5
+
+  // Dark square bezel
+  ctx.fillStyle = '#020617'
+  roundRect(ctx, w - 10, 6, 8, 11, 2)
+  ctx.fill()
+  ctx.strokeStyle = '#334155'
   ctx.lineWidth = 1
   ctx.stroke()
-  ctx.beginPath()
-  ctx.arc(9, 5.5, 3, Math.PI, 0)
-  ctx.stroke()
 
-  // Keyhole Dot
-  ctx.fillStyle = '#0f172a'
-  ctx.fillRect(8.5, 8.5, 1.5, 2.5)
+  if (isAttack) {
+    // ATTACK: 4-Frame Laser & Bullet Cycle
+    const attFrame = customAction === 'attack' ? cycleFrame : (drone.laserPhase || 0)
 
-  // Pulsing Jet Thrust Exhaust
-  const jetLen = 2 + Math.sin(frame * 0.5) * 2
-  ctx.fillStyle = '#06b6d4'
-  ctx.fillRect(drone.w / 2 - 2, drone.h - 1, 4, jetLen)
+    if (attFrame === 0) {
+      // Frame 0: Red eye charge
+      ctx.fillStyle = '#ef4444'
+      ctx.beginPath()
+      ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(eyeX - 1.5, eyeY - 1.5, 3, 3)
+    } else if (attFrame === 1) {
+      // Frame 1: Cyan bezel glow + Horizontal cyan beam
+      ctx.fillStyle = '#00f0ff'
+      ctx.beginPath()
+      ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#ffffff'
+      ctx.beginPath()
+      ctx.arc(eyeX, eyeY, 2.5, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Cyan laser beam
+      const beamDir = isFacingLeft ? -1 : 1
+      const bLen = 65
+      ctx.save()
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)'
+      ctx.lineWidth = 6.5
+      ctx.beginPath()
+      ctx.moveTo(eyeX + eyeR, eyeY)
+      ctx.lineTo(eyeX + eyeR + beamDir * bLen, eyeY)
+      ctx.stroke()
+
+      ctx.strokeStyle = '#00f0ff'
+      ctx.lineWidth = 3.5
+      ctx.beginPath()
+      ctx.moveTo(eyeX + eyeR, eyeY)
+      ctx.lineTo(eyeX + eyeR + beamDir * bLen, eyeY)
+      ctx.stroke()
+
+      ctx.strokeStyle = '#ffffff'
+      ctx.lineWidth = 1.5
+      ctx.beginPath()
+      ctx.moveTo(eyeX + eyeR, eyeY)
+      ctx.lineTo(eyeX + eyeR + beamDir * bLen, eyeY)
+      ctx.stroke()
+
+      // Rounded beam tip
+      ctx.fillStyle = '#00f0ff'
+      ctx.beginPath()
+      ctx.arc(eyeX + eyeR + beamDir * bLen, eyeY, 3, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.restore()
+    } else if (attFrame === 2) {
+      // Frame 2: Cyan energy projectile bullet firing with dash trail
+      ctx.fillStyle = '#0891b2'
+      ctx.beginPath()
+      ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
+      ctx.fill()
+
+      const bulletX = eyeX + (isFacingLeft ? -24 : 24)
+      ctx.fillStyle = '#00f0ff'
+      ctx.beginPath()
+      ctx.arc(bulletX, eyeY, 4, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#ffffff'
+      ctx.beginPath()
+      ctx.arc(bulletX, eyeY, 2, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Cyan dashed particle trail
+      ctx.fillStyle = 'rgba(0, 240, 255, 0.7)'
+      ctx.fillRect(bulletX + (isFacingLeft ? 8 : -8), eyeY - 2, 4, 1.5)
+      ctx.fillRect(bulletX + (isFacingLeft ? 14 : -14), eyeY + 1, 3, 1.5)
+    } else {
+      // Frame 3: Cooldown, dark wine red eye
+      ctx.fillStyle = '#450a0a'
+      ctx.beginPath()
+      ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  } else {
+    // IDLE: 4-Frame Hover Cycle
+    let irisColor = '#ef4444'
+    let pupilColor = '#991b1b'
+    let hasGlint = true
+
+    if (cycleFrame === 1) {
+      irisColor = '#991b1b'
+      pupilColor = '#450a0a'
+      hasGlint = false
+    } else if (cycleFrame === 2) {
+      irisColor = '#f87171'
+      pupilColor = '#dc2626'
+      hasGlint = true
+    }
+
+    ctx.fillStyle = irisColor
+    ctx.beginPath()
+    ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.fillStyle = pupilColor
+    ctx.beginPath()
+    ctx.arc(eyeX, eyeY, 2.2, 0, Math.PI * 2)
+    ctx.fill()
+
+    if (hasGlint) {
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(eyeX - 1.8, eyeY - 1.8, 1.6, 1.6)
+    }
+  }
 
   ctx.restore()
 }
 
-// 4. Cyber Packet Bat Sprite (Airborne Swooper - 2 HP, +25 pts - 4-Frame Flapping Wings & Sonar Pulse)
-function renderPacketBat(ctx, bat) {
+// 3. Squatter Recon Drone Sprite (Spherical Gunmetal Chassis, Padlock, Cyan Equator, Radar Scanner Eye & Ventral Spotlight)
+function renderSquatterDrone(ctx, drone, customAction = null, customFrame = null) {
   ctx.save()
+  const frame = customFrame !== null ? customFrame : (drone.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    drone.actionState === 'attack' ||
+    (drone.attackTimer && drone.attackTimer > 0)
+
+  // 4-Phase Animation Frames
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const bobY = !isAttack ? (cycleFrame === 1 ? 1.5 : cycleFrame === 2 ? -1.5 : 0) : 0
+
+  ctx.translate(Math.round(drone.x), Math.round(drone.y + bobY))
+
+  if (drone.hitFlash > 0) {
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, 0, 0, drone.w || 26, drone.h || 26, 6)
+    ctx.fill()
+    ctx.restore()
+    return
+  }
+
+  const w = drone.w || 26
+  const h = drone.h || 26
+  const centerX = w / 2
+
+  // 1. Top Quad-Rotor / Halo Propeller with Cyan Glow Trails
+  const rPhase = frame * 0.35
+  const bladeSpan1 = Math.cos(rPhase) * 14
+  const bladeSpan2 = Math.sin(rPhase) * 14
+
+  // Mast
+  ctx.fillStyle = '#1e293b'
+  ctx.fillRect(centerX - 1, -4, 2, 5)
+
+  // Dual crossing cyan halo blades
+  ctx.strokeStyle = '#38bdf8'
+  ctx.lineWidth = 1.8
+  ctx.beginPath()
+  ctx.ellipse(centerX, -4.5, 14, 3, 0, 0, Math.PI * 2)
+  ctx.stroke()
+
+  ctx.strokeStyle = '#e0f2fe'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(centerX - bladeSpan1, -4.5)
+  ctx.lineTo(centerX + bladeSpan1, -4.5)
+  ctx.moveTo(centerX - bladeSpan2 * 0.7, -4.5)
+  ctx.lineTo(centerX + bladeSpan2 * 0.7, -4.5)
+  ctx.stroke()
+
+  // Rotor hub
+  ctx.fillStyle = '#94a3b8'
+  ctx.fillRect(centerX - 1.5, -5.5, 3, 2)
+
+  // 2. Ventral Downward Spotlight (Pulsing across 4 idle frames)
+  if (!isAttack) {
+    const spotSpread = 5 + cycleFrame * 3.5
+    ctx.save()
+    const spotGrad = ctx.createLinearGradient(centerX, h - 2, centerX, h + 22)
+    spotGrad.addColorStop(0, 'rgba(6, 182, 212, 0.55)')
+    spotGrad.addColorStop(1, 'rgba(6, 182, 212, 0.0)')
+    ctx.fillStyle = spotGrad
+    ctx.beginPath()
+    ctx.moveTo(centerX - 2, h - 2)
+    ctx.lineTo(centerX - spotSpread, h + 22)
+    ctx.lineTo(centerX + spotSpread, h + 22)
+    ctx.lineTo(centerX + 2, h - 2)
+    ctx.closePath()
+    ctx.fill()
+    ctx.restore()
+  }
+
+  // 3. Spherical Gunmetal Chassis
+  const grad = ctx.createLinearGradient(centerX, 0, centerX, h)
+  grad.addColorStop(0, '#334155')
+  grad.addColorStop(0.4, '#1e293b')
+  grad.addColorStop(1, '#0f172a')
+  ctx.fillStyle = grad
+  ctx.beginPath()
+  ctx.arc(centerX, h / 2, 11, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.strokeStyle = '#020617'
+  ctx.lineWidth = 1.4
+  ctx.stroke()
+
+  // Glowing Cyan Equator Seamline
+  ctx.strokeStyle = '#06b6d4'
+  ctx.lineWidth = 1.2
+  ctx.beginPath()
+  ctx.arc(centerX, h / 2, 11, Math.PI * 0.1, Math.PI * 0.9)
+  ctx.stroke()
+
+  // 4. Golden Padlock Emblem on Left Side
+  ctx.fillStyle = '#f59e0b'
+  roundRect(ctx, 3, h / 2 - 2, 5.5, 5.5, 1.5)
+  ctx.fill()
+  ctx.strokeStyle = '#d97706'
+  ctx.lineWidth = 0.8
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.arc(5.75, h / 2 - 2, 1.8, Math.PI, 0)
+  ctx.stroke()
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(5.25, h / 2, 1, 1.8) // keyhole
+
+  // 5. Central Radar Scanner Eye
+  const eyeX = centerX + 3.5
+  const eyeY = h / 2
+  const eyeR = 6
+
+  // Dark outer bezel with cyan trim
+  ctx.fillStyle = '#020617'
+  ctx.beginPath()
+  ctx.arc(eyeX, eyeY, eyeR + 1.2, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.strokeStyle = '#38bdf8'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  if (isAttack) {
+    // ATTACK: 4-Frame Scanner Overcharge Cycle
+    const attFrame = customAction === 'attack' ? cycleFrame : (drone.attackPhase || 0)
+
+    if (attFrame === 0) {
+      // Frame 0: Yellow/Amber Charge Cone
+      ctx.fillStyle = '#f59e0b'
+      ctx.beginPath()
+      ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#ffffff'
+      ctx.beginPath()
+      ctx.arc(eyeX, eyeY, 2.5, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Forward Amber Cone
+      ctx.save()
+      const coneGrad = ctx.createLinearGradient(eyeX, eyeY, eyeX + 35, eyeY)
+      coneGrad.addColorStop(0, 'rgba(245, 158, 11, 0.75)')
+      coneGrad.addColorStop(1, 'rgba(251, 191, 36, 0.05)')
+      ctx.fillStyle = coneGrad
+      ctx.beginPath()
+      ctx.moveTo(eyeX + eyeR, eyeY)
+      ctx.lineTo(eyeX + eyeR + 32, eyeY - 14)
+      ctx.lineTo(eyeX + eyeR + 32, eyeY + 14)
+      ctx.closePath()
+      ctx.fill()
+      ctx.restore()
+    } else if (attFrame === 1) {
+      // Frame 1: Wide Red Surveillance Flashwave
+      ctx.fillStyle = '#ef4444'
+      ctx.beginPath()
+      ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#ffffff'
+      ctx.beginPath()
+      ctx.arc(eyeX, eyeY, 2.8, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Red Flashwave Sector
+      ctx.save()
+      const redGrad = ctx.createLinearGradient(eyeX, eyeY, eyeX + 45, eyeY)
+      redGrad.addColorStop(0, 'rgba(239, 68, 68, 0.85)')
+      redGrad.addColorStop(1, 'rgba(248, 113, 113, 0.05)')
+      ctx.fillStyle = redGrad
+      ctx.beginPath()
+      ctx.moveTo(eyeX + eyeR, eyeY)
+      ctx.lineTo(eyeX + eyeR + 42, eyeY - 18)
+      ctx.lineTo(eyeX + eyeR + 42, eyeY + 18)
+      ctx.closePath()
+      ctx.fill()
+      ctx.restore()
+    } else if (attFrame === 2) {
+      // Frame 2: EMP Electrical Discharge with Crackling Cyan Sparks
+      ctx.fillStyle = '#00f0ff'
+      ctx.beginPath()
+      ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#ffffff'
+      ctx.beginPath()
+      ctx.arc(eyeX, eyeY, 3, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Full Body Crackling Electrical Spikes
+      ctx.strokeStyle = '#38bdf8'
+      ctx.lineWidth = 1.4
+      ;[0, Math.PI * 0.35, Math.PI * 0.7, Math.PI * 1.1, Math.PI * 1.5, Math.PI * 1.85].forEach(
+        (spkAngle) => {
+          const sx = centerX + Math.cos(spkAngle) * 12
+          const sy = h / 2 + Math.sin(spkAngle) * 12
+          const ex = centerX + Math.cos(spkAngle) * 22
+          const ey = h / 2 + Math.sin(spkAngle) * 22
+          ctx.beginPath()
+          ctx.moveTo(sx, sy)
+          ctx.lineTo((sx + ex) / 2 + (Math.random() - 0.5) * 4, (sy + ey) / 2)
+          ctx.lineTo(ex, ey)
+          ctx.stroke()
+        }
+      )
+    } else {
+      // Frame 3: Rear Steam Vents & Glassy Cyan Standby Lens
+      ctx.fillStyle = '#0891b2'
+      ctx.beginPath()
+      ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#67e8f9'
+      ctx.beginPath()
+      ctx.arc(eyeX - 1.5, eyeY - 1.5, 2, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Rear steam puffs
+      ctx.fillStyle = 'rgba(203, 213, 225, 0.65)'
+      ctx.beginPath()
+      ctx.arc(centerX - 13, h / 2 - 3, 3, 0, Math.PI * 2)
+      ctx.arc(centerX - 16, h / 2 - 6, 2.5, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  } else {
+    // IDLE: Rotating Radar Needle (10 o'clock -> 1 o'clock -> 4 o'clock -> 7 o'clock)
+    ctx.fillStyle = '#0f172a'
+    ctx.beginPath()
+    ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Radar grid circle
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)'
+    ctx.lineWidth = 0.8
+    ctx.beginPath()
+    ctx.arc(eyeX, eyeY, 3.5, 0, Math.PI * 2)
+    ctx.stroke()
+
+    // Rotating red radar needle
+    const needleAngle = cycleFrame * (Math.PI / 2) - Math.PI * 0.6
+    ctx.strokeStyle = '#ef4444'
+    ctx.lineWidth = 1.3
+    ctx.beginPath()
+    ctx.moveTo(eyeX, eyeY)
+    ctx.lineTo(eyeX + Math.cos(needleAngle) * 5, eyeY + Math.sin(needleAngle) * 5)
+    ctx.stroke()
+
+    // Red radar sweep dot
+    ctx.fillStyle = '#f87171'
+    ctx.fillRect(eyeX + Math.cos(needleAngle) * 4 - 1, eyeY + Math.sin(needleAngle) * 4 - 1, 2, 2)
+  }
+
+  ctx.restore()
+}
+
+// 4. Cyber Packet Bat Sprite (Royal Purple / Indigo, Magenta Circuit Veins, Cyan Visor, White Fangs & RGB Sonar Waves)
+function renderPacketBat(ctx, bat, customAction = null, customFrame = null) {
+  ctx.save()
+  const frame = customFrame !== null ? customFrame : (bat.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    bat.actionState === 'attack' ||
+    (bat.attackTimer && bat.attackTimer > 0)
+
+  // 4-Phase Animation Frames
+  const cycleFrame = Math.floor(frame / 6) % 4
+
   ctx.translate(Math.round(bat.x), Math.round(bat.y))
 
   if (bat.hitFlash > 0) {
     ctx.fillStyle = '#ffffff'
-    roundRect(ctx, 0, 0, bat.w, bat.h, 3)
+    roundRect(ctx, 0, 0, bat.w || 28, bat.h || 22, 5)
     ctx.fill()
     ctx.restore()
     return
   }
 
-  const frame = bat.frame || 0
-  const wingFlap = Math.sin(frame * 0.35) * 7
+  const w = bat.w || 28
+  const h = bat.h || 22
+  const centerX = w / 2
 
-  // Expanding Sonar Radar Echo Rings
-  if (frame % 16 < 8) {
-    ctx.strokeStyle = 'rgba(168, 85, 247, 0.4)'
+  // Wing Flapping Angles (Frame 0: High, Frame 1: Mid-down, Frame 2: Full spread, Frame 3: Arched upstroke glide)
+  let wingLift = 0
+  if (!isAttack) {
+    wingLift = cycleFrame === 0 ? -6 : cycleFrame === 1 ? -1 : cycleFrame === 2 ? 4 : -4
+  } else {
+    // Attack wings: Frame 0 (tucked), Frame 1 (open), Frame 2 (screech spread), Frame 3 (glide)
+    const attFrame = customAction === 'attack' ? cycleFrame : (bat.attackPhase || 0)
+    wingLift = attFrame === 0 ? 6 : attFrame === 1 ? -3 : attFrame === 2 ? -6 : -2
+  }
+
+  const isDiving = isAttack && (customAction === 'attack' ? cycleFrame === 0 : bat.attackPhase === 0)
+
+  // 1. Scalloped Cyber Wings (Royal Purple with Magenta Circuit Veins)
+  if (!isDiving) {
+    // Left Wing
+    ctx.fillStyle = '#581c87'
+    ctx.beginPath()
+    ctx.moveTo(centerX - 3, 10)
+    ctx.lineTo(-8, 3 + wingLift)
+    ctx.lineTo(-4, 14 + wingLift * 0.5)
+    ctx.lineTo(centerX - 3, 14)
+    ctx.closePath()
+    ctx.fill()
+    ctx.strokeStyle = '#3b0764'
+    ctx.lineWidth = 1.2
+    ctx.stroke()
+
+    // Right Wing
+    ctx.fillStyle = '#581c87'
+    ctx.beginPath()
+    ctx.moveTo(centerX + 3, 10)
+    ctx.lineTo(w + 8, 3 + wingLift)
+    ctx.lineTo(w + 4, 14 + wingLift * 0.5)
+    ctx.lineTo(centerX + 3, 14)
+    ctx.closePath()
+    ctx.fill()
+    ctx.strokeStyle = '#3b0764'
+    ctx.lineWidth = 1.2
+    ctx.stroke()
+
+    // Glowing Magenta Circuit Veins on Wings
+    ctx.strokeStyle = '#ec4899'
     ctx.lineWidth = 1
     ctx.beginPath()
-    ctx.arc(bat.w / 2 - 4, bat.h / 2, 10 + (frame % 8) * 1.5, Math.PI * 0.7, Math.PI * 1.3)
+    ctx.moveTo(centerX - 3, 11)
+    ctx.lineTo(-5, 5 + wingLift)
+    ctx.moveTo(centerX + 3, 11)
+    ctx.lineTo(w + 5, 5 + wingLift)
+    ctx.stroke()
+  } else {
+    // Dive Crouch Tucked Wings Wrapped Around Body
+    ctx.fillStyle = '#3b0764'
+    roundRect(ctx, 4, 6, w - 8, h - 8, 5)
+    ctx.fill()
+    ctx.strokeStyle = '#ec4899'
+    ctx.lineWidth = 1.2
     ctx.stroke()
   }
 
-  // Left & Right Flapping Cyber Wings with Circuit Veins
+  // 2. Aerodynamic Indigo Bat Torso & Head
+  ctx.fillStyle = '#1e1b4b'
+  roundRect(ctx, centerX - 6, 5, 12, 13, 4)
+  ctx.fill()
+  ctx.strokeStyle = '#581c87'
+  ctx.lineWidth = 1.2
+  ctx.stroke()
+
+  // Bat Ears
   ctx.fillStyle = '#7c3aed'
   ctx.beginPath()
-  ctx.moveTo(bat.w / 2, 7)
-  ctx.lineTo(-6, 3 - wingFlap)
-  ctx.lineTo(-2, 13)
+  ctx.moveTo(centerX - 5, 5)
+  ctx.lineTo(centerX - 7, -1)
+  ctx.lineTo(centerX - 2, 5)
+  ctx.moveTo(centerX + 2, 5)
+  ctx.lineTo(centerX + 7, -1)
+  ctx.lineTo(centerX + 5, 5)
   ctx.fill()
 
+  // Torso Magenta Circuit Veins
+  ctx.strokeStyle = '#ec4899'
+  ctx.lineWidth = 0.9
   ctx.beginPath()
-  ctx.moveTo(bat.w / 2, 7)
-  ctx.lineTo(bat.w + 6, 3 - wingFlap)
-  ctx.lineTo(bat.w + 2, 13)
-  ctx.fill()
-
-  // Wing Neon Edges
-  ctx.strokeStyle = '#c084fc'
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(bat.w / 2, 7)
-  ctx.lineTo(-6, 3 - wingFlap)
-  ctx.lineTo(-2, 13)
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.moveTo(bat.w / 2, 7)
-  ctx.lineTo(bat.w + 6, 3 - wingFlap)
-  ctx.lineTo(bat.w + 2, 13)
+  ctx.moveTo(centerX - 3, 13)
+  ctx.lineTo(centerX, 16)
+  ctx.lineTo(centerX + 3, 13)
   ctx.stroke()
 
-  // Aerodynamic Stealth Body
-  ctx.fillStyle = '#1e1b4b'
-  roundRect(ctx, 3, 2, bat.w - 6, bat.h - 4, 3)
-  ctx.fill()
-  ctx.strokeStyle = '#8b5cf6'
-  ctx.lineWidth = 1
-  ctx.stroke()
-
-  // Glowing Cyan Sensor Visors & Cyber Fangs
+  // 3. Glowing Cyan Visor & White Vampire Fangs
   ctx.fillStyle = '#06b6d4'
-  ctx.fillRect(4.5, 4.5, 2.5, 2.5)
-  ctx.fillRect(bat.w - 7, 4.5, 2.5, 2.5)
+  roundRect(ctx, centerX - 4.5, 7, 9, 4, 1.5)
+  ctx.fill()
+  ctx.fillStyle = '#a5f3fc'
+  ctx.fillRect(centerX - 3, 8, 6, 1.5)
+
+  // White fangs
   ctx.fillStyle = '#ffffff'
-  ctx.fillRect(6, 9.5, 1.5, 2)
-  ctx.fillRect(bat.w - 7.5, 9.5, 1.5, 2)
+  ctx.fillRect(centerX - 3, 13, 1.5, 2.5)
+  ctx.fillRect(centerX + 1.5, 13, 1.5, 2.5)
+
+  // 4. Sonar Screech Waveform / Sonar Rings
+  if (!isAttack) {
+    // IDLE: Concentric Purple Sound Rings emitting from mouth
+    const ringCount = cycleFrame + 1
+    ctx.strokeStyle = '#c084fc'
+    ctx.lineWidth = 1.2
+    for (let r = 0; r < ringCount; r++) {
+      ctx.beginPath()
+      ctx.arc(centerX + 8 + r * 4.5, 12, 5 + r * 3, -Math.PI * 0.35, Math.PI * 0.35)
+      ctx.stroke()
+    }
+  } else {
+    // ATTACK: 4-Frame Sonar Screech Cycle
+    const attFrame = customAction === 'attack' ? cycleFrame : (bat.attackPhase || 0)
+
+    if (attFrame === 1) {
+      // Frame 1: 3 Concentric Violet Rings
+      ctx.strokeStyle = '#a855f7'
+      ctx.lineWidth = 2
+      ;[10, 18, 26].forEach((rx) => {
+        ctx.beginPath()
+        ctx.arc(centerX + rx, 12, 7 + rx * 0.4, -Math.PI * 0.4, Math.PI * 0.4)
+        ctx.stroke()
+      })
+    } else if (attFrame === 2) {
+      // Frame 2: Multicoloured RGB Glitch Audio Waveform Blast
+      const waveColors = ['#00f0ff', '#ec4899', '#facc15', '#a855f7']
+      waveColors.forEach((wCol, idx) => {
+        ctx.strokeStyle = wCol
+        ctx.lineWidth = 1.6
+        ctx.beginPath()
+        ctx.arc(centerX + 14 + idx * 7, 12, 8 + idx * 5, -Math.PI * 0.45, Math.PI * 0.45)
+        ctx.stroke()
+
+        // Horizontal glitch spikes
+        ctx.fillStyle = wCol
+        ctx.fillRect(centerX + 16 + idx * 9, 11 + ((idx % 2) * 2 - 1) * 3, 5, 2)
+      })
+    } else if (attFrame === 3) {
+      // Frame 3: Residual Purple Audio Dust Particles
+      ctx.fillStyle = '#c084fc'
+      ;[18, 25, 32].forEach((px, idx) => {
+        ctx.fillRect(centerX + px, 9 + (idx % 3) * 3, 2, 2)
+      })
+    }
+  }
 
   ctx.restore()
 }
 
-// 5. Malware Golem Sprite (Heavy Armored Walker - 3 HP, +35 pts - Hydraulic Stomp & Heat Core)
-function renderMalwareGolem(ctx, golem) {
+// 5. Malware Titan Golem Sprite (Obsidian Mech Brute, Spiked Pauldrons, Molten Magma Core, Piston Stomp & Magma Slam)
+function renderMalwareGolem(ctx, golem, customAction = null, customFrame = null) {
   ctx.save()
+  const frame = customFrame !== null ? customFrame : (golem.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    golem.actionState === 'attack' ||
+    (golem.attackTimer && golem.attackTimer > 0)
+
+  // 4-Phase Animation Frames
+  const cycleFrame = Math.floor(frame / 6) % 4
+
   ctx.translate(Math.round(golem.x), Math.round(golem.y))
 
   if (golem.hitFlash > 0) {
     ctx.fillStyle = '#ffffff'
-    roundRect(ctx, 0, 0, golem.w, golem.h, 4)
+    roundRect(ctx, 0, 0, golem.w || 32, golem.h || 30, 6)
     ctx.fill()
     ctx.restore()
     return
   }
 
-  const frame = golem.frame || 0
-  const legOffset = Math.sin(frame * 0.25) * 2.5
+  const w = golem.w || 32
+  const h = golem.h || 30
+  const centerX = w / 2
 
-  // Heavy Hydraulic Piston Legs
-  ctx.fillStyle = '#334155'
-  ctx.fillRect(2, golem.h - 5 + legOffset, 6, 6)
-  ctx.fillRect(golem.w - 8, golem.h - 5 - legOffset, 6, 6)
-  ctx.fillStyle = '#94a3b8'
-  ctx.fillRect(3, golem.h - 7 + legOffset, 4, 3)
-  ctx.fillRect(golem.w - 7, golem.h - 7 - legOffset, 4, 3)
+  // 1. Rear Exhaust Smokestacks (Venting Steam Puffs)
+  ctx.fillStyle = '#1e293b'
+  ctx.fillRect(centerX - 6, -4, 3, 6)
+  ctx.fillRect(centerX + 3, -4, 3, 6)
 
-  // Heavy Armored Obsidian Torso
-  ctx.fillStyle = '#090d16'
-  roundRect(ctx, 1, 2, golem.w - 2, golem.h - 7, 4)
+  // Steam puff rendering
+  const showSteam = isAttack ? true : cycleFrame === 0 || cycleFrame === 3
+  if (showSteam) {
+    ctx.fillStyle = 'rgba(203, 213, 225, 0.7)'
+    ctx.beginPath()
+    ctx.arc(centerX - 6, -8, 3, 0, Math.PI * 2)
+    ctx.arc(centerX + 4, -9, 3.5, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // 2. Heavy Hydraulic Piston Legs & Foot Stomp
+  const legStride = !isAttack
+    ? cycleFrame === 0
+      ? -2.5
+      : cycleFrame === 1
+      ? 0
+      : cycleFrame === 2
+      ? 2.5
+      : 0
+    : 0
+
+  // Left Leg
+  ctx.fillStyle = '#1e293b'
+  ctx.fillRect(centerX - 10 + legStride, h - 11, 7, 7)
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, centerX - 12 + legStride, h - 4, 10, 4, 2)
   ctx.fill()
-  ctx.strokeStyle = '#ef4444'
-  ctx.lineWidth = 1.3
+
+  // Right Leg
+  ctx.fillStyle = '#1e293b'
+  ctx.fillRect(centerX + 3 - legStride, h - 11, 7, 7)
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, centerX + 1 - legStride, h - 4, 10, 4, 2)
+  ctx.fill()
+
+  // Stomp Dust Clouds (Frame 2 in idle stomp)
+  if (!isAttack && cycleFrame === 2) {
+    ctx.fillStyle = '#d4b896'
+    ctx.beginPath()
+    ctx.arc(centerX + 12, h - 2, 4, 0, Math.PI * 2)
+    ctx.arc(centerX + 16, h - 3, 3, 0, Math.PI * 2)
+    ctx.arc(centerX - 14, h - 2, 3.5, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // 3. Spiked Shoulder Pauldrons
+  let armRaise = 0
+  const attFrame = customAction === 'attack' ? cycleFrame : (golem.attackPhase || 0)
+  if (isAttack) {
+    armRaise = attFrame === 0 ? -12 : attFrame === 1 ? -4 : attFrame === 2 ? 6 : 0
+  }
+
+  // Left Arm & Pauldron
+  ctx.fillStyle = '#334155'
+  roundRect(ctx, 0, 4 + armRaise * 0.5, 9, 8, 3)
+  ctx.fill()
+  ctx.fillStyle = '#94a3b8'
+  // Iron Spikes
+  ctx.beginPath()
+  ctx.moveTo(1, 4 + armRaise * 0.5)
+  ctx.lineTo(-2, 0 + armRaise * 0.5)
+  ctx.lineTo(4, 4 + armRaise * 0.5)
+  ctx.fill()
+  // Heavy Fist
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, -1, 12 + armRaise, 9, 10, 3)
+  ctx.fill()
+
+  // Right Arm & Pauldron
+  ctx.fillStyle = '#334155'
+  roundRect(ctx, w - 9, 4 + armRaise * 0.5, 9, 8, 3)
+  ctx.fill()
+  ctx.fillStyle = '#94a3b8'
+  // Iron Spikes
+  ctx.beginPath()
+  ctx.moveTo(w - 1, 4 + armRaise * 0.5)
+  ctx.lineTo(w + 2, 0 + armRaise * 0.5)
+  ctx.lineTo(w - 4, 4 + armRaise * 0.5)
+  ctx.fill()
+  // Heavy Fist
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, w - 8, 12 + armRaise, 9, 10, 3)
+  ctx.fill()
+
+  // 4. Obsidian Armored Torso Chassis
+  ctx.fillStyle = '#1e293b'
+  roundRect(ctx, centerX - 10, 3, 20, 18, 5)
+  ctx.fill()
+  ctx.strokeStyle = '#020617'
+  ctx.lineWidth = 1.5
   ctx.stroke()
 
-  // Pulsing Magma Energy Reactor Core
-  const corePulse = Math.sin(frame * 0.15) * 0.4 + 0.6
-  ctx.fillStyle = `rgba(239, 68, 68, ${corePulse})`
-  ctx.fillRect(golem.w / 2 - 3, 9, 6, 5)
-  ctx.fillStyle = '#fbbf24'
-  ctx.fillRect(golem.w / 2 - 1.5, 10.5, 3, 2.5)
+  // Armored Stone Head & Glowing Orange-Red Eyes
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, centerX - 6, -1, 12, 7, 3)
+  ctx.fill()
+  ctx.strokeStyle = '#334155'
+  ctx.lineWidth = 1
+  ctx.stroke()
 
-  // Sweeping Thermal Visor Slit
-  ctx.fillStyle = '#ef4444'
-  ctx.fillRect(3.5, 4.5, golem.w - 7, 2.5)
-  ctx.fillStyle = '#ffffff'
-  const visorX = 4 + Math.sin(frame * 0.2) * (golem.w - 11) * 0.5 + (golem.w - 11) * 0.5
-  ctx.fillRect(visorX, 4.5, 2.5, 2.5)
+  ctx.fillStyle = '#ea580c'
+  ctx.fillRect(centerX - 4, 1, 2.5, 2)
+  ctx.fillRect(centerX + 1.5, 1, 2.5, 2)
+  ctx.fillStyle = '#fef08a'
+  ctx.fillRect(centerX - 3, 1.5, 1, 1)
+  ctx.fillRect(centerX + 2.5, 1.5, 1, 1)
 
-  // Spiked Steel Shoulder Pauldrons
-  ctx.fillStyle = '#64748b'
-  ctx.fillRect(0, 0, 4, 4)
-  ctx.fillRect(golem.w - 4, 0, 4, 4)
-  ctx.fillStyle = '#cbd5e1'
-  ctx.fillRect(1, -2, 2, 2)
-  ctx.fillRect(golem.w - 3, -2, 2, 2)
+  // 5. Exposed Radiant Molten Magma Reactor Core
+  const coreFlare = isAttack && attFrame === 0 ? 1.4 : 1.0
+  const coreGrad = ctx.createRadialGradient(centerX, 12, 1, centerX, 12, 7 * coreFlare)
+  coreGrad.addColorStop(0, '#ffffff')
+  coreGrad.addColorStop(0.3, '#fbbf24')
+  coreGrad.addColorStop(0.7, '#ea580c')
+  coreGrad.addColorStop(1, '#7c2d12')
+  ctx.fillStyle = coreGrad
+  ctx.beginPath()
+  ctx.arc(centerX, 12, 6 * coreFlare, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.strokeStyle = '#0f172a'
+  ctx.lineWidth = 1.2
+  ctx.stroke()
+
+  // Crackling magma veins
+  ctx.strokeStyle = '#f97316'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(centerX - 5, 8)
+  ctx.lineTo(centerX - 2, 12)
+  ctx.lineTo(centerX + 5, 15)
+  ctx.stroke()
+
+  // 6. ATTACK: Erupting Fiery Magma Spikes on Ground Slam (Frame 2)
+  if (isAttack && attFrame === 2) {
+    ctx.save()
+    // Jagged magma eruption spikes bursting forward from ground
+    const spikeColors = ['#dc2626', '#f97316', '#facc15', '#ffffff']
+    ;[-16, -8, 0, 8, 16, 24].forEach((sx, idx) => {
+      const spkH = 12 + (idx % 3) * 8
+      ctx.fillStyle = spikeColors[idx % spikeColors.length]
+      ctx.beginPath()
+      ctx.moveTo(centerX + sx - 5, h)
+      ctx.lineTo(centerX + sx, h - spkH)
+      ctx.lineTo(centerX + sx + 5, h)
+      ctx.closePath()
+      ctx.fill()
+    })
+    ctx.restore()
+  }
 
   ctx.restore()
 }
 
-// 6. Boss 1: Megabyte Squatter Mecha (1000 pts - Animated Sawblade Drill & Thrusters)
-function renderBossMech(ctx, boss) {
-  const frame = Date.now() * 0.008
+// 6. Boss 1: Megabyte Squatter Mecha (1000 pts - Bipedal Crimson/Gunmetal Mech, 404 Blue Visor, Diamond Drill & Thruster Dash)
+function renderBossMech(ctx, boss, customAction = null, customFrame = null) {
+  const frame = customFrame !== null ? customFrame : Date.now() * 0.008
+  const isAttack =
+    customAction === 'attack' ||
+    (customAction && customAction.startsWith('attack')) ||
+    boss.actionState === 'attack' ||
+    (boss.actionState && boss.actionState.includes('DASH')) ||
+    (boss.actionState && boss.actionState.includes('SALVO')) ||
+    (boss.actionState && boss.actionState.includes('MORTAR')) ||
+    boss.isDashing
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const attFrame = isAttack ? (customFrame !== null ? cycleFrame : (boss.attackPhase || 0)) : 0
 
-  // Dual Thruster Exhaust Afterburners
-  const flameLen = 8 + Math.sin(frame * 3) * 6
-  ctx.fillStyle = '#f97316'
-  ctx.beginPath()
-  ctx.moveTo(8, boss.h - 4)
-  ctx.lineTo(13, boss.h + flameLen)
-  ctx.lineTo(18, boss.h - 4)
-  ctx.fill()
-  ctx.beginPath()
-  ctx.moveTo(boss.w - 18, boss.h - 4)
-  ctx.lineTo(boss.w - 13, boss.h + flameLen)
-  ctx.lineTo(boss.w - 8, boss.h - 4)
-  ctx.fill()
-  ctx.fillStyle = '#fef08a'
-  ctx.fillRect(10, boss.h - 3, 6, flameLen * 0.5)
-  ctx.fillRect(boss.w - 16, boss.h - 3, 6, flameLen * 0.5)
+  const w = boss.w || 56
+  const h = boss.h || 50
+  const centerX = w / 2
 
-  // Heavy Armored Gunmetal Chassis
-  ctx.fillStyle = '#0f172a'
-  roundRect(ctx, 4, 4, boss.w - 8, boss.h - 8, 6)
+  // Body Y and tilt offsets based on 4-frame cycle
+  let bodyY = 0
+  let bodyTilt = 0
+  if (!isAttack) {
+    // IDLE: 4-Frame Diesel Combat Walker Cycle (I1, I2, I3, I4)
+    bodyY = cycleFrame === 0 ? 0 : cycleFrame === 1 ? 1.5 : cycleFrame === 2 ? -1.5 : 1
+  } else {
+    // ATTACK: 4-Frame Rocket Drill Dash Cycle (A1, A2, A3, A4)
+    bodyY = attFrame === 0 ? 4 : attFrame === 1 ? -2 : attFrame === 2 ? -1 : 2
+    bodyTilt = attFrame === 0 ? 0.12 : attFrame === 1 ? 0.35 : attFrame === 2 ? 0.25 : 0
+  }
+
+  ctx.save()
+  ctx.translate(0, bodyY)
+  if (bodyTilt !== 0) {
+    ctx.rotate(bodyTilt)
+  }
+
+  // 1. REAR BACKPACK TURBINE & THRUSTER FLAMES
+  const bpX = w - 12
+  const bpY = 12
+
+  // Heavy Cylindrical Jet Backpack Unit
+  ctx.fillStyle = '#1e293b'
+  roundRect(ctx, bpX, bpY, 10, 22, 3)
   ctx.fill()
-  ctx.strokeStyle = '#ef4444'
+  ctx.strokeStyle = '#0f172a'
+  ctx.lineWidth = 1.2
+  ctx.stroke()
+  ctx.fillStyle = '#475569'
+  ctx.fillRect(bpX + 2, bpY + 3, 6, 3)
+  ctx.fillRect(bpX + 2, bpY + 16, 6, 3)
+
+  // Thruster Flames
+  if (!isAttack) {
+    // IDLE (I1-I4): Dual Flame Puff + Floating Ember Sparks
+    const fLen = 8 + Math.sin(frame * 0.4) * 4 + (cycleFrame === 2 ? 3 : 0)
+    ctx.fillStyle = '#f97316'
+    ctx.beginPath()
+    ctx.moveTo(bpX + 8, bpY + 10)
+    ctx.lineTo(bpX + 8 + fLen, bpY + 14)
+    ctx.lineTo(bpX + 8, bpY + 18)
+    ctx.closePath()
+    ctx.fill()
+
+    ctx.fillStyle = '#fde047'
+    ctx.beginPath()
+    ctx.moveTo(bpX + 8, bpY + 12)
+    ctx.lineTo(bpX + 8 + fLen * 0.6, bpY + 14)
+    ctx.lineTo(bpX + 8, bpY + 16)
+    ctx.closePath()
+    ctx.fill()
+
+    // Floating Ember Sparks (I1, I2, I3)
+    const sp1 = (frame * 0.3) % 10
+    const sp2 = (frame * 0.3 + 5) % 10
+    ctx.fillStyle = '#fde047'
+    ctx.fillRect(bpX + 10 + sp1, bpY + 11 - (sp1 % 4), 2, 2)
+    ctx.fillRect(bpX + 12 + sp2, bpY + 16 + (sp2 % 4), 1.5, 1.5)
+  } else {
+    // ATTACK: 4-Frame Rocket Thruster Dynamics
+    if (attFrame === 0) {
+      // A1: Huge Multi-Layered Blue & Yellow Rocket Ignition Plume
+      const fLen = 28 + Math.sin(frame * 0.6) * 6
+      ctx.fillStyle = 'rgba(6, 182, 212, 0.45)'
+      ctx.beginPath()
+      ctx.moveTo(bpX + 8, bpY + 6)
+      ctx.lineTo(bpX + 8 + fLen + 6, bpY + 14)
+      ctx.lineTo(bpX + 8, bpY + 22)
+      ctx.closePath()
+      ctx.fill()
+
+      ctx.fillStyle = '#38bdf8'
+      ctx.beginPath()
+      ctx.moveTo(bpX + 8, bpY + 8)
+      ctx.lineTo(bpX + 8 + fLen, bpY + 14)
+      ctx.lineTo(bpX + 8, bpY + 20)
+      ctx.closePath()
+      ctx.fill()
+
+      ctx.fillStyle = '#fde047'
+      ctx.beginPath()
+      ctx.moveTo(bpX + 8, bpY + 10)
+      ctx.lineTo(bpX + 8 + fLen * 0.65, bpY + 14)
+      ctx.lineTo(bpX + 8, bpY + 18)
+      ctx.closePath()
+      ctx.fill()
+
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(bpX + 8, bpY + 12.5, fLen * 0.35, 3)
+    } else if (attFrame === 1) {
+      // A2: High-Speed Blazing Horizontal Orange/Yellow Speed Thrust & Streaks
+      const fLen = 36 + Math.sin(frame * 0.8) * 8
+      ctx.fillStyle = '#ea580c'
+      ctx.beginPath()
+      ctx.moveTo(bpX + 8, bpY + 6)
+      ctx.lineTo(bpX + 8 + fLen, bpY + 14)
+      ctx.lineTo(bpX + 8, bpY + 22)
+      ctx.closePath()
+      ctx.fill()
+
+      ctx.fillStyle = '#fde047'
+      ctx.beginPath()
+      ctx.moveTo(bpX + 8, bpY + 9)
+      ctx.lineTo(bpX + 8 + fLen * 0.7, bpY + 14)
+      ctx.lineTo(bpX + 8, bpY + 19)
+      ctx.closePath()
+      ctx.fill()
+
+      // Speed lines rushing behind
+      ctx.strokeStyle = 'rgba(253, 224, 71, 0.75)'
+      ctx.lineWidth = 1.2
+      ;[-6, 0, 6, 12].forEach((sy, idx) => {
+        const lx = bpX + 16 + (idx * 6)
+        ctx.beginPath()
+        ctx.moveTo(lx, bpY + 14 + sy)
+        ctx.lineTo(lx + 18, bpY + 14 + sy)
+        ctx.stroke()
+      })
+    } else if (attFrame === 2) {
+      // A3: Billowing Grey Exhaust Smoke Cloud + Afterburner Flame
+      ctx.fillStyle = 'rgba(100, 116, 139, 0.75)'
+      ctx.beginPath()
+      ctx.arc(bpX + 16, bpY + 14, 8, 0, Math.PI * 2)
+      ctx.arc(bpX + 24, bpY + 10, 9, 0, Math.PI * 2)
+      ctx.arc(bpX + 26, bpY + 18, 7.5, 0, Math.PI * 2)
+      ctx.fill()
+
+      ctx.fillStyle = '#f97316'
+      ctx.beginPath()
+      ctx.moveTo(bpX + 8, bpY + 10)
+      ctx.lineTo(bpX + 20, bpY + 14)
+      ctx.lineTo(bpX + 8, bpY + 18)
+      ctx.closePath()
+      ctx.fill()
+    } else if (attFrame === 3) {
+      // A4: Skid Dust & Smoke Clouds at feet
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.7)'
+      ctx.beginPath()
+      ctx.arc(4, h + 2, 7, 0, Math.PI * 2)
+      ctx.arc(-4, h - 2, 8, 0, Math.PI * 2)
+      ctx.arc(w - 4, h + 2, 6, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+
+  // 2. BIPEDAL MECH LEGS WITH HYDRAULIC PISTONS & RED SABATONS
+  if (!isAttack) {
+    // IDLE 4-Frame Walking Strides
+    let lLegX = 12
+    let lLegY = h - 8
+    let rLegX = 26
+    let rLegY = h - 8
+
+    if (cycleFrame === 0) {
+      lLegX = 10
+      rLegX = 24
+    } else if (cycleFrame === 1) {
+      lLegX = 14
+      lLegY = h - 11 // raised
+      rLegX = 26
+    } else if (cycleFrame === 2) {
+      lLegX = 26
+      rLegX = 8
+    } else {
+      lLegX = 22
+      rLegX = 18
+      rLegY = h - 11 // raised
+    }
+
+    // Rear Leg (Left)
+    ctx.fillStyle = '#1e293b'
+    ctx.fillRect(lLegX, lLegY, 6.5, 10)
+    ctx.fillStyle = '#dc2626'
+    roundRect(ctx, lLegX - 1.5, lLegY + 1, 9, 5.5, 1.5) // Red knee pad
+    ctx.fill()
+    ctx.fillStyle = '#dc2626'
+    roundRect(ctx, lLegX - 2, lLegY + 8, 10, 3.5, 1) // Red ankle armor
+    ctx.fill()
+    ctx.fillStyle = '#0f172a'
+    ctx.fillRect(lLegX - 3, lLegY + 10, 11, 2.5) // Sole
+
+    // Front Leg (Right)
+    ctx.fillStyle = '#0f172a'
+    ctx.fillRect(rLegX, rLegY, 7, 10)
+    ctx.fillStyle = '#b91c1c'
+    roundRect(ctx, rLegX - 1.5, rLegY + 1, 9.5, 6, 1.5) // Red knee pad
+    ctx.fill()
+    ctx.fillStyle = '#b91c1c'
+    roundRect(ctx, rLegX - 2, rLegY + 8, 10.5, 4, 1) // Red ankle armor
+    ctx.fill()
+    ctx.fillStyle = '#020617'
+    ctx.fillRect(rLegX - 3, rLegY + 10.5, 12, 2.5) // Sole
+  } else {
+    // ATTACK Leg Postures
+    if (attFrame === 0) {
+      // A1: Deep crouch stance
+      ctx.fillStyle = '#1e293b'
+      ctx.fillRect(10, h - 5, 8, 7)
+      ctx.fillRect(24, h - 5, 8, 7)
+      ctx.fillStyle = '#dc2626'
+      roundRect(ctx, 8, h - 3, 11, 5, 1.5)
+      roundRect(ctx, 22, h - 3, 11, 5, 1.5)
+      ctx.fill()
+    } else if (attFrame === 1 || attFrame === 2) {
+      // A2/A3: Horizontal sprint flight trailing behind
+      ctx.fillStyle = '#1e293b'
+      ctx.fillRect(w - 2, h - 16, 10, 6)
+      ctx.fillRect(w + 6, h - 22, 10, 6)
+      ctx.fillStyle = '#dc2626'
+      roundRect(ctx, w - 1, h - 18, 7, 8, 1.5)
+      roundRect(ctx, w + 7, h - 24, 7, 8, 1.5)
+      ctx.fill()
+    } else {
+      // A4: Skid brake stance
+      ctx.fillStyle = '#1e293b'
+      ctx.fillRect(8, h - 6, 8, 8)
+      ctx.fillRect(24, h - 6, 8, 8)
+      ctx.fillStyle = '#dc2626'
+      roundRect(ctx, 6, h - 4, 11, 6, 1.5)
+      roundRect(ctx, 22, h - 4, 11, 6, 1.5)
+      ctx.fill()
+    }
+  }
+
+  // 3. REAR ARM (RIGHT GAUNTLET)
+  ctx.fillStyle = '#1e293b'
+  roundRect(ctx, w - 14, 16, 6, 12, 2)
+  ctx.fill()
+  ctx.fillStyle = '#dc2626'
+  roundRect(ctx, w - 16, 14, 8, 6, 2) // Shoulder pauldron
+  ctx.fill()
+  roundRect(ctx, w - 15, 24, 7, 6, 2) // Red fist
+  ctx.fill()
+
+  // 4. MAIN HEAVY ARMORED CRIMSON CHASSIS & TORSO
+  ctx.fillStyle = boss.hitFlash > 0 ? '#ffffff' : '#b91c1c'
+  roundRect(ctx, 6, 4, w - 14, h - 14, 6)
+  ctx.fill()
+  ctx.strokeStyle = '#020617'
   ctx.lineWidth = 1.6
   ctx.stroke()
 
-  // Rotating Diamond-Tipped Sawblade Arm on Forward Mount
-  const sawAngle = frame * 4
-  ctx.save()
-  ctx.translate(-2, boss.h / 2)
-  ctx.rotate(sawAngle)
-  ctx.fillStyle = '#94a3b8'
-  ctx.beginPath()
-  ctx.arc(0, 0, 8, 0, Math.PI * 2)
+  // Red Chest Armor Plate with Top Highlights
+  ctx.fillStyle = '#dc2626'
+  roundRect(ctx, 8, 12, w - 18, 14, 3)
   ctx.fill()
-  ctx.fillStyle = '#ef4444'
-  for (let t = 0; t < 6; t++) {
-    const a = (t * Math.PI) / 3
-    ctx.fillRect(Math.cos(a) * 6 - 1.5, Math.sin(a) * 6 - 1.5, 3, 3)
+  ctx.fillStyle = '#f87171'
+  ctx.fillRect(10, 13, w - 22, 2) // Highlight bevel
+
+  // Dark Segmented Chest Vent Grilles
+  ctx.fillStyle = '#0f172a'
+  for (let gy = 20; gy <= 24; gy += 2.5) {
+    ctx.fillRect(14, gy, w - 30, 1.2)
   }
-  ctx.restore()
 
-  // Heavy Armor Plates & Brass Trim
-  ctx.fillStyle = '#1e293b'
-  roundRect(ctx, 8, 7, boss.w - 16, 15, 3)
+  // 5. CRIMSON DOME HELMET & GLOWING CYAN 404 DIGITAL VISOR
+  ctx.fillStyle = '#dc2626'
+  roundRect(ctx, 12, 0, w - 26, 12, 5)
   ctx.fill()
-  ctx.fillStyle = '#d97706'
-  ctx.fillRect(6, 6, 3, boss.h - 12)
-  ctx.fillRect(boss.w - 9, 6, 3, boss.h - 12)
+  ctx.strokeStyle = '#020617'
+  ctx.lineWidth = 1.4
+  ctx.stroke()
 
-  // Central 404 Digital Skull Visor with Scanning Reticle
+  // Helmet Top Highlight
+  ctx.fillStyle = '#f87171'
+  ctx.fillRect(16, 1.5, w - 34, 1.5)
+
+  // Shiny Black Visor Housing
   ctx.fillStyle = '#020617'
-  roundRect(ctx, 12, 10, boss.w - 24, 9, 2)
+  roundRect(ctx, 15, 4, w - 30, 8, 2.5)
   ctx.fill()
-  ctx.fillStyle = '#ef4444'
-  ctx.font = 'bold 7px monospace'
+  ctx.strokeStyle = '#083344'
+  ctx.lineWidth = 0.9
+  ctx.stroke()
+
+  // Glowing Cyan Digital "404" Matrix Text
+  ctx.fillStyle = '#00f0ff'
+  ctx.font = 'bold 7px "JetBrains Mono", monospace'
   ctx.textAlign = 'center'
-  ctx.fillText('404', boss.w / 2, 17)
+  ctx.textBaseline = 'middle'
+  ctx.fillText('404', centerX - 1, 8)
+  ctx.textBaseline = 'alphabetic'
   ctx.textAlign = 'start'
 
-  // Segmented Chest Air Vent Grilles
-  ctx.fillStyle = '#334155'
-  for (let gy = 26; gy <= 33; gy += 3) {
-    ctx.fillRect(14, gy, boss.w - 28, 1.5)
+  // 6. FORWARD LEFT ARM & ROTATING CONICAL DIAMOND DRILL
+  let drillX = 2
+  let drillY = h / 2 - 2
+  let drillRot = !isAttack ? frame * 0.3 : frame * 0.8
+  let drillPitch = 0
+
+  if (!isAttack) {
+    drillPitch = cycleFrame === 0 ? 0.25 : cycleFrame === 1 ? -0.1 : cycleFrame === 2 ? 0.0 : 0.2
+  } else {
+    drillPitch = attFrame === 0 ? 0.05 : attFrame === 1 ? 0 : attFrame === 2 ? 0 : 0.4
+    drillX = attFrame === 1 ? -4 : attFrame === 2 ? -6 : 2
   }
+
+  // Red Shoulder Pauldron (Left)
+  ctx.fillStyle = '#dc2626'
+  roundRect(ctx, drillX + 10, drillY - 4, 10, 8, 3)
+  ctx.fill()
+  ctx.strokeStyle = '#020617'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  // Slate Forearm Mount
+  ctx.fillStyle = '#334155'
+  roundRect(ctx, drillX + 6, drillY - 2, 7, 6, 2)
+  ctx.fill()
+
+  // Diamond Spiral Drill Assembly
+  ctx.save()
+  ctx.translate(drillX + 6, drillY + 1)
+  ctx.rotate(drillPitch)
+
+  // Rotating Drill Cone
+  ctx.fillStyle = '#cbd5e1'
+  ctx.beginPath()
+  ctx.moveTo(0, -7.5)
+  ctx.lineTo(-18, 0)
+  ctx.lineTo(0, 7.5)
+  ctx.closePath()
+  ctx.fill()
+  ctx.strokeStyle = '#1e293b'
+  ctx.lineWidth = 1.2
+  ctx.stroke()
+
+  // Steel Drill Spiral Flute Cuts & Diamond Facets
+  for (let fl = 0; fl < 4; fl++) {
+    const flPhase = (drillRot + fl * (Math.PI / 2)) % (Math.PI * 2)
+    const flX = -3 - fl * 3.5
+    const flH = 6.5 - fl * 1.2
+    ctx.strokeStyle = (fl % 2 === 0) ? '#475569' : '#00f0ff'
+    ctx.lineWidth = 1.2
+    ctx.beginPath()
+    ctx.moveTo(flX, -flH * Math.cos(flPhase))
+    ctx.lineTo(flX - 2.5, flH * Math.sin(flPhase))
+    ctx.stroke()
+  }
+
+  // Sharp Drill Needle Point
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(-19, -1, 3, 2)
+
+  // ATTACK A3: Massive Circular Shower of Radial Impact Sparks from Drill Tip
+  if (isAttack && attFrame === 2) {
+    ctx.save()
+    const sparkColors = ['#fde047', '#f97316', '#ffffff', '#ea580c']
+    for (let spk = 0; spk < 10; spk++) {
+      const spkAng = (spk * Math.PI) / 5 + frame * 0.4
+      const spkDist = 8 + (spk % 3) * 5
+      ctx.fillStyle = sparkColors[spk % sparkColors.length]
+      ctx.fillRect(-18 + Math.cos(spkAng) * spkDist, Math.sin(spkAng) * spkDist, 2.5, 2.5)
+    }
+    // High-RPM White Motion Blur Arcs
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'
+    ctx.lineWidth = 1.4
+    ctx.beginPath()
+    ctx.arc(-8, 0, 9, -Math.PI * 0.4, Math.PI * 0.4)
+    ctx.stroke()
+    ctx.restore()
+  }
+
+  // ATTACK A4: Residual Sparks on Ground
+  if (isAttack && attFrame === 3) {
+    ctx.fillStyle = '#fde047'
+    ;[-14, -18, -22].forEach((sx, idx) => {
+      ctx.fillRect(sx, 6 + (idx % 2) * 3, 2, 2)
+    })
+  }
+
+  ctx.restore()
+  ctx.restore()
 }
 
-// 7. Boss 2: Phishing Hydra (1800 pts - 3 Writhing Cyber Serpent Heads & Bioluminescent Scales)
-function renderPhishingHydra(ctx, boss) {
-  const time = Date.now() * 0.006
+// 7. Boss 2: Toxic Phishing Hydra (1800 pts - Bio-Vat Tank & 3 Undulating Toxic Serpent Heads)
+function renderPhishingHydra(ctx, boss, customAction = null, customFrame = null) {
+  const frame = customFrame !== null ? customFrame : Date.now() * 0.006
+  const isAttack =
+    customAction === 'attack' ||
+    boss.actionState === 'attack' ||
+    (boss.actionState && boss.actionState.includes('VENOM')) ||
+    (boss.actionState && boss.actionState.includes('SLIME')) ||
+    (boss.actionState && boss.actionState.includes('ACID'))
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const attFrame = customAction === 'attack' ? cycleFrame : (boss.attackPhase || 0)
 
-  // Undulating 3 Serpentine Heads with Independent Motion
-  for (let h = 0; h < 3; h++) {
-    const headOffset = Math.sin(time * 1.5 + h * 2.1) * 10
-    const hx = 8 + h * 16
-    const hy = 11 + headOffset
+  const w = boss.w || 64
+  const h = boss.h || 58
+  const centerX = w / 2
+
+  // 1. Heavy Reinforced Bio-Vat Tank with Hydraulic Anchor Feet
+  ctx.fillStyle = '#1e293b'
+  roundRect(ctx, 4, h - 22, w - 8, 22, 4)
+  ctx.fill()
+  ctx.strokeStyle = '#020617'
+  ctx.lineWidth = 1.4
+  ctx.stroke()
+
+  // Base platform footings
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(2, h - 4, 8, 4)
+  ctx.fillRect(w - 10, h - 4, 8, 4)
+  ctx.fillRect(centerX - 6, h - 3, 12, 3)
+
+  // Vertical Fluid Level Meter Tubes with Glowing Green Acid
+  ctx.fillStyle = '#020617'
+  roundRect(ctx, 8, h - 18, 5, 12, 1)
+  roundRect(ctx, w - 13, h - 18, 5, 12, 1)
+  ctx.fill()
+  ctx.fillStyle = '#22c55e'
+  ctx.fillRect(9, h - 16, 3, 8)
+  ctx.fillRect(w - 12, h - 16, 3, 8)
+
+  // Dark Iron Reinforcing Hoops
+  ctx.fillStyle = '#334155'
+  ctx.fillRect(4, h - 20, w - 8, 2.5)
+  ctx.fillRect(4, h - 8, w - 8, 2.5)
+
+  // 2. Bubbling Luminescent Lime-Green Slime Overflowing Rim
+  ctx.fillStyle = '#10b981'
+  ctx.fillRect(6, h - 23, w - 12, 6)
+  // Slime drips
+  ctx.fillStyle = '#22c55e'
+  ctx.fillRect(10, h - 18, 3, 5)
+  ctx.fillRect(w - 18, h - 18, 3.5, 7)
+  ctx.fillRect(centerX - 2, h - 18, 4, 4)
+
+  // Animated bubbling slime bubbles
+  for (let b = 0; b < 4; b++) {
+    const bPhase = (frame * 0.3 + b * 1.5) % 3
+    const bx = 12 + b * 11
+    const by = h - 22 - bPhase * 3
+    ctx.fillStyle = '#86efac'
+    ctx.beginPath()
+    ctx.arc(bx, by, 2, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // 3. 3 Cybernetic Serpent Heads (Left, Middle, Right)
+  const neckGlow = isAttack && attFrame === 0
+
+  ;[-1, 0, 1].forEach((pos, idx) => {
+    // S-curve wave offset
+    let headYOffset = 0
+    let neckSway = 0
+
+    if (!isAttack) {
+      // IDLE 4-Frame Undulation (Staggered Heights)
+      if (cycleFrame === 0) {
+        headYOffset = pos === -1 ? 2 : pos === 0 ? -6 : 5
+      } else if (cycleFrame === 1) {
+        headYOffset = pos === -1 ? 6 : pos === 0 ? -4 : 0
+      } else if (cycleFrame === 2) {
+        headYOffset = pos === -1 ? 1 : pos === 0 ? -8 : -3
+      } else {
+        headYOffset = pos === -1 ? -5 : pos === 0 ? 0 : 4
+      }
+      neckSway = Math.sin(frame * 0.2 + idx * 2) * 3
+    } else {
+      // ATTACK Stances
+      if (attFrame === 0) {
+        headYOffset = -4
+      } else if (attFrame === 1 || attFrame === 2) {
+        headYOffset = pos === 0 ? -8 : -4
+        neckSway = pos * 3
+      } else {
+        headYOffset = 6 // recoil back into vat
+      }
+    }
+
+    const hx = centerX + pos * 18 + neckSway
+    const hy = 16 + headYOffset
 
     // Coiling Serpent Neck
-    ctx.fillStyle = '#064e3b'
-    ctx.beginPath()
-    ctx.arc(hx, hy + 18, 7, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.fillStyle = '#047857'
-    ctx.fillRect(hx - 4, hy + 10, 8, 12)
+    ctx.save()
+    if (neckGlow) {
+      ctx.strokeStyle = '#86efac'
+      ctx.lineWidth = 11
+      ctx.beginPath()
+      ctx.moveTo(hx, hy + 6)
+      ctx.quadraticCurveTo(centerX + pos * 12, (hy + h - 22) / 2, centerX + pos * 14, h - 20)
+      ctx.stroke()
+    }
 
-    // Hydra Head with Glowing Scales
-    ctx.fillStyle = '#10b981'
-    roundRect(ctx, hx - 7, hy - 2, 14, 15, 4)
+    ctx.strokeStyle = neckGlow ? '#22c55e' : '#064e3b'
+    ctx.lineWidth = 8
+    ctx.beginPath()
+    ctx.moveTo(hx, hy + 6)
+    ctx.quadraticCurveTo(centerX + pos * 12, (hy + h - 22) / 2, centerX + pos * 14, h - 20)
+    ctx.stroke()
+
+    // Inner neck scale segment
+    ctx.strokeStyle = neckGlow ? '#ffffff' : '#047857'
+    ctx.lineWidth = 4
+    ctx.beginPath()
+    ctx.moveTo(hx, hy + 6)
+    ctx.quadraticCurveTo(centerX + pos * 12, (hy + h - 22) / 2, centerX + pos * 14, h - 20)
+    ctx.stroke()
+    ctx.restore()
+
+    // Viper Head
+    ctx.save()
+    ctx.translate(hx, hy)
+    ctx.fillStyle = neckGlow ? '#22c55e' : '#0f766e'
+    roundRect(ctx, -8, -6, 16, 13, 4)
     ctx.fill()
     ctx.strokeStyle = '#022c22'
     ctx.lineWidth = 1.2
     ctx.stroke()
 
-    // Dripping Venom Fangs & Piercing Magenta Eyes
-    ctx.fillStyle = '#a7f3d0'
-    ctx.fillRect(hx - 5, hy + 2, 2.5, 3)
-    ctx.fillRect(hx + 2.5, hy + 2, 2.5, 3)
-    ctx.fillStyle = '#ec4899'
-    ctx.fillRect(hx - 3, hy + 9, 6, 3.5)
-    ctx.fillStyle = '#34d399'
-    ctx.fillRect(hx - 1, hy + 13, 2, 3) // dripping venom drop
-  }
+    // Snout and upper jaw
+    ctx.fillStyle = neckGlow ? '#86efac' : '#10b981'
+    roundRect(ctx, -6, -4, 12, 7, 2)
+    ctx.fill()
 
-  // Base Toxic Chemical Generator Tank
-  ctx.fillStyle = '#090d16'
-  roundRect(ctx, 2, boss.h - 16, boss.w - 4, 16, 4)
-  ctx.fill()
-  ctx.strokeStyle = '#10b981'
-  ctx.lineWidth = 1.5
-  ctx.stroke()
+    // Glowing Crimson Eyes
+    ctx.fillStyle = '#ef4444'
+    ctx.fillRect(-5, -2, 3, 2.5)
+    ctx.fillRect(2, -2, 3, 2.5)
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(-4, -1.5, 1, 1)
+    ctx.fillRect(3, -1.5, 1, 1)
 
-  // Glowing Chemical Liquid Bubble
-  ctx.fillStyle = 'rgba(16, 185, 129, 0.4)'
-  roundRect(ctx, 6, boss.h - 13, boss.w - 12, 10, 2)
-  ctx.fill()
+    // Razor Sharp White Fangs
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(-4, 5, 2, 4)
+    ctx.fillRect(2, 5, 2, 4)
+
+    // Dripping Neon Acid Droplets
+    ctx.fillStyle = '#22c55e'
+    ctx.fillRect(-3, 8, 1.5, 3)
+    ctx.fillRect(3, 8, 1.5, 3)
+    ctx.restore()
+
+    // 4. ATTACK: Venom Lasers & Acid Sprays
+    if (isAttack) {
+      if (attFrame === 1) {
+        // Frame 1: Criss-Crossing Venom Laser Bolts
+        ctx.save()
+        ctx.strokeStyle = '#86efac'
+        ctx.lineWidth = 2.5
+        ;[-1, 1].forEach((crossDir) => {
+          ctx.beginPath()
+          ctx.moveTo(hx + pos * 4, hy + 6)
+          ctx.lineTo(hx - 28, hy + 6 + crossDir * 14)
+          ctx.stroke()
+        })
+        ctx.strokeStyle = '#22c55e'
+        ctx.lineWidth = 1.2
+        ;[-1, 1].forEach((crossDir) => {
+          ctx.beginPath()
+          ctx.moveTo(hx + pos * 4, hy + 6)
+          ctx.lineTo(hx - 28, hy + 6 + crossDir * 14)
+          ctx.stroke()
+        })
+        ctx.restore()
+      } else if (attFrame === 2) {
+        // Frame 2: Toxic Acid Spray & Corrosive Vapor Clouds
+        ctx.save()
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.45)'
+        ctx.beginPath()
+        ctx.arc(hx - 14, hy + 4, 6, 0, Math.PI * 2)
+        ctx.arc(hx - 22, hy - 2, 7.5, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Sizzling acid droplets
+        ctx.fillStyle = '#86efac'
+        ;[-10, -18, -26].forEach((dx, dIdx) => {
+          ctx.fillRect(hx + dx, hy + 4 + (dIdx % 2) * 5, 2.5, 2.5)
+        })
+        ctx.restore()
+      }
+    }
+  })
 }
 
-// 8. Boss 3: DDoS Swarm Titan (2500 pts - Heavy Carrier, Minigun Turrets & Energy Shield)
-function renderDDoSTitan(ctx, boss) {
-  const time = Date.now() * 0.005
+// 8. Boss 3: DDoS Swarm Titan (2500 pts - Monolithic Obsidian Obelisk, Violet Plasma Core & Sawblade Drones)
+function renderDDoSTitan(ctx, boss, customAction = null, customFrame = null) {
+  const frame = customFrame !== null ? customFrame : (Date.now() * 0.005)
+  const isAttack =
+    customAction === 'attack' ||
+    boss.actionState === 'attack' ||
+    (boss.actionState && boss.actionState.includes('SWARM')) ||
+    (boss.actionState && boss.actionState.includes('DRONE')) ||
+    (boss.actionState && boss.actionState.includes('BEAM'))
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const attFrame = customAction === 'attack' ? cycleFrame : (boss.attackPhase || 0)
 
-  // Pulsing Hexagonal Deflector Shield Bubble
-  const shieldPulse = Math.sin(time * 2) * 0.25 + 0.55
-  ctx.strokeStyle = `rgba(139, 92, 246, ${shieldPulse})`
-  ctx.lineWidth = 2
-  ctx.beginPath()
-  ctx.arc(boss.w / 2, boss.h / 2, boss.w * 0.58, 0, Math.PI * 2)
-  ctx.stroke()
+  const w = boss.w || 64
+  const h = boss.h || 60
+  const centerX = w / 2
+  const bobY = !isAttack ? (cycleFrame === 1 ? -2 : cycleFrame === 2 ? 2 : 0) : 0
 
-  // Shield Hex Lattice Dots
-  ctx.fillStyle = `rgba(192, 132, 252, ${shieldPulse * 0.5})`
-  for (let a = 0; a < 6; a++) {
-    const ang = (a * Math.PI) / 3 + time
+  ctx.save()
+  ctx.translate(0, bobY)
+
+  // 1. Orbiting Deployable Sawblade Escort Drones (Left & Right)
+  const droneAng1 = frame * 0.4
+  const droneAng2 = frame * 0.4 + Math.PI
+
+  const d1X = centerX + Math.cos(droneAng1) * 28 - (isAttack && attFrame === 2 ? 18 : 0)
+  const d1Y = h / 2 + Math.sin(droneAng1) * 12
+  const d2X = centerX + Math.cos(droneAng2) * 28 - (isAttack && attFrame === 2 ? 18 : 0)
+  const d2Y = h / 2 + Math.sin(droneAng2) * 12
+
+  ;[
+    { x: d1X, y: d1Y },
+    { x: d2X, y: d2Y },
+  ].forEach((dr) => {
+    ctx.save()
+    ctx.translate(dr.x, dr.y)
+    ctx.rotate(frame * 0.8)
+
+    // Outer Sawblade Teeth
+    ctx.fillStyle = '#64748b'
+    for (let t = 0; t < 6; t++) {
+      const a = (t * Math.PI) / 3
+      ctx.fillRect(Math.cos(a) * 6 - 1.5, Math.sin(a) * 6 - 1.5, 3.5, 3.5)
+    }
+
+    // Sawblade Core
+    ctx.fillStyle = '#1e1b4b'
     ctx.beginPath()
-    ctx.arc(boss.w / 2 + Math.cos(ang) * (boss.w * 0.55), boss.h / 2 + Math.sin(ang) * (boss.w * 0.55), 2.5, 0, Math.PI * 2)
+    ctx.arc(0, 0, 5, 0, Math.PI * 2)
     ctx.fill()
-  }
+    ctx.strokeStyle = '#a855f7'
+    ctx.lineWidth = 1
+    ctx.stroke()
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(-1, -1, 2, 2)
+    ctx.restore()
+  })
 
-  // Heavy Battleship Carrier Chassis
-  ctx.fillStyle = '#1e1b4b'
-  roundRect(ctx, 4, 4, boss.w - 8, boss.h - 8, 6)
+  // 2. Monolithic Obsidian Obelisk Chassis with Beveled Apex
+  const grad = ctx.createLinearGradient(centerX, 0, centerX, h)
+  grad.addColorStop(0, '#3b0764')
+  grad.addColorStop(0.3, '#1e1b4b')
+  grad.addColorStop(0.7, '#0f0d1e')
+  grad.addColorStop(1, '#020617')
+  ctx.fillStyle = grad
+
+  // Tapered Obelisk Silhouette
+  ctx.beginPath()
+  ctx.moveTo(centerX - 10, 4)
+  ctx.lineTo(centerX, 0)
+  ctx.lineTo(centerX + 10, 4)
+  ctx.lineTo(centerX + 16, h - 8)
+  ctx.lineTo(centerX, h)
+  ctx.lineTo(centerX - 16, h - 8)
+  ctx.closePath()
   ctx.fill()
   ctx.strokeStyle = '#8b5cf6'
   ctx.lineWidth = 1.6
   ctx.stroke()
 
-  // Dual Rotating Minigun Pods on Top and Bottom
-  ctx.fillStyle = '#475569'
-  ctx.fillRect(-4, 9, 8, 6)
-  ctx.fillRect(-4, boss.h - 15, 8, 6)
-  ctx.fillStyle = '#fbbf24'
-  ctx.fillRect(-6, 11, 3, 2)
-  ctx.fillRect(-6, boss.h - 13, 3, 2)
-
-  // Command Bridge & Central Flux Core
-  ctx.fillStyle = '#a855f7'
-  roundRect(ctx, 16, 12, boss.w - 32, boss.h - 24, 4)
-  ctx.fill()
-  ctx.fillStyle = '#ffffff'
-  ctx.fillRect(boss.w / 2 - 4, boss.h / 2 - 4, 8, 8)
-}
-
-// 9. Boss 4: DNS Hijacker Prime (3200 pts - Iridescent Quantum Saucer & Warp Telegraph)
-function renderDNSSaucer(ctx, boss) {
-  const time = Date.now() * 0.007
-
-  // Quantum Phase-Shift Warp Afterimages
-  const warpPulse = Math.sin(time * 3) * 0.3 + 0.7
-  ctx.strokeStyle = `rgba(6, 182, 212, ${warpPulse * 0.7})`
-  ctx.lineWidth = 1.5
-  ctx.beginPath()
-  ctx.ellipse(boss.w / 2, boss.h / 2, boss.w * 0.56, boss.h * 0.36, 0, 0, Math.PI * 2)
-  ctx.stroke()
-
-  // Iridescent Alien Saucer Hull
-  ctx.fillStyle = '#090d16'
-  ctx.beginPath()
-  ctx.ellipse(boss.w / 2, boss.h / 2, boss.w * 0.48, boss.h * 0.28, 0, 0, Math.PI * 2)
-  ctx.fill()
-  ctx.strokeStyle = '#06b6d4'
-  ctx.lineWidth = 1.6
-  ctx.stroke()
-
-  // Rotating Quantum Gyro Rings
-  ctx.strokeStyle = '#38bdf8'
+  // Heavy Beveled Edge Facets
+  ctx.strokeStyle = '#3b0764'
   ctx.lineWidth = 1.2
   ctx.beginPath()
-  ctx.ellipse(boss.w / 2, boss.h / 2, boss.w * 0.38, boss.h * 0.16, time * 2, 0, Math.PI * 2)
+  ctx.moveTo(centerX, 0)
+  ctx.lineTo(centerX, h)
+  ctx.moveTo(centerX - 10, 4)
+  ctx.lineTo(centerX - 14, h - 10)
+  ctx.moveTo(centerX + 10, 4)
+  ctx.lineTo(centerX + 14, h - 10)
   ctx.stroke()
 
-  // Cockpit Scanning Dome
-  ctx.fillStyle = '#06b6d4'
-  ctx.beginPath()
-  ctx.arc(boss.w / 2, boss.h / 2 - 5, 11, Math.PI, 0)
-  ctx.fill()
-  ctx.fillStyle = '#ffffff'
-  ctx.fillRect(boss.w / 2 - 4, boss.h / 2 - 10, 8, 5)
+  // 3. Side Missile Bay Hatches (Open during attack)
+  const isBayOpen = isAttack && (attFrame === 0 || attFrame === 1 || attFrame === 2)
+  if (isBayOpen) {
+    // Left Bay
+    ctx.fillStyle = '#020617'
+    roundRect(ctx, centerX - 24, 14, 8, 22, 2)
+    ctx.fill()
+    ctx.strokeStyle = '#ef4444'
+    ctx.lineWidth = 1
+    ctx.stroke()
+    // Red LED Missile Tubes
+    ctx.fillStyle = '#ef4444'
+    ctx.fillRect(centerX - 22, 17, 4, 3)
+    ctx.fillRect(centerX - 22, 23, 4, 3)
+    ctx.fillRect(centerX - 22, 29, 4, 3)
 
-  // Ventral Charging Ion Emitter
-  ctx.fillStyle = '#38bdf8'
-  ctx.fillRect(boss.w / 2 - 5, boss.h / 2 + 7, 10, 5)
-}
+    // Right Bay
+    ctx.fillStyle = '#020617'
+    roundRect(ctx, centerX + 16, 14, 8, 22, 2)
+    ctx.fill()
+    ctx.strokeStyle = '#ef4444'
+    ctx.lineWidth = 1
+    ctx.stroke()
+    ctx.fillStyle = '#ef4444'
+    ctx.fillRect(centerX + 18, 17, 4, 3)
+    ctx.fillRect(centerX + 18, 23, 4, 3)
+    ctx.fillRect(centerX + 18, 29, 4, 3)
+  }
 
-// 10. Boss 5: Ransomware Dreadnought (4200 pts - Obsidian Fortress, Grinder & Encrypted Lock)
-function renderRansomDreadnought(ctx, boss) {
-  const time = Date.now() * 0.008
+  // 4. Central Pulsating Violet Plasma Reactor Core
+  const coreX = centerX
+  const coreY = h / 2 - 2
+  const isOvercharging = isAttack && attFrame === 0
+  const coreR = isOvercharging ? 10 : 7.5
 
-  // Triple Fiery Exhaust Engines
-  const flameL = 8 + Math.sin(time * 4) * 6
-  ctx.fillStyle = '#f59e0b'
-  ctx.fillRect(boss.w - 6, 8, flameL, 6)
-  ctx.fillRect(boss.w - 6, 19, flameL + 5, 8)
-  ctx.fillRect(boss.w - 6, 30, flameL, 6)
-
-  // Obsidian Battleship Chassis
+  // Dark Cavity Bezel
   ctx.fillStyle = '#020617'
-  roundRect(ctx, 2, 4, boss.w - 8, boss.h - 8, 6)
+  ctx.beginPath()
+  ctx.arc(coreX, coreY, coreR + 2, 0, Math.PI * 2)
   ctx.fill()
-  ctx.strokeStyle = '#ea580c'
-  ctx.lineWidth = 2
+  ctx.strokeStyle = '#a855f7'
+  ctx.lineWidth = 1.4
   ctx.stroke()
 
-  // Encrypted Firewall Grid Cells
-  ctx.fillStyle = '#ea580c'
-  for (let fx = 9; fx < boss.w - 18; fx += 8) {
-    for (let fy = 11; fy < boss.h - 15; fy += 8) {
-      ctx.fillRect(fx, fy, 5, 5)
+  // Crackling Vertical Lightning Arcs Inside Core Channel
+  ctx.strokeStyle = '#c084fc'
+  ctx.lineWidth = 1.2
+  ctx.beginPath()
+  ctx.moveTo(coreX, 6)
+  ctx.lineTo(coreX + (Math.sin(frame * 0.5) * 3), coreY - coreR)
+  ctx.moveTo(coreX, h - 8)
+  ctx.lineTo(coreX - (Math.cos(frame * 0.5) * 3), coreY + coreR)
+  ctx.stroke()
+
+  // Radiant Plasma Core
+  const pGrad = ctx.createRadialGradient(coreX, coreY, 1, coreX, coreY, coreR)
+  pGrad.addColorStop(0, '#ffffff')
+  pGrad.addColorStop(0.3, isOvercharging ? '#fde047' : '#c084fc')
+  pGrad.addColorStop(0.7, '#8b5cf6')
+  pGrad.addColorStop(1, '#3b0764')
+  ctx.fillStyle = pGrad
+  ctx.beginPath()
+  ctx.arc(coreX, coreY, coreR, 0, Math.PI * 2)
+  ctx.fill()
+
+  // 5. ATTACK: 5-Way Swarm Salvo Fan Launch
+  if (isAttack) {
+    if (attFrame === 0) {
+      // Core Nova Flare
+      ctx.fillStyle = '#ffffff'
+      ctx.beginPath()
+      ctx.arc(coreX, coreY, 12, 0, Math.PI * 2)
+      ctx.fill()
+    } else if (attFrame === 1 || attFrame === 2) {
+      // 5-Way Spread Fan of Micro Swarm Rockets
+      const angles = [-0.55, -0.28, 0, 0.28, 0.55]
+      const dist = attFrame === 1 ? 26 : 48
+
+      angles.forEach((ang) => {
+        const rx = coreX - Math.cos(ang) * dist
+        const ry = coreY + Math.sin(ang) * dist
+
+        ctx.save()
+        ctx.translate(rx, ry)
+        ctx.rotate(ang + Math.PI)
+
+        // Trailing purple propulsion streak
+        ctx.strokeStyle = 'rgba(168, 85, 247, 0.7)'
+        ctx.lineWidth = 3
+        ctx.beginPath()
+        ctx.moveTo(14, 0)
+        ctx.lineTo(-4, 0)
+        ctx.stroke()
+
+        // Rocket Body
+        ctx.fillStyle = '#8b5cf6'
+        roundRect(ctx, -5, -2.5, 10, 5, 2)
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(-2, -1, 3, 2)
+
+        // Exhaust smoke puffs (Frame 2)
+        if (attFrame === 2) {
+          ctx.fillStyle = 'rgba(148, 163, 184, 0.5)'
+          ctx.beginPath()
+          ctx.arc(10, 0, 3, 0, Math.PI * 2)
+          ctx.arc(16, (Math.random() - 0.5) * 4, 3.5, 0, Math.PI * 2)
+          ctx.fill()
+        }
+        ctx.restore()
+      })
     }
   }
 
-  // Heavy Forward Grinder Jaw / Spikes
-  ctx.fillStyle = '#78350f'
-  ctx.fillRect(-8, boss.h / 2 - 6, 12, 12)
-  ctx.fillStyle = '#f97316'
-  ctx.fillRect(-10, boss.h / 2 - 3, 4, 6)
-
-  // Pulsing Crimson Encrypted Lock Center
-  ctx.fillStyle = '#ef4444'
-  roundRect(ctx, boss.w / 2 - 6, boss.h / 2 - 7, 12, 14, 2)
-  ctx.fill()
-  ctx.fillStyle = '#fef08a'
-  ctx.fillRect(boss.w / 2 - 1.5, boss.h / 2 - 2, 3, 4)
+  ctx.restore()
 }
 
-// 11. Boss 6: Zero-Day Overlord (Final Boss - 5000 pts - 6-Winged Cyber Archangel Deity)
-function renderZeroDayOverlord(ctx, boss) {
-  const time = Date.now() * 0.006
-  const wingSpread = Math.sin(time) * 7
+// 9. Boss 4: DNS Hijacker Prime (3200 pts - Quantum Saucer, Concentric 3D Gyro Rings, Ion Rail Beam & Coordinate Grid)
+function renderDNSSaucer(ctx, boss, customAction = null, customFrame = null) {
+  const frame = customFrame !== null ? customFrame : (Date.now() * 0.006)
+  const isAttack =
+    customAction === 'attack' ||
+    boss.actionState === 'attack' ||
+    (boss.actionState && boss.actionState.includes('RAIL')) ||
+    (boss.actionState && boss.actionState.includes('WARP')) ||
+    (boss.actionState && boss.actionState.includes('GRAVITY')) ||
+    (boss.actionState && boss.actionState.includes('LASER'))
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const attFrame = customAction === 'attack' ? cycleFrame : (boss.attackPhase || 0)
 
-  // 6 Transcendent Neon Archangel Wings (Upper, Middle, Lower pairs)
-  ;[-1, 1].forEach((dir) => {
-    // Upper Wings
-    ctx.fillStyle = 'rgba(236, 72, 153, 0.75)'
+  const w = boss.w || 64
+  const h = boss.h || 48
+  const centerX = w / 2
+
+  // 1. Concentric 3D Levitating Orbital Gyro-Rings
+  const isRingsLocked = isAttack && (attFrame === 0 || attFrame === 1 || attFrame === 2)
+  const ringTilt1 = isRingsLocked ? 0 : Math.sin(frame * 0.25) * 0.6
+  const ringTilt2 = isRingsLocked ? 0 : Math.cos(frame * 0.25) * 0.6
+
+  // Outer Gyro-Ring
+  ctx.save()
+  ctx.translate(centerX, h / 2)
+  ctx.rotate(ringTilt1)
+  ctx.strokeStyle = '#06b6d4'
+  ctx.lineWidth = 2.5
+  ctx.beginPath()
+  ctx.ellipse(0, 0, w * 0.52, h * 0.38, 0, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.strokeStyle = '#a5f3fc'
+  ctx.lineWidth = 1.2
+  ctx.beginPath()
+  ctx.ellipse(0, 0, w * 0.52, h * 0.38, 0, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.restore()
+
+  // Inner Gyro-Ring
+  ctx.save()
+  ctx.translate(centerX, h / 2)
+  ctx.rotate(ringTilt2 + Math.PI * 0.3)
+  ctx.strokeStyle = '#0891b2'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.ellipse(0, 0, w * 0.44, h * 0.3, 0, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.restore()
+
+  // 2. Ventral Ion Engine Thruster & Warp Flames
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, centerX - 7, h / 2 + 6, 14, 8, 3)
+  ctx.fill()
+  ctx.strokeStyle = '#06b6d4'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  if (!isAttack) {
+    const warpLen = 6 + Math.sin(frame * 0.4) * 3
+    ctx.fillStyle = '#00f0ff'
     ctx.beginPath()
-    ctx.moveTo(boss.w / 2, boss.h / 2)
-    ctx.lineTo(boss.w / 2 + dir * (boss.w * 0.75), -10 - wingSpread)
-    ctx.lineTo(boss.w / 2 + dir * (boss.w * 0.4), boss.h * 0.3)
+    ctx.moveTo(centerX - 5, h / 2 + 14)
+    ctx.lineTo(centerX, h / 2 + 14 + warpLen)
+    ctx.lineTo(centerX + 5, h / 2 + 14)
+    ctx.closePath()
     ctx.fill()
+  }
 
-    // Middle Wings
-    ctx.fillStyle = 'rgba(168, 85, 247, 0.75)'
-    ctx.beginPath()
-    ctx.moveTo(boss.w / 2, boss.h / 2)
-    ctx.lineTo(boss.w / 2 + dir * (boss.w * 0.85), boss.h * 0.5 + wingSpread * 0.5)
-    ctx.lineTo(boss.w / 2 + dir * (boss.w * 0.45), boss.h * 0.7)
-    ctx.fill()
+  // 3. Metallic Chrome & Cyan Disc Hull
+  const sGrad = ctx.createLinearGradient(centerX, 4, centerX, h)
+  sGrad.addColorStop(0, '#67e8f9')
+  sGrad.addColorStop(0.3, '#0891b2')
+  sGrad.addColorStop(0.7, '#0e7490')
+  sGrad.addColorStop(1, '#083344')
+  ctx.fillStyle = sGrad
+  ctx.beginPath()
+  ctx.ellipse(centerX, h / 2, w * 0.42, h * 0.22, 0, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.strokeStyle = '#020617'
+  ctx.lineWidth = 1.5
+  ctx.stroke()
 
-    // Lower Wings
-    ctx.fillStyle = 'rgba(56, 189, 248, 0.75)'
+  // Hull Rim Light Trims
+  ctx.strokeStyle = '#a5f3fc'
+  ctx.lineWidth = 1.2
+  ctx.beginPath()
+  ctx.ellipse(centerX, h / 2 + 1, w * 0.36, h * 0.16, 0, 0, Math.PI * 2)
+  ctx.stroke()
+
+  // 4. Glowing Aqua Cockpit Dome with Specular Glint
+  ctx.fillStyle = '#00f0ff'
+  ctx.beginPath()
+  ctx.arc(centerX, h / 2 - 3, 11, Math.PI, 0)
+  ctx.fill()
+  ctx.strokeStyle = '#a5f3fc'
+  ctx.lineWidth = 1.2
+  ctx.stroke()
+
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(centerX - 6, h / 2 - 11, 5, 3)
+
+  // 5. ATTACK: Ion Rail Beam & Quantum Coordinate Grid
+  if (isAttack) {
+    if (attFrame === 0) {
+      // Frame 0: Charging Ventral Ion Emitter
+      ctx.fillStyle = '#ffffff'
+      ctx.beginPath()
+      ctx.arc(centerX - 18, h / 2, 5, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.strokeStyle = '#00f0ff'
+      ctx.lineWidth = 2
+      ctx.stroke()
+    } else if (attFrame === 1 || attFrame === 2) {
+      // Frame 1/2: Massive Horizontal Cyan Rail Beam + Dispersion Rings
+      ctx.save()
+      // Concentric Particle Dispersion Rings
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.7)'
+      ctx.lineWidth = 1.6
+      ;[centerX - 24, centerX - 34].forEach((rx, idx) => {
+        ctx.beginPath()
+        ctx.ellipse(rx, h / 2, 5 + idx * 3, 11 + idx * 5, 0, 0, Math.PI * 2)
+        ctx.stroke()
+      })
+
+      // Quantum Coordinate Targeting Grid (Frame 2)
+      if (attFrame === 2) {
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.35)'
+        ctx.lineWidth = 0.8
+        for (let gx = -10; gx < centerX - 20; gx += 8) {
+          ctx.beginPath()
+          ctx.moveTo(gx, h / 2 - 18)
+          ctx.lineTo(gx, h / 2 + 18)
+          ctx.stroke()
+        }
+        for (let gy = h / 2 - 16; gy <= h / 2 + 16; gy += 8) {
+          ctx.beginPath()
+          ctx.moveTo(-10, gy)
+          ctx.lineTo(centerX - 20, gy)
+          ctx.stroke()
+        }
+      }
+
+      // Main Blinding Rail Beam
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)'
+      ctx.lineWidth = 14
+      ctx.beginPath()
+      ctx.moveTo(centerX - 18, h / 2)
+      ctx.lineTo(-40, h / 2)
+      ctx.stroke()
+
+      ctx.strokeStyle = '#00f0ff'
+      ctx.lineWidth = 8
+      ctx.beginPath()
+      ctx.moveTo(centerX - 18, h / 2)
+      ctx.lineTo(-40, h / 2)
+      ctx.stroke()
+
+      ctx.strokeStyle = '#ffffff'
+      ctx.lineWidth = 3.5
+      ctx.beginPath()
+      ctx.moveTo(centerX - 18, h / 2)
+      ctx.lineTo(-40, h / 2)
+      ctx.stroke()
+      ctx.restore()
+    } else {
+      // Frame 3: Steam Vapor Clouds from Ring Exhausts
+      ctx.fillStyle = 'rgba(165, 243, 252, 0.65)'
+      ctx.beginPath()
+      ctx.arc(centerX - 20, h / 2 - 8, 4, 0, Math.PI * 2)
+      ctx.arc(centerX + 20, h / 2 - 8, 4, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+}
+
+// 10. Boss 5: Ransomware Dreadnought (4200 pts - Gothic Castle Fortress Tank, 4 Smokestacks & Padlock Core)
+function renderRansomDreadnought(ctx, boss, customAction = null, customFrame = null) {
+  const frame = customFrame !== null ? customFrame : (Date.now() * 0.007)
+  const isAttack =
+    customAction === 'attack' ||
+    boss.actionState === 'attack' ||
+    (boss.actionState && boss.actionState.includes('FIREWALL')) ||
+    (boss.actionState && boss.actionState.includes('SKULL')) ||
+    (boss.actionState && boss.actionState.includes('GRINDER'))
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const attFrame = customAction === 'attack' ? cycleFrame : (boss.attackPhase || 0)
+
+  const w = boss.w || 68
+  const h = boss.h || 58
+  const centerX = w / 2
+
+  // 1. Four Smoking Industrial Chimney Smokestacks
+  ;[10, 20, w - 24, w - 14].forEach((cx, idx) => {
+    ctx.fillStyle = '#1e293b'
+    ctx.fillRect(cx, 0, 5, 8)
+    ctx.strokeStyle = '#0f172a'
+    ctx.lineWidth = 1
+    ctx.strokeRect(cx, 0, 5, 8)
+
+    // Dark soot smoke puffs
+    const sPhase = (frame * 0.2 + idx * 1.2) % 3
+    ctx.fillStyle = 'rgba(51, 65, 85, 0.75)'
     ctx.beginPath()
-    ctx.moveTo(boss.w / 2, boss.h / 2)
-    ctx.lineTo(boss.w / 2 + dir * (boss.w * 0.7), boss.h + 12 + wingSpread)
-    ctx.lineTo(boss.w / 2 + dir * (boss.w * 0.3), boss.h * 0.8)
+    ctx.arc(cx + 2 - sPhase * 2, -4 - sPhase * 5, 3 + sPhase * 1.5, 0, Math.PI * 2)
     ctx.fill()
   })
 
-  // Floating Golden Corona Halo Ring
-  ctx.strokeStyle = '#fbbf24'
-  ctx.lineWidth = 2.2
-  ctx.beginPath()
-  ctx.arc(boss.w / 2, 4, 14, 0, Math.PI * 2)
+  // 2. Heavy Caterpillar Tank Treads & Rolling Bogie Wheels
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, 2, h - 14, w - 4, 14, 5)
+  ctx.fill()
+  ctx.strokeStyle = '#334155'
+  ctx.lineWidth = 1.4
   ctx.stroke()
 
-  // Radiating Star Dust Particles
-  ctx.fillStyle = '#ffffff'
-  for (let s = 0; s < 4; s++) {
-    const sAng = (s * Math.PI) / 2 + time * 2
-    ctx.fillRect(boss.w / 2 + Math.cos(sAng) * 16 - 1, 4 + Math.sin(sAng) * 16 - 1, 2, 2)
+  // 5 Bogie Wheels
+  const treadOffset = Math.sin(frame * 0.3) * 2
+  for (let wheel = 0; wheel < 5; wheel++) {
+    const wx = 8 + wheel * 13 + treadOffset
+    ctx.fillStyle = '#334155'
+    ctx.beginPath()
+    ctx.arc(wx, h - 7, 4.5, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#64748b'
+    ctx.fillRect(wx - 1, h - 8, 2, 2)
   }
 
-  // Cyber Deity Core Body
-  ctx.fillStyle = '#090d16'
-  roundRect(ctx, 6, 8, boss.w - 12, boss.h - 12, 8)
+  // 3. Black Iron Gothic Castle Fortress with Battlements & Stone Turrets
+  ctx.fillStyle = '#1e293b'
+  roundRect(ctx, 4, 8, w - 8, h - 22, 4)
   ctx.fill()
-  ctx.strokeStyle = '#ec4899'
-  ctx.lineWidth = 2
+  ctx.strokeStyle = '#020617'
+  ctx.lineWidth = 1.6
   ctx.stroke()
 
-  // Blazing Cosmic Prismatic Eye Core
-  ctx.fillStyle = '#ec4899'
-  ctx.beginPath()
-  ctx.arc(boss.w / 2, boss.h / 2, 9, 0, Math.PI * 2)
+  // Castle Crenellations (Top Battlements)
+  ctx.fillStyle = '#0f172a'
+  for (let bx = 6; bx < w - 8; bx += 8) {
+    ctx.fillRect(bx, 5, 5, 4)
+  }
+
+  // Stone Brick Texture
+  ctx.fillStyle = '#78350f'
+  ctx.fillRect(6, 18, 12, 14)
+  ctx.fillRect(w - 18, 18, 12, 14)
+
+  // 4. Heavy Forward Dual Artillery Cannons
+  let cannonAngle = isAttack ? -Math.PI * 0.25 : -Math.PI * 0.15
+  ctx.save()
+  ctx.translate(14, 26)
+  ctx.rotate(cannonAngle)
+  ctx.fillStyle = '#334155'
+  roundRect(ctx, -14, -4, 18, 8, 2)
   ctx.fill()
-  ctx.fillStyle = '#ffffff'
-  ctx.beginPath()
-  ctx.arc(boss.w / 2, boss.h / 2, 4.5, 0, Math.PI * 2)
+  ctx.strokeStyle = '#0f172a'
+  ctx.lineWidth = 1
+  ctx.stroke()
+  ctx.restore()
+
+  ctx.save()
+  ctx.translate(w - 14, 26)
+  ctx.rotate(-Math.PI + cannonAngle)
+  ctx.fillStyle = '#334155'
+  roundRect(ctx, -14, -4, 18, 8, 2)
   ctx.fill()
+  ctx.strokeStyle = '#0f172a'
+  ctx.lineWidth = 1
+  ctx.stroke()
+  ctx.restore()
+
+  // 5. Central Fortified Gate & Glowing Golden Padlock Core
+  const lockGateX = centerX - 8
+  const lockGateY = 16
+  const isGateGlowing = isAttack && (attFrame === 0 || attFrame === 1)
+
+  ctx.fillStyle = isGateGlowing ? '#78350f' : '#020617'
+  roundRect(ctx, lockGateX, lockGateY, 16, 18, 4)
+  ctx.fill()
+  ctx.strokeStyle = isGateGlowing ? '#f59e0b' : '#334155'
+  ctx.lineWidth = 1.4
+  ctx.stroke()
+
+  // Padlock Emblem
+  ctx.fillStyle = isGateGlowing ? '#fde047' : '#f59e0b'
+  roundRect(ctx, lockGateX + 3, lockGateY + 5, 10, 9, 2)
+  ctx.fill()
+  ctx.strokeStyle = '#78350f'
+  ctx.lineWidth = 1
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.arc(centerX, lockGateY + 5, 3.5, Math.PI, 0)
+  ctx.stroke()
+  ctx.fillStyle = '#020617'
+  ctx.fillRect(centerX - 1, lockGateY + 8, 2, 3)
+
+  // 6. ATTACK: Incendiary Firewall Spikes & Pixel Skull Mines
+  if (isAttack) {
+    if (attFrame === 1 || attFrame === 2) {
+      // Massive Incendiary Firewall Spikes from Cannons
+      ;[14, w - 14].forEach((cx, idx) => {
+        ctx.save()
+        ctx.translate(cx, 26)
+        ctx.rotate(idx === 0 ? -Math.PI * 0.25 : -Math.PI * 0.75)
+
+        // Blazing Muzzle Flash
+        ctx.fillStyle = '#ffffff'
+        ctx.beginPath()
+        ctx.arc(-18, 0, 5, 0, Math.PI * 2)
+        ctx.fill()
+
+        ctx.fillStyle = '#fbbf24'
+        ctx.beginPath()
+        ctx.moveTo(-16, -6)
+        ctx.lineTo(-32, 0)
+        ctx.lineTo(-16, 6)
+        ctx.closePath()
+        ctx.fill()
+
+        ctx.fillStyle = '#ea580c'
+        ctx.beginPath()
+        ctx.moveTo(-18, -4)
+        ctx.lineTo(-40, 0)
+        ctx.lineTo(-18, 4)
+        ctx.closePath()
+        ctx.fill()
+        ctx.restore()
+      })
+
+      // Frame 2: Floating Pixel Proximity Skull Mines
+      if (attFrame === 2) {
+        ;[-18, 0, 18].forEach((sx, sIdx) => {
+          const skX = centerX + sx
+          const skY = -12 - (sIdx % 2) * 8
+
+          ctx.fillStyle = '#e2e8f0'
+          roundRect(ctx, skX - 4, skY - 4, 8, 7, 2)
+          ctx.fill()
+          ctx.fillStyle = '#ef4444'
+          ctx.fillRect(skX - 2.5, skY - 2, 1.5, 1.5)
+          ctx.fillRect(skX + 1, skY - 2, 1.5, 1.5)
+        })
+      }
+    } else if (attFrame === 3) {
+      // Cooldown Barrel Red Heat Glow & Smoke
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.75)'
+      ctx.fillRect(4, 20, 4, 4)
+      ctx.fillRect(w - 8, 20, 4, 4)
+    }
+  }
+}
+
+// 11. Boss 6: Zero-Day Overlord (Final Boss - 5000 pts - 6-Winged Celestial Prismatic Seraph & Singularity Core)
+function renderZeroDayOverlord(ctx, boss, customAction = null, customFrame = null) {
+  const frame = customFrame !== null ? customFrame : (Date.now() * 0.006)
+  const isAttack =
+    customAction === 'attack' ||
+    boss.actionState === 'attack' ||
+    (boss.actionState && boss.actionState.includes('STARBURST')) ||
+    (boss.actionState && boss.actionState.includes('SMITE')) ||
+    (boss.actionState && boss.actionState.includes('VOID'))
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const attFrame = customAction === 'attack' ? cycleFrame : (boss.attackPhase || 0)
+
+  const w = boss.w || 74
+  const h = boss.h || 64
+  const centerX = w / 2
+
+  // Wing Span Sweep Motion across 4 frames
+  let wingSpan = 0
+  if (!isAttack) {
+    // IDLE: 0 (Neutral), 1 (Wide Fan), 2 (High Divine Arc), 3 (Downward Protective Guard)
+    wingSpan = cycleFrame === 0 ? 0 : cycleFrame === 1 ? 8 : cycleFrame === 2 ? 14 : -12
+  } else {
+    wingSpan = attFrame === 0 ? 6 : attFrame === 1 ? 16 : attFrame === 2 ? 20 : -14
+  }
+
+  // 1. Six Prismatic Crystal Wings with Chromatic Rainbow Gradients
+  ;[-1, 1].forEach((dir) => {
+    // Upper Pair (Prismatic Magenta / Cyan Gradient)
+    const uGrad = ctx.createLinearGradient(centerX, h / 2, centerX + dir * 38, h / 2 - 24 - wingSpan)
+    uGrad.addColorStop(0, '#ec4899')
+    uGrad.addColorStop(0.5, '#06b6d4')
+    uGrad.addColorStop(1, '#fde047')
+    ctx.fillStyle = uGrad
+    ctx.beginPath()
+    ctx.moveTo(centerX + dir * 6, h / 2 - 4)
+    ctx.lineTo(centerX + dir * (34 + wingSpan * 0.6), h / 2 - 24 - wingSpan)
+    ctx.lineTo(centerX + dir * 18, h / 2 + 2)
+    ctx.closePath()
+    ctx.fill()
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 1.2
+    ctx.stroke()
+
+    // Middle Pair (Cosmic Purple / Electric Cyan)
+    const mGrad = ctx.createLinearGradient(centerX, h / 2, centerX + dir * 42, h / 2)
+    mGrad.addColorStop(0, '#8b5cf6')
+    mGrad.addColorStop(0.6, '#38bdf8')
+    mGrad.addColorStop(1, '#ffffff')
+    ctx.fillStyle = mGrad
+    ctx.beginPath()
+    ctx.moveTo(centerX + dir * 6, h / 2)
+    ctx.lineTo(centerX + dir * (38 + wingSpan * 0.4), h / 2 + 2 + wingSpan * 0.3)
+    ctx.lineTo(centerX + dir * 16, h / 2 + 16)
+    ctx.closePath()
+    ctx.fill()
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 1
+    ctx.stroke()
+
+    // Lower Pair (Prismatic Gold / Magenta)
+    const lGrad = ctx.createLinearGradient(centerX, h / 2, centerX + dir * 28, h / 2 + 28)
+    lGrad.addColorStop(0, '#facc15')
+    lGrad.addColorStop(0.7, '#ec4899')
+    lGrad.addColorStop(1, '#3b0764')
+    ctx.fillStyle = lGrad
+    ctx.beginPath()
+    ctx.moveTo(centerX + dir * 4, h / 2 + 6)
+    ctx.lineTo(centerX + dir * (26 - wingSpan * 0.4), h / 2 + 26 + wingSpan * 0.5)
+    ctx.lineTo(centerX + dir * 10, h / 2 + 18)
+    ctx.closePath()
+    ctx.fill()
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 1
+    ctx.stroke()
+  })
+
+  // 2. Levitating Golden Corona Halo Ring with Crown Spikes
+  const isCoronaOvercharged = isAttack && (attFrame === 0 || attFrame === 1)
+  const haloR = isCoronaOvercharged ? 14 : 10
+
+  ctx.strokeStyle = isCoronaOvercharged ? '#ffffff' : '#fbbf24'
+  ctx.lineWidth = isCoronaOvercharged ? 3.5 : 2.2
+  ctx.beginPath()
+  ctx.ellipse(centerX, 4, haloR, 4, 0, 0, Math.PI * 2)
+  ctx.stroke()
+
+  // Crown Spikes
+  ctx.fillStyle = '#fde047'
+  ;[-6, 0, 6].forEach((sx) => {
+    ctx.beginPath()
+    ctx.moveTo(centerX + sx - 2, 4)
+    ctx.lineTo(centerX + sx, isCoronaOvercharged ? -6 : -2)
+    ctx.lineTo(centerX + sx + 2, 4)
+    ctx.closePath()
+    ctx.fill()
+  })
+
+  // 3. Central Obsidian Singularity Core
+  ctx.fillStyle = '#020617'
+  ctx.beginPath()
+  ctx.arc(centerX, h / 2, 8.5, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.strokeStyle = '#ffffff'
+  ctx.lineWidth = 1.4
+  ctx.stroke()
+
+  // Inner Swirling Black Hole Core Eye
+  const cGrad = ctx.createRadialGradient(centerX, h / 2, 1, centerX, h / 2, 7.5)
+  cGrad.addColorStop(0, '#ffffff')
+  cGrad.addColorStop(0.3, '#38bdf8')
+  cGrad.addColorStop(0.7, '#ec4899')
+  cGrad.addColorStop(1, '#020617')
+  ctx.fillStyle = cGrad
+  ctx.beginPath()
+  ctx.arc(centerX, h / 2, 6.5, 0, Math.PI * 2)
+  ctx.fill()
+
+  // 4. ATTACK: 6-Way Prismatic Starburst, Golden Lightning & Dual Void Vortexes
+  if (isAttack) {
+    if (attFrame === 1) {
+      // Vertical Golden Lightning Smite Pillars
+      ctx.save()
+      ctx.strokeStyle = '#fde047'
+      ctx.lineWidth = 2.5
+      ;[-16, 16].forEach((lx) => {
+        ctx.beginPath()
+        ctx.moveTo(centerX + lx, -20)
+        ctx.lineTo(centerX + lx + 3, h / 2 - 10)
+        ctx.lineTo(centerX + lx - 2, h / 2 + 10)
+        ctx.lineTo(centerX + lx + 4, h + 20)
+        ctx.stroke()
+      })
+      ctx.restore()
+    } else if (attFrame === 2) {
+      // Full Cosmic Explosion: 6-Way Prismatic Starburst + Dual Swirling Black Holes
+      ctx.save()
+      const starColors = ['#fde047', '#00f0ff', '#ec4899', '#ffffff', '#a855f7', '#22c55e']
+
+      // 6-Way Starburst Rays
+      for (let r = 0; r < 6; r++) {
+        const sAng = (r * Math.PI) / 3
+        ctx.strokeStyle = starColors[r % starColors.length]
+        ctx.lineWidth = 4
+        ctx.beginPath()
+        ctx.moveTo(centerX, h / 2)
+        ctx.lineTo(centerX + Math.cos(sAng) * 65, h / 2 + Math.sin(sAng) * 65)
+        ctx.stroke()
+      }
+
+      // Dual Swirling Void Vortexes
+      ;[-22, 22].forEach((vx) => {
+        ctx.fillStyle = '#020617'
+        ctx.beginPath()
+        ctx.arc(centerX + vx, h / 2, 9, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = '#ec4899'
+        ctx.lineWidth = 1.8
+        ctx.beginPath()
+        ctx.arc(centerX + vx, h / 2, 11, 0, Math.PI * 2)
+        ctx.stroke()
+      })
+      ctx.restore()
+    } else if (attFrame === 3) {
+      // Falling Residual Rainbow Pixel Sparks
+      const sparkColors = ['#fde047', '#00f0ff', '#ec4899', '#ffffff']
+      ;[-18, -8, 0, 8, 18].forEach((sx, idx) => {
+        ctx.fillStyle = sparkColors[idx % sparkColors.length]
+        ctx.fillRect(centerX + sx, h / 2 + 22 + (idx % 3) * 6, 2, 3)
+      })
+    }
+  }
 }
 
 // Unified Boss Sprite Dispatcher with Action Badges & Telegraphs
@@ -1764,7 +3380,7 @@ function renderBoss(ctx, boss) {
     return
   }
 
-  // Draw Boss Chassis based on type
+  // Dispatch to high-fidelity 16-bit arcade pixel art procedural renderers
   if (boss.type === 'phishing_hydra') {
     renderPhishingHydra(ctx, boss)
   } else if (boss.type === 'ddos_titan') {
@@ -1798,11 +3414,11 @@ function renderBoss(ctx, boss) {
 
   ctx.restore()
 
-  // Render Telegraph Warning Lines (laser aim, sky pillar, mortar reticle)
+  // Render Telegraph Warning Lines (laser aim, sky pillar, mortar reticle, thunder strike)
   if (boss.telegraph && boss.telegraph.timer > 0) {
     ctx.save()
     const tg = boss.telegraph
-    const alpha = (tg.timer % 6 < 3) ? 0.85 : 0.4
+    const alpha = (tg.timer % 6 < 3) ? 0.9 : 0.45
     if (tg.type === 'laser') {
       // Horizontal charging laser guide
       ctx.strokeStyle = `rgba(239, 68, 68, ${alpha})`
@@ -1827,6 +3443,37 @@ function renderBoss(ctx, boss) {
       ctx.font = 'bold 7.5px "JetBrains Mono", monospace'
       ctx.textAlign = 'center'
       ctx.fillText('⚡ JUDGEMENT ZONE', tg.x, 38)
+    } else if (tg.type === 'thunder') {
+      // Dynamic Crackling Sky Lightning Strike & Danger Warning
+      ctx.fillStyle = `rgba(6, 182, 212, ${alpha * 0.3})`
+      ctx.fillRect(tg.x - 16, 0, 32, 330)
+      ctx.strokeStyle = '#00f0ff'
+      ctx.lineWidth = 1.6
+      ctx.strokeRect(tg.x - 16, 0, 32, 330)
+
+      // Crackling Jagged Electric Bolt
+      ctx.strokeStyle = alpha > 0.6 ? '#ffffff' : '#facc15'
+      ctx.lineWidth = 2.5
+      ctx.beginPath()
+      ctx.moveTo(tg.x, 0)
+      ctx.lineTo(tg.x - 6, 60)
+      ctx.lineTo(tg.x + 8, 120)
+      ctx.lineTo(tg.x - 5, 180)
+      ctx.lineTo(tg.x + 4, 240)
+      ctx.lineTo(tg.x, 290)
+      ctx.stroke()
+
+      // Target Shockwave Ring on Ground
+      ctx.strokeStyle = '#38bdf8'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.ellipse(tg.x, 240, 18, 6, 0, 0, Math.PI * 2)
+      ctx.stroke()
+
+      ctx.fillStyle = '#38bdf8'
+      ctx.font = 'bold 7.5px "JetBrains Mono", monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText('⚡ QUANTUM THUNDER', tg.x, 34)
     } else if (tg.type === 'mortar') {
       // Ground landing target reticle
       ctx.strokeStyle = `rgba(16, 185, 129, ${alpha})`
@@ -1852,15 +3499,15 @@ function renderBoss(ctx, boss) {
       ctx.save()
       ctx.translate(Math.round(b.x), Math.round(b.y))
 
-      if (b.type === 'sawblade') {
-        // Rotating 404 Glitch Sawblade with Spark Trails
+      if (b.type === 'sawblade' || b.type === 'grinder') {
+        // Rotating Diamond Sawblade / Grinder with Spark Trails
         b.rot = (b.rot || 0) + 0.35
         ctx.rotate(b.rot)
-        ctx.fillStyle = '#ef4444'
+        ctx.fillStyle = '#94a3b8'
         ctx.beginPath()
         ctx.arc(0, 0, b.size + 1, 0, Math.PI * 2)
         ctx.fill()
-        ctx.fillStyle = '#fbbf24'
+        ctx.fillStyle = '#ea580c'
         for (let t = 0; t < 6; t++) {
           const a = (t * Math.PI) / 3
           ctx.fillRect(Math.cos(a) * (b.size - 1) - 1.5, Math.sin(a) * (b.size - 1) - 1.5, 3, 3)
@@ -1877,8 +3524,45 @@ function renderBoss(ctx, boss) {
         ctx.fill()
         ctx.fillStyle = '#ffffff'
         ctx.fillRect(-7, -1, 14, 2)
-      } else if (b.type === 'venom_wave') {
-        // Weaving Bioluminescent Venom Orb
+      } else if (b.type === 'fireball') {
+        // Burning Pixel Fireball with Pulsing Flame Core
+        b.rot = (b.rot || 0) + 0.3
+        ctx.fillStyle = 'rgba(249, 115, 22, 0.45)'
+        ctx.beginPath()
+        ctx.arc(0, 0, (b.size || 5) + 3, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#f97316'
+        ctx.beginPath()
+        ctx.arc(0, 0, b.size || 5, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#fde047'
+        ctx.beginPath()
+        ctx.arc(-1, 0, (b.size || 5) * 0.6, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(-1.5, -1.5, 3, 3)
+      } else if (b.type === 'energy_bullet') {
+        // High-Velocity Piercing Cyan / White Energy Round
+        ctx.fillStyle = '#00f0ff'
+        roundRect(ctx, -8, -3, 16, 6, 2)
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        roundRect(ctx, -5, -1.5, 10, 3, 1)
+        ctx.fill()
+      } else if (b.type === 'venom_cross' || b.type === 'venom') {
+        // Criss-Crossing Bioluminescent Venom Sparks
+        b.rot = (b.rot || 0) + 0.25
+        ctx.rotate(b.rot)
+        ctx.fillStyle = '#10b981'
+        roundRect(ctx, -b.size, -b.size, b.size * 2, b.size * 2, 2)
+        ctx.fill()
+        ctx.fillStyle = '#a7f3d0'
+        roundRect(ctx, -b.size * 0.5, -b.size * 0.5, b.size, b.size, 1)
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(-1, -1, 2, 2)
+      } else if (b.type === 'slime_wave' || b.type === 'venom_wave') {
+        // Weaving Bioluminescent Slime Wave
         ctx.fillStyle = '#10b981'
         ctx.beginPath()
         ctx.arc(0, 0, b.size + 1, 0, Math.PI * 2)
@@ -1887,8 +3571,8 @@ function renderBoss(ctx, boss) {
         ctx.fillRect(-2, -2, 4, 4)
         ctx.fillStyle = '#34d399'
         ctx.fillRect(2, -1, 3, 2)
-      } else if (b.type === 'mortar') {
-        // Arcing Toxic Slime Mortar
+      } else if (b.type === 'mortar' || b.type === 'acid_mortar') {
+        // Arcing Toxic Slime Mortar Canister
         ctx.fillStyle = '#065f46'
         roundRect(ctx, -b.size, -b.size, b.size * 2, b.size * 2, 3)
         ctx.fill()
@@ -1914,7 +3598,7 @@ function renderBoss(ctx, boss) {
         ctx.stroke()
         ctx.fillStyle = 'rgba(192, 132, 252, 0.25)'
         ctx.fill()
-      } else if (b.type === 'beam') {
+      } else if (b.type === 'warp_beam' || b.type === 'beam') {
         // Cyan Ion Rail Beam
         ctx.fillStyle = '#06b6d4'
         roundRect(ctx, -12, -3, 24, 6, 2)
@@ -1922,37 +3606,53 @@ function renderBoss(ctx, boss) {
         ctx.fillStyle = '#ffffff'
         ctx.fillRect(-8, -1.5, 16, 3)
       } else if (b.type === 'gravity_orb') {
-        // Quantum Gravity Singularity
-        ctx.fillStyle = 'rgba(6, 182, 212, 0.35)'
+        // Quantum Gravity Singularity with Orbiting Trap Particles
+        b.rot = (b.rot || 0) + 0.15
+        ctx.fillStyle = 'rgba(168, 85, 247, 0.4)'
         ctx.beginPath()
-        ctx.arc(0, 0, b.size + 3, 0, Math.PI * 2)
+        ctx.arc(0, 0, b.size + 4, 0, Math.PI * 2)
         ctx.fill()
-        ctx.fillStyle = '#06b6d4'
+        ctx.fillStyle = '#7c3aed'
         ctx.beginPath()
         ctx.arc(0, 0, b.size, 0, Math.PI * 2)
         ctx.fill()
+        ctx.fillStyle = '#c084fc'
+        for (let o = 0; o < 3; o++) {
+          const oa = b.rot + (o * Math.PI * 2) / 3
+          ctx.fillRect(Math.cos(oa) * (b.size + 2) - 1, Math.sin(oa) * (b.size + 2) - 1, 2.5, 2.5)
+        }
         ctx.fillStyle = '#ffffff'
         ctx.fillRect(-2, -2, 4, 4)
-      } else if (b.type === 'spike') {
-        // Fiery Ransomware Spikewall
-        ctx.fillStyle = '#ea580c'
-        roundRect(ctx, -5, -5, 10, 10, 2)
+      } else if (b.type === 'firewall_spikes' || b.type === 'spike') {
+        // Fiery Ransomware Firewall Jet / Spikes
+        ctx.fillStyle = '#f97316'
+        roundRect(ctx, -6, -5, 12, 10, 2)
         ctx.fill()
         ctx.fillStyle = '#fef08a'
-        ctx.fillRect(-2, -2, 4, 4)
-      } else if (b.type === 'mine') {
-        // Floating Ransom Skull Mine
-        ctx.fillStyle = '#090d16'
-        roundRect(ctx, -b.size, -b.size, b.size * 2, b.size * 2, 3)
+        ctx.fillRect(-3, -2, 6, 4)
+        ctx.fillStyle = '#dc2626'
+        ctx.fillRect(-8, -3, 3, 6)
+      } else if (b.type === 'skull_mines' || b.type === 'mine') {
+        // Floating Ransom Pixel Skull Mine with Glowing Red Eyes
+        ctx.fillStyle = '#e2e8f0'
+        roundRect(ctx, -b.size, -b.size, b.size * 2, b.size * 1.6, 3)
         ctx.fill()
-        ctx.strokeStyle = '#ef4444'
-        ctx.lineWidth = 1.2
+        ctx.fillRect(-b.size * 0.5, b.size * 0.6 - 2, b.size, 4)
+        ctx.strokeStyle = '#334155'
+        ctx.lineWidth = 1
         ctx.stroke()
+        // Glowing Red Eyes
         ctx.fillStyle = '#ef4444'
-        ctx.fillRect(-1.5, -b.size - 2, 3, 3) // blinking LED
-      } else if (b.type === 'star') {
-        // 5-Way Archangel Cosmic Star with Comet Glow
-        ctx.fillStyle = '#ec4899'
+        ctx.fillRect(-3.5, -2, 2.5, 2.5)
+        ctx.fillRect(1, -2, 2.5, 2.5)
+        // Teeth
+        ctx.fillStyle = '#0f172a'
+        ctx.fillRect(-2, b.size * 0.6 - 1, 1.5, 2)
+        ctx.fillRect(0.5, b.size * 0.6 - 1, 1.5, 2)
+      } else if (b.type === 'prismatic_star' || b.type === 'star') {
+        // 5-Way Archangel Cosmic Star with Comet Rainbow Glow
+        const starColors = ['#ef4444', '#f97316', '#22c55e', '#06b6d4', '#a855f7']
+        ctx.fillStyle = b.starColor || starColors[(i + (b.starIdx || 0)) % 5]
         ctx.beginPath()
         ctx.arc(0, 0, b.size + 2, 0, Math.PI * 2)
         ctx.fill()
@@ -1960,18 +3660,21 @@ function renderBoss(ctx, boss) {
         ctx.fillRect(-2, -2, 4, 4)
         ctx.fillStyle = '#fde047'
         ctx.fillRect(-1, -1, 2, 2)
-      } else if (b.type === 'vortex') {
-        // Black Hole Dual Core Vortex
+      } else if (b.type === 'void_vortex' || b.type === 'vortex') {
+        // Black Hole Dual Core Vortex with Accretion Horizon
         b.rot = (b.rot || 0) + 0.2
         ctx.rotate(b.rot)
-        ctx.fillStyle = '#581c87'
+        ctx.fillStyle = '#030712'
         ctx.beginPath()
-        ctx.arc(0, 0, b.size + 2, 0, Math.PI * 2)
+        ctx.arc(0, 0, b.size + 3, 0, Math.PI * 2)
         ctx.fill()
-        ctx.fillStyle = '#a855f7'
+        ctx.strokeStyle = '#a855f7'
+        ctx.lineWidth = 1.8
+        ctx.stroke()
+        ctx.fillStyle = '#ec4899'
         for (let v = 0; v < 4; v++) {
           const va = (v * Math.PI) / 2
-          ctx.fillRect(Math.cos(va) * b.size - 1.5, Math.sin(va) * b.size - 1.5, 3, 3)
+          ctx.fillRect(Math.cos(va) * (b.size + 1) - 1.5, Math.sin(va) * (b.size + 1) - 1.5, 3, 3)
         }
       } else {
         // Standard 404 Glitch Saw Orb
@@ -2032,20 +3735,22 @@ function renderBossHud(ctx, boss, w) {
   ctx.restore()
 }
 
-// Final 6 Progressive Boss Milestones with Calibrated High HP (55, 85, 120, 165, 220, 300)
+// Final 6 Progressive Boss Milestones with 50% Calibrated HP (55, 85, 120, 165, 220, 300)
 const BOSS_MILESTONES = [
-  { score: 1000, name: 'MEGABYTE SQUATTER', type: 'squatter_mech', hp: 55, reward: 200, color: '#ef4444' },
-  { score: 1800, name: 'PHISHING HYDRA', type: 'phishing_hydra', hp: 85, reward: 300, color: '#10b981' },
-  { score: 2500, name: 'DDoS SWARM TITAN', type: 'ddos_titan', hp: 120, reward: 400, color: '#8b5cf6' },
-  { score: 3200, name: 'DNS HIJACKER PRIME', type: 'dns_saucer', hp: 165, reward: 500, color: '#06b6d4' },
-  { score: 4200, name: 'RANSOMWARE DREADNOUGHT', type: 'ransom_dreadnought', hp: 220, reward: 650, color: '#f59e0b' },
-  { score: 5000, name: 'ZERO-DAY OVERLORD', type: 'zero_day_overlord', hp: 300, reward: 1000, color: '#ec4899', isFinal: true },
+  { score: 1000, name: 'MEGABYTE SQUATTER', type: 'squatter_mech', hp: 55, reward: 0, color: '#ef4444' },
+  { score: 1800, name: 'PHISHING HYDRA', type: 'phishing_hydra', hp: 85, reward: 0, color: '#10b981' },
+  { score: 2500, name: 'DDoS SWARM TITAN', type: 'ddos_titan', hp: 120, reward: 0, color: '#8b5cf6' },
+  { score: 3200, name: 'DNS HIJACKER PRIME', type: 'dns_saucer', hp: 165, reward: 0, color: '#06b6d4' },
+  { score: 4200, name: 'RANSOMWARE DREADNOUGHT', type: 'ransom_dreadnought', hp: 220, reward: 0, color: '#f59e0b' },
+  { score: 5000, name: 'ZERO-DAY OVERLORD', type: 'zero_day_overlord', hp: 300, reward: 0, color: '#ec4899', isFinal: true },
 ]
 
 const DomainGameEngine = forwardRef(function DomainGameEngine(
   {
     isAutoMode = true,
     gameMode = 'campaign',
+    difficulty = 'easy',
+    godMode = false,
     onToggleAutoMode,
     onToggleGameMode,
     soundEnabled = true,
@@ -2059,6 +3764,12 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     soundEnabledRef.current = soundEnabled
   }, [soundEnabled])
 
+  useEffect(() => {
+    if (stateRef.current) {
+      stateRef.current.godMode = !!godMode
+    }
+  }, [godMode])
+
   const [score, setScore] = useState(0)
   const [highScore, setHighScore] = useState(() => {
     try {
@@ -2067,7 +3778,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       return 420
     }
   })
-  const [lives, setLives] = useState(1)
+  const [lives, setLives] = useState(3)
   const [gameOver, setGameOver] = useState(false)
   const [revives, setRevives] = useState(0)
   const [bubbleText, setBubbleText] = useState('')
@@ -2084,13 +3795,16 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
   const stateRef = useRef({
     gameState: isAutoMode ? 'PLAYING' : 'COUNTDOWN',
     gameMode: gameMode || 'campaign',
+    difficulty: difficulty || 'easy',
+    godMode: !!godMode,
+    bossHpMultiplier: difficulty === 'hard' ? 2 : 1,
     bossIndex: 0,
     bossesDefeated: 0,
     countdown: 3,
     countdownTimer: 60,
     score: 0,
     highScore: 420,
-    lives: 1,
+    lives: 3,
     cannon: {
       active: false,
       phase: 'idle',
@@ -2141,11 +3855,16 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       vx: 0,
       vy: 0,
       isGrounded: true,
+      jumpsLeft: 2,
+      lastJumpTime: 0,
       frameCounter: 0,
       accessory: 'goggles',
       canAirCannon: true,
       coyoteFrames: 8,
+      hitFlash: 0,
     },
+    moveLeft: false,
+    moveRight: false,
     // Calibrated starter platforms with 55px-58px gaps for rewarding athletic leaps
     platforms: [
       { x: 15, y: 198, baseY: 198, w: 130, h: 42, text: 'genesis.com', tld: '.com', color: '#ea580c', cracks: [] },
@@ -2185,11 +3904,44 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       s.cat.y = curPlat.y - s.cat.h
       s.cat.vy = 0
       s.cat.isGrounded = true
+      s.cat.jumpsLeft = 2
+      s.cat.lastJumpTime = 0
       s.cat.canAirCannon = true
       s.cat.coyoteFrames = 8
+      s.cat.hitFlash = 0
     }
 
-    if (soundEnabledRef.current) playCountdownBeep(false)
+    if (soundEnabledRef.current) playCountdownBeep()
+  }
+
+  // Start campaign run with chosen difficulty
+  const startCampaign = (diff = 'easy') => {
+    const s = stateRef.current
+    s.difficulty = diff
+    s.bossHpMultiplier = diff === 'hard' ? 2 : 1
+    s.isAuto = false
+    s.gameMode = 'campaign'
+    if (onToggleAutoMode) onToggleAutoMode(false)
+    if (onToggleGameMode) onToggleGameMode('campaign')
+    s.bubbleText = `⚔️ CAMPAIGN [${diff.toUpperCase()} - ${s.bossHpMultiplier}x HP]!`
+    s.bubbleTimer = 90
+    setBubbleText(s.bubbleText)
+    resetGame(true)
+  }
+
+  // Switch to casual autopilot mode
+  const startAutoMode = () => {
+    const s = stateRef.current
+    s.isAuto = true
+    s.gameMode = 'casual'
+    s.gameState = 'PLAYING'
+    s.gameOver = false
+    s.lives = 3
+    setGameOver(false)
+    setLives(3)
+    if (onToggleAutoMode) onToggleAutoMode(true)
+    if (onToggleGameMode) onToggleGameMode('casual')
+    resetGame(false)
   }
 
   const prevAutoModeRef = useRef(isAutoMode)
@@ -2231,11 +3983,18 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       s.countdownTimer = 0
     }
 
+    const now = performance.now()
+    if (s.cat.lastJumpTime && now - s.cat.lastJumpTime < 80) {
+      return
+    }
+
     // 1. Primary Ground / Platform Jump (with Coyote Time support)
     if (s.cat.isGrounded || (s.cat.coyoteFrames && s.cat.coyoteFrames > 0)) {
-      s.cat.vy = -7.4
+      s.cat.lastJumpTime = now
+      s.cat.vy = -5.25
       s.cat.isGrounded = false
       s.cat.coyoteFrames = 0
+      s.cat.jumpsLeft = 1
       s.jumpBuffer = 0
 
       if (soundEnabledRef.current) playPixelJump()
@@ -2255,7 +4014,32 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       return
     }
 
-    s.jumpBuffer = 10
+    // 2. Mid-Air Double Jump
+    if (s.cat.jumpsLeft > 0 && !s.cat.isGrounded) {
+      s.cat.lastJumpTime = now
+      s.cat.vy = -5.25
+      s.cat.jumpsLeft = 0
+      s.jumpBuffer = 0
+
+      if (soundEnabledRef.current) playPixelJump()
+
+      // Ethereal cyan & gold sparkle paw ring on mid-air double jump
+      for (let k = 0; k < 10; k++) {
+        const angle = (k / 10) * Math.PI * 2
+        s.particles.push({
+          x: s.cat.x + s.cat.w / 2,
+          y: s.cat.y + s.cat.h - 4,
+          vx: Math.cos(angle) * (1.8 + Math.random() * 1.2),
+          vy: Math.sin(angle) * (1.2 + Math.random() * 0.8) + 0.5,
+          color: k % 2 === 0 ? '#38bdf8' : '#fbbf24',
+          life: 18,
+          size: 2.5,
+        })
+      }
+      return
+    }
+
+    s.jumpBuffer = 8
   }
 
   const executeShoot = (fromUser = false) => {
@@ -2279,7 +4063,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     }
 
     if (s.shootCooldown > 0) return
-    s.shootCooldown = s.weapon === 'railgun' ? 14 : s.weapon === 'missile' ? 16 : 8
+    s.shootCooldown = s.godMode ? 2 : s.weapon === 'railgun' ? 14 : s.weapon === 'missile' ? 16 : 8
 
     const muzzleX = s.cat.x + s.cat.w + 2
     const muzzleY = s.cat.y + 11
@@ -2304,7 +4088,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           y: muzzleY,
           vx: 6.8,
           vy: angleVy,
-          damage: 1,
+          damage: 1.5,
           color: '#c084fc',
           type: 'spread',
           life: 55,
@@ -2318,7 +4102,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         y: muzzleY,
         vx: 9.5,
         vy: 0,
-        damage: 2,
+        damage: 3.5,
         color: '#06b6d4',
         type: 'railgun',
         piercing: true,
@@ -2332,7 +4116,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         y: muzzleY,
         vx: 5.6,
         vy: -0.5,
-        damage: 3,
+        damage: 5.0,
         color: '#f97316',
         type: 'missile',
         isMissile: true,
@@ -2346,7 +4130,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         y: muzzleY,
         vx: 7.4,
         vy: 0,
-        damage: 1,
+        damage: 2.0,
         color: '#f43f5e',
         type: 'plasma',
         life: 50,
@@ -2362,9 +4146,11 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     s.score = 0
     s.speed = BASE_SPEED
     s.revives = 0
-    s.lives = 1
+    s.lives = 3
     s.weapon = 'plasma'
     s.shootCooldown = 0
+    s.moveLeft = false
+    s.moveRight = false
     s.projectiles = []
     s.enemies = []
     s.boss = null
@@ -2389,8 +4175,10 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     s.cat.vx = 0
     s.cat.vy = 0
     s.cat.isGrounded = true
+    s.cat.jumpsLeft = 2
     s.cat.canAirCannon = true
     s.cat.coyoteFrames = 8
+    s.cat.hitFlash = 0
     s.powerups = []
     s.particles = []
     s.floatingTexts = []
@@ -2409,7 +4197,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     setGameOver(false)
     setScore(0)
     setRevives(0)
-    setLives(1)
+    setLives(3)
 
     if (triggerCountdown || !s.isAuto) {
       startManualCountdown()
@@ -2423,13 +4211,6 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     stateRef.current.currentBiome = Math.floor(stateRef.current.bgTimeMs / BIOME_DURATION_MS) % BIOMES.length
   }
 
-  useImperativeHandle(ref, () => ({
-    jump: () => executeJump(true),
-    shoot: () => executeShoot(true),
-    restart: () => resetGame(true),
-    nextBiome: () => nextBiome(),
-  }))
-
   const updateGame = () => {
     const s = stateRef.current
     if (s.gameState === 'GAMEOVER') return
@@ -2437,6 +4218,65 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     const cat = s.cat
     const gravity = 0.19
     const maxFallSpeed = 5.4
+
+    // Unified Cat Damage & Lives System with I-Frames & Game Over
+    const damageCat = (reason = 'HIT') => {
+      if (s.godMode) {
+        s.bubbleText = `🛡️ IMMUNE [GOD MODE]`
+        s.bubbleTimer = 25
+        setBubbleText(s.bubbleText)
+        return
+      }
+      if (cat.hitFlash > 0 || cat.inRescueFlight || s.gameState !== 'PLAYING') return
+      cat.hitFlash = 32 // ~0.5s invulnerability frames
+      s.screenshake = 6
+      if (soundEnabledRef.current) playEnemyExplode()
+
+      if (s.isAuto) {
+        s.bubbleText = `⚡ HAZARD DEFLECTED!`
+        s.bubbleTimer = 35
+        setBubbleText(s.bubbleText)
+        return
+      }
+
+      s.lives = Math.max(0, (s.lives ?? 3) - 0.5)
+      setLives(s.lives)
+
+      if (s.floatingTexts) {
+        s.floatingTexts.push({
+          x: cat.x + cat.w / 2,
+          y: cat.y - 8,
+          text: '-0.5 ❤️',
+          color: '#ef4444',
+          vy: -1.1,
+          life: 28,
+          font: 'bold 10.5px "JetBrains Mono", monospace',
+        })
+      }
+
+      for (let k = 0; k < 14; k++) {
+        s.particles.push({
+          x: cat.x + cat.w / 2,
+          y: cat.y + cat.h / 2,
+          vx: (Math.random() - 0.5) * 5,
+          vy: (Math.random() - 0.5) * 5,
+          color: '#ef4444',
+          life: 20,
+          size: 3,
+        })
+      }
+
+      if (s.lives <= 0) {
+        s.gameState = 'GAMEOVER'
+        s.gameOver = true
+        setGameOver(true)
+        if (soundEnabledRef.current) playGameOver()
+      } else {
+        s.bubbleText = `OUCH! ❤️ x ${s.lives}`
+        s.bubbleTimer = 45
+        setBubbleText(s.bubbleText)
+      }
+    }
 
     s.speed = s.isAuto
       ? BASE_SPEED
@@ -2685,19 +4525,38 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         cracks: generateCracks(width, 42),
       })
 
-      // Floating Domain Extension Life Badge / Weapon Pickup (30% spawn rate)
-      if (Math.random() < 0.30 && s.powerups.length < 2) {
-        const pwr = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)]
+      // Separate Gun Drops (20%) and Domain Extension Life +1UP Drops (45%)
+      const dropRoll = Math.random()
+      if (dropRoll < 0.20 && s.powerups.length < 3) {
+        // Gun Drop Crate
+        const gun = GUN_TYPES[Math.floor(Math.random() * GUN_TYPES.length)]
         s.powerups.push({
-          x: spawnX + width / 2 - 18,
+          itemType: 'gun',
+          x: spawnX + width / 2 - 16,
           y: targetBaseY - 38,
+          w: 32,
+          h: 22,
+          label: gun.label,
+          color: gun.color,
+          score: gun.score,
+          weapon: gun.weapon,
+          weaponName: gun.weaponName,
+          icon: gun.icon,
+          bobAngle: Math.random() * Math.PI,
+        })
+      } else if (dropRoll < 0.65 && s.powerups.length < 3) {
+        // Domain Extension +1 Life Drop
+        const dLife = DOMAIN_LIFE_TYPES[Math.floor(Math.random() * DOMAIN_LIFE_TYPES.length)]
+        s.powerups.push({
+          itemType: 'domain_life',
+          x: spawnX + width / 2 - 18,
+          y: targetBaseY - 40,
           w: 36,
           h: 22,
-          label: pwr.label,
-          color: pwr.color,
-          score: pwr.score,
-          weapon: pwr.weapon,
-          weaponName: pwr.weaponName,
+          label: dLife.label,
+          color: dLife.color,
+          score: dLife.score,
+          accessory: dLife.accessory,
           bobAngle: Math.random() * Math.PI,
         })
       }
@@ -2706,21 +4565,25 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       if (s.gameMode === 'campaign' && !s.boss && s.enemies.length < 3) {
         const rand = Math.random()
         if (rand < 0.22) {
-          // 1. 404 Glitch Bug (1 HP, +10 pts)
+          // 1. 404 Cyber Drone (2 HP, +15 pts, 4-Frame Hover & Cyan Laser Pulse)
           s.enemies.push({
             type: 'glitch_bug',
             x: spawnX + width * 0.4,
-            y: targetBaseY - 14,
-            w: 16,
-            h: 12,
-            vx: 0.6,
-            patrolLeft: spawnX + 8,
-            patrolRight: spawnX + width - 18,
-            hp: 1,
-            maxHp: 1,
-            scoreVal: 10,
+            y: targetBaseY - 26,
+            w: 24,
+            h: 22,
+            vx: -0.65,
+            patrolLeft: spawnX + 6,
+            patrolRight: spawnX + width - 26,
+            hp: 2,
+            maxHp: 2,
+            scoreVal: 15,
             frame: Math.random() * 20,
             hitFlash: 0,
+            actionState: 'idle',
+            laserTimer: 0,
+            laserPhase: 0,
+            shootCooldown: 120 + Math.floor(Math.random() * 60),
           })
         } else if (rand < 0.36) {
           // 2. Squatter Drone (2 HP, +20 pts)
@@ -2784,18 +4647,20 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     if (s.gameMode === 'campaign' && !s.boss && (s.bossIndex ?? 0) < BOSS_MILESTONES.length) {
       const targetBoss = BOSS_MILESTONES[s.bossIndex ?? 0]
       if (s.score >= targetBoss.score) {
+        const hpMult = s.difficulty === 'hard' ? 2 : 1
+        const bossHp = targetBoss.hp * hpMult
         s.boss = {
           active: true,
           name: targetBoss.name,
           type: targetBoss.type,
           x: 395,
-          targetX: 275,
-          y: 105,
-          baseY: 105,
-          w: 48,
-          h: 44,
-          hp: targetBoss.hp,
-          maxHp: targetBoss.hp,
+          targetX: 265,
+          y: 95,
+          baseY: 95,
+          w: 56,
+          h: 50,
+          hp: bossHp,
+          maxHp: bossHp,
           floatAngle: 0,
           attackTimer: 0,
           attackPattern: 0,
@@ -2805,14 +4670,14 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           hitFlash: 0,
           bullets: [],
           deathTimer: 0,
-          reward: targetBoss.reward,
+          reward: targetBoss.reward * hpMult,
           isFinal: Boolean(targetBoss.isFinal),
           color: targetBoss.color,
           teleportTimer: 0,
         }
         s.bossIndex = (s.bossIndex ?? 0) + 1
         if (soundEnabledRef.current) playBossWarning()
-        s.bubbleText = `⚠️ BOSS ALERT: ${targetBoss.name}!`
+        s.bubbleText = `⚠️ BOSS ALERT: ${targetBoss.name} [${s.difficulty === 'hard' ? '2x HP' : '1x HP'}]!`
         s.bubbleTimer = 90
         setBubbleText(s.bubbleText)
       }
@@ -2841,18 +4706,11 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
             if (soundEnabledRef.current) playLaserShoot('railgun')
           } else if (tg.type === 'pillar') {
             if (
-              !cat.inRescueFlight &&
+              !s.cat.inRescueFlight &&
               s.gameState === 'PLAYING' &&
-              Math.abs(cat.x + cat.w / 2 - tg.x) < 20
+              Math.abs(s.cat.x + s.cat.w / 2 - tg.x) < 22
             ) {
-              if (soundEnabledRef.current) playEnemyExplode()
-              if (s.lives > 0) {
-                s.lives = Math.max(0, s.lives - 1)
-                setLives(s.lives)
-                s.bubbleText = s.lives > 0 ? `PILLAR HIT! ❤️ x ${s.lives}` : `0 LIVES LEFT!`
-                s.bubbleTimer = 45
-                setBubbleText(s.bubbleText)
-              }
+              damageCat('PILLAR')
             }
             for (let k = 0; k < 12; k++) {
               s.particles.push({
@@ -2865,15 +4723,36 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
                 size: 3,
               })
             }
+          } else if (tg.type === 'thunder') {
+            // Quantum Thunder Strike Blast
+            if (
+              !s.cat.inRescueFlight &&
+              s.gameState === 'PLAYING' &&
+              Math.abs(s.cat.x + s.cat.w / 2 - tg.x) < 22
+            ) {
+              damageCat('THUNDER')
+            }
+            if (soundEnabledRef.current) playLaserShoot('railgun')
+            for (let k = 0; k < 18; k++) {
+              s.particles.push({
+                x: tg.x + (Math.random() - 0.5) * 28,
+                y: Math.random() * 280,
+                vx: (Math.random() - 0.5) * 5,
+                vy: (Math.random() - 0.5) * 5,
+                color: k % 3 === 0 ? '#00f0ff' : k % 3 === 1 ? '#facc15' : '#ffffff',
+                life: 22,
+                size: 3.2,
+              })
+            }
           } else if (tg.type === 'mortar') {
             boss.bullets.push({
               x: tg.x,
               y: 0,
               vx: 0,
-              vy: 4.5,
+              vy: 2.8,
               type: 'mortar',
               size: 6,
-              life: 70,
+              life: 80,
             })
             if (soundEnabledRef.current) playLaserShoot('plasma')
           }
@@ -2894,121 +4773,132 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
 
         boss.attackTimer++
 
-        // Cycle through 3 multi-attack patterns per boss type
+        // Cycle through 3 multi-attack patterns per boss type (Calibrated for fair dodge windows & double jumps)
         if (boss.type === 'phishing_hydra') {
-          if (boss.attackTimer >= 65) {
+          if (boss.attackTimer >= 78) {
             boss.attackTimer = 0
             boss.attackPattern = ((boss.attackPattern || 0) + 1) % 3
             if (boss.attackPattern === 0) {
-              boss.actionState = '🧪 VENOM SPRAY'
-              boss.bullets.push(
-                { x: boss.x + 4, y: boss.y + 10, vx: -3.2, vy: -0.8, type: 'venom', size: 5, life: 120 },
-                { x: boss.x + 4, y: boss.y + 24, vx: -3.2, vy: 0.8, type: 'venom', size: 5, life: 120 }
-              )
-              if (soundEnabledRef.current) playLaserShoot('plasma')
-            } else if (boss.attackPattern === 1) {
-              boss.actionState = '🌊 TOXIC WAVE'
-              for (let a = -1; a <= 1; a++) {
+              boss.actionState = '🐍 TRIPLE HYDRA SPIT'
+              ;[-0.55, 0, 0.55].forEach((vy) => {
                 boss.bullets.push({
                   x: boss.x + 4,
                   y: boss.y + 18,
-                  vx: -3.0,
-                  vy: a * 1.0,
-                  type: 'venom_wave',
-                  size: 6,
-                  life: 110,
+                  vx: -1.8,
+                  vy: vy,
+                  type: 'venom_cross',
+                  size: 5.5,
+                  life: 140,
+                  hp: 1,
+                  shootable: true,
+                })
+              })
+              if (soundEnabledRef.current) playLaserShoot('plasma')
+            } else if (boss.attackPattern === 1) {
+              boss.actionState = '🧪 TOXIC SLIME GEYSER'
+              boss.bullets.push(
+                { x: boss.x + 4, y: boss.y + 10, vx: -1.6, vy: -1.2, type: 'slime_wave', size: 6.5, life: 130, hp: 1, shootable: true },
+                { x: boss.x + 4, y: boss.y + 24, vx: -1.3, vy: -0.6, type: 'slime_wave', size: 6.5, life: 140, hp: 1, shootable: true }
+              )
+              if (soundEnabledRef.current) playLaserShoot('plasma')
+            } else {
+              boss.actionState = '🌧️ ACID SHOWER BARRAGE'
+              boss.telegraph = { type: 'mortar', x: Math.max(40, Math.min(220, s.cat.x + 18)), y: 195, timer: 38 }
+            }
+          }
+        } else if (boss.type === 'ddos_titan') {
+          if (boss.attackTimer >= 85) {
+            boss.attackTimer = 0
+            boss.attackPattern = ((boss.attackPattern || 0) + 1) % 3
+            if (boss.attackPattern === 0) {
+              boss.actionState = '🚀 5-ROCKET SALVO'
+              for (let r = -2; r <= 2; r++) {
+                boss.bullets.push({
+                  x: boss.x + 2,
+                  y: boss.y + 20,
+                  vx: -2.1,
+                  vy: r * 0.35,
+                  type: 'rocket',
+                  size: 5,
+                  life: 120,
                   hp: 1,
                   shootable: true,
                 })
               }
-              if (soundEnabledRef.current) playLaserShoot('plasma')
-            } else {
-              boss.actionState = '🌧️ ACID MORTAR'
-              boss.telegraph = { type: 'mortar', x: cat.x + 25, y: 195, timer: 20 }
-            }
-          }
-        } else if (boss.type === 'ddos_titan') {
-          if (boss.attackTimer >= 75) {
-            boss.attackTimer = 0
-            boss.attackPattern = ((boss.attackPattern || 0) + 1) % 3
-            if (boss.attackPattern === 0) {
-              boss.actionState = '🚀 TRI-MISSILE'
-              boss.bullets.push(
-                { x: boss.x + 2, y: boss.y + 8, vx: -3.4, vy: -0.9, type: 'rocket', size: 5, life: 110, hp: 1, shootable: true },
-                { x: boss.x + 2, y: boss.y + 20, vx: -3.8, vy: 0, type: 'rocket', size: 5, life: 110, hp: 1, shootable: true },
-                { x: boss.x + 2, y: boss.y + 32, vx: -3.4, vy: 0.9, type: 'rocket', size: 5, life: 110, hp: 1, shootable: true }
-              )
               if (soundEnabledRef.current) playLaserShoot('missile')
             } else if (boss.attackPattern === 1) {
               boss.actionState = '🛸 SWARM DRONES'
               boss.bullets.push(
-                { x: boss.x, y: boss.y + 12, vx: -2.2, vy: -0.4, type: 'sawblade', size: 6, life: 120, hp: 2, shootable: true },
-                { x: boss.x, y: boss.y + 28, vx: -2.2, vy: 0.4, type: 'sawblade', size: 6, life: 120, hp: 2, shootable: true }
+                { x: boss.x, y: boss.y + 12, vx: -1.4, vy: -0.2, type: 'sawblade', size: 6, life: 140, hp: 2, shootable: true },
+                { x: boss.x, y: boss.y + 28, vx: -1.4, vy: 0.2, type: 'sawblade', size: 6, life: 140, hp: 2, shootable: true }
               )
               if (soundEnabledRef.current) playLaserShoot('spread')
             } else {
-              boss.actionState = '⚡ JUDGEMENT BEAM'
-              boss.telegraph = { type: 'pillar', x: Math.max(30, cat.x), timer: 22 }
+              boss.actionState = '⚡ WARP BEAMS'
+              boss.telegraph = { type: 'pillar', x: Math.max(30, s.cat.x), timer: 36 }
             }
           }
         } else if (boss.type === 'dns_saucer') {
-          if (boss.attackTimer >= 60) {
+          if (boss.attackTimer >= 72) {
             boss.attackTimer = 0
             boss.attackPattern = ((boss.attackPattern || 0) + 1) % 3
             if (boss.attackPattern === 0) {
-              boss.actionState = '⚡ QUANTUM BEAM'
-              boss.bullets.push({
-                x: boss.x - 2,
-                y: boss.y + boss.h / 2,
-                vx: -5.4,
-                vy: 0,
-                type: 'beam',
-                size: 5,
-                life: 90,
-              })
-              boss.baseY = 60 + Math.random() * 80
-              if (soundEnabledRef.current) playLaserShoot('railgun')
-            } else if (boss.attackPattern === 1) {
-              boss.actionState = '🌌 GRAVITY ORBS'
+              boss.actionState = '⚡ THUNDER & FIREBALLS'
+              boss.telegraph = { type: 'thunder', x: Math.max(35, Math.min(230, s.cat.x + 12)), timer: 36 }
               boss.bullets.push(
-                { x: boss.x, y: boss.y + 10, vx: -2.4, vy: -0.5, type: 'gravity_orb', size: 7, life: 120, hp: 2, shootable: true },
-                { x: boss.x, y: boss.y + 26, vx: -2.4, vy: 0.5, type: 'gravity_orb', size: 7, life: 120, hp: 2, shootable: true }
+                { x: boss.x - 2, y: boss.y + 10, vx: -1.7, vy: -0.25, type: 'fireball', size: 5.5, life: 130, hp: 1, shootable: true },
+                { x: boss.x - 2, y: boss.y + 26, vx: -1.7, vy: 0.25, type: 'fireball', size: 5.5, life: 130, hp: 1, shootable: true }
+              )
+              if (soundEnabledRef.current) playLaserShoot('plasma')
+            } else if (boss.attackPattern === 1) {
+              boss.actionState = '🌌 GRAVITY ORBS & BULLETS'
+              boss.bullets.push(
+                { x: boss.x, y: boss.y + 10, vx: -1.3, vy: -0.2, type: 'gravity_orb', size: 7, life: 140, hp: 2, shootable: true },
+                { x: boss.x, y: boss.y + 26, vx: -1.3, vy: 0.2, type: 'gravity_orb', size: 7, life: 140, hp: 2, shootable: true },
+                { x: boss.x - 4, y: boss.y + 18, vx: -2.3, vy: 0, type: 'energy_bullet', size: 5, life: 110, hp: 1, shootable: true }
               )
               if (soundEnabledRef.current) playLaserShoot('plasma')
             } else {
-              boss.actionState = '⚠️ LASER SWEEP'
-              boss.telegraph = { type: 'laser', y: boss.y + boss.h / 2, timer: 20 }
+              boss.actionState = '⚡ WARP BEAMS & FIRE'
+              boss.bullets.push(
+                { x: boss.x - 2, y: boss.y + boss.h / 2, vx: -2.6, vy: 0, type: 'warp_beam', size: 5, life: 120 },
+                { x: boss.x - 2, y: boss.y + 8, vx: -1.8, vy: -0.35, type: 'fireball', size: 5, life: 120, hp: 1, shootable: true },
+                { x: boss.x - 2, y: boss.y + 30, vx: -1.8, vy: 0.35, type: 'fireball', size: 5, life: 120, hp: 1, shootable: true }
+              )
+              boss.baseY = 60 + Math.random() * 80
+              if (soundEnabledRef.current) playLaserShoot('railgun')
             }
           }
         } else if (boss.type === 'ransom_dreadnought') {
-          if (boss.attackTimer >= 68) {
+          if (boss.attackTimer >= 80) {
             boss.attackTimer = 0
             boss.attackPattern = ((boss.attackPattern || 0) + 1) % 3
             if (boss.attackPattern === 0) {
-              boss.actionState = '🛡️ FIREWALL SPIKES'
+              boss.actionState = '🛡️ FIREWALL THRUST'
               boss.bullets.push(
-                { x: boss.x - 4, y: boss.y + 10, vx: -3.8, vy: -0.6, type: 'spike', size: 6, life: 110, hp: 1, shootable: true },
-                { x: boss.x - 4, y: boss.y + 28, vx: -3.8, vy: 0.6, type: 'spike', size: 6, life: 110, hp: 1, shootable: true }
+                { x: boss.x - 4, y: boss.y + 10, vx: -2.0, vy: -0.25, type: 'firewall_spikes', size: 7, life: 120, hp: 1, shootable: true },
+                { x: boss.x - 4, y: boss.y + 28, vx: -2.0, vy: 0.25, type: 'firewall_spikes', size: 7, life: 120, hp: 1, shootable: true }
               )
               if (soundEnabledRef.current) playLaserShoot('plasma')
             } else if (boss.attackPattern === 1) {
               boss.actionState = '💀 SKULL MINES'
               boss.bullets.push(
-                { x: boss.x - 6, y: boss.y + 14, vx: -1.6, vy: 0.2, type: 'mine', size: 7, life: 140, hp: 2, shootable: true },
-                { x: boss.x - 6, y: boss.y + 26, vx: -1.6, vy: -0.2, type: 'mine', size: 7, life: 140, hp: 2, shootable: true }
+                { x: boss.x - 6, y: boss.y + 10, vx: -1.1, vy: 0.1, type: 'skull_mines', size: 7, life: 160, hp: 2, shootable: true },
+                { x: boss.x - 6, y: boss.y + 22, vx: -0.85, vy: -0.05, type: 'skull_mines', size: 7, life: 160, hp: 2, shootable: true },
+                { x: boss.x - 6, y: boss.y + 34, vx: -1.1, vy: -0.1, type: 'skull_mines', size: 7, life: 160, hp: 2, shootable: true }
               )
               if (soundEnabledRef.current) playLaserShoot('plasma')
             } else {
-              boss.actionState = '💣 QUAD SPREAD'
+              boss.actionState = '⚙️ 4-WAY GRINDER SPREAD'
               for (let q = -1.5; q <= 1.5; q += 1) {
                 boss.bullets.push({
                   x: boss.x - 4,
                   y: boss.y + 20,
-                  vx: -3.2,
-                  vy: q * 0.9,
-                  type: 'sawblade',
+                  vx: -1.8,
+                  vy: q * 0.4,
+                  type: 'grinder',
                   size: 6,
-                  life: 100,
+                  life: 120,
                   hp: 1,
                   shootable: true,
                 })
@@ -3017,66 +4907,78 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
             }
           }
         } else if (boss.type === 'zero_day_overlord') {
-          if (boss.attackTimer >= 52) {
+          if (boss.attackTimer >= 68) {
             boss.attackTimer = 0
             boss.attackPattern = ((boss.attackPattern || 0) + 1) % 3
             if (boss.attackPattern === 0) {
-              boss.actionState = '✨ COSMIC STARS'
+              boss.actionState = '🌈 PRISMATIC STARBURST'
+              const starColors = ['#ef4444', '#f97316', '#22c55e', '#06b6d4', '#a855f7']
               for (let a = -2; a <= 2; a++) {
                 boss.bullets.push({
                   x: boss.x,
                   y: boss.y + boss.h / 2,
-                  vx: -3.6,
-                  vy: a * 1.1,
-                  type: 'star',
+                  vx: -2.2,
+                  vy: a * 0.45,
+                  type: 'prismatic_star',
+                  starColor: starColors[a + 2],
+                  starIdx: a + 2,
                   size: 6,
-                  life: 110,
+                  life: 130,
                   hp: 1,
                   shootable: true,
                 })
               }
               if (soundEnabledRef.current) playLaserShoot('spread')
             } else if (boss.attackPattern === 1) {
-              boss.actionState = '🌀 VOID VORTEX'
+              boss.actionState = '🌀 VOID SINGULARITY'
               boss.bullets.push(
-                { x: boss.x, y: boss.y + 12, vx: -2.8, vy: -0.4, type: 'vortex', size: 8, life: 130, hp: 3, shootable: true },
-                { x: boss.x, y: boss.y + 28, vx: -2.8, vy: 0.4, type: 'vortex', size: 8, life: 130, hp: 3, shootable: true }
+                { x: boss.x, y: boss.y + 12, vx: -1.5, vy: -0.2, type: 'void_vortex', size: 8, life: 140, hp: 3, shootable: true },
+                { x: boss.x, y: boss.y + 28, vx: -1.5, vy: 0.2, type: 'void_vortex', size: 8, life: 140, hp: 3, shootable: true }
               )
               if (soundEnabledRef.current) playLaserShoot('missile')
             } else {
               boss.actionState = '⚡ ARCHANGEL SMITE'
-              boss.telegraph = { type: 'pillar', x: Math.max(30, cat.x + 10), timer: 22 }
+              boss.telegraph = { type: 'pillar', x: Math.max(30, s.cat.x + 10), timer: 38 }
             }
           }
         } else {
-          // Standard Megabyte Squatter Mecha (1000 pts)
-          if (boss.attackTimer >= 70) {
+          // Megabyte Squatter Mecha (1000 pts)
+          if (boss.attackTimer >= 80) {
             boss.attackTimer = 0
             boss.attackPattern = ((boss.attackPattern || 0) + 1) % 3
             if (boss.attackPattern === 0) {
-              boss.actionState = '🪚 SAW DRILL'
+              boss.actionState = '💎 DIAMOND DASH'
               boss.bullets.push({
                 x: boss.x - 2,
                 y: boss.y + 20,
-                vx: -2.2,
+                vx: -1.8,
                 vy: 0,
                 type: 'sawblade',
-                size: 7,
-                life: 130,
+                size: 8,
+                life: 140,
                 hp: 2,
                 shootable: true,
               })
               if (soundEnabledRef.current) playLaserShoot('plasma')
             } else if (boss.attackPattern === 1) {
-              boss.actionState = '🚀 DUAL ROCKETS'
-              boss.bullets.push(
-                { x: boss.x + 4, y: boss.y + 10, vx: -3.6, vy: -0.7, type: 'rocket', size: 5, life: 110, hp: 1, shootable: true },
-                { x: boss.x + 4, y: boss.y + 26, vx: -3.6, vy: 0.7, type: 'rocket', size: 5, life: 110, hp: 1, shootable: true }
-              )
+              boss.actionState = '🚀 5-ROCKET SALVO'
+              for (let r = -2; r <= 2; r++) {
+                boss.bullets.push({
+                  x: boss.x + 4,
+                  y: boss.y + 20,
+                  vx: -2.2,
+                  vy: r * 0.35,
+                  type: 'rocket',
+                  size: 5,
+                  life: 120,
+                  hp: 1,
+                  shootable: true,
+                })
+              }
               if (soundEnabledRef.current) playLaserShoot('missile')
             } else {
-              boss.actionState = '🎯 MORTAR SHELL'
-              boss.telegraph = { type: 'mortar', x: Math.max(30, cat.x + 20), y: 195, timer: 20 }
+              boss.actionState = '🎯 MORTAR STRIKES'
+              boss.telegraph = { type: 'mortar', x: Math.max(30, s.cat.x + 20), y: 195, timer: 38 }
             }
           }
         }
@@ -3104,35 +5006,32 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
             s.boss = null
             s.screenshake = 0
             s.bossesDefeated = 6
-            s.score += boss.reward
-            setScore(s.score)
-            if (s.score > s.highScore) {
-              s.highScore = s.score
-              setHighScore(s.highScore)
-              try {
-                localStorage.setItem('ng_tamagotchi_highscore', s.score.toString())
-              } catch (_) {}
-            }
+            // Boss defeat restores full health bar to 100% (3 hearts)
+            s.lives = 3
+            setLives(3)
+            s.bubbleText = `🏆 ZERO-DAY OVERLORD DEFEATED! ALL DOMAINS RESTORED!`
+            s.bubbleTimer = 120
+            setBubbleText(s.bubbleText)
             if (onMilestone) onMilestone(s.score)
           } else {
-            // Progressive Boss Defeated
+            // Progressive Boss Defeated: Full health restoration (0 score addition)
             if (soundEnabledRef.current) playBossDefeated()
-            s.score += boss.reward
-            setScore(s.score)
             s.bossesDefeated = (s.bossesDefeated || 0) + 1
-            // Guaranteed life badge drop!
-            s.powerups.push({
-              x: Math.min(220, boss.x - 30),
-              y: 140,
-              w: 36,
-              h: 22,
-              label: '.COM',
-              color: '#ea580c',
-              score: 100,
-              weapon: null,
-              bobAngle: 0,
-            })
-            s.bubbleText = `🏆 ${boss.name} DESTROYED! +${boss.reward} PTS!`
+            // Refill full health bar!
+            s.lives = 3
+            setLives(3)
+            if (s.floatingTexts) {
+              s.floatingTexts.push({
+                x: s.cat.x + s.cat.w / 2,
+                y: s.cat.y - 12,
+                text: '+FULL HEALTH ❤️❤️❤️',
+                color: '#22c55e',
+                vy: -1.2,
+                life: 45,
+                font: 'bold 11px "JetBrains Mono", monospace',
+              })
+            }
+            s.bubbleText = `🏆 ${boss.name} DEFEATED! ❤️ HEALTH RESTORED TO FULL!`
             s.bubbleTimer = 90
             setBubbleText(s.bubbleText)
             s.boss = null
@@ -3163,25 +5062,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
             cat.y + cat.h > b.y - b.size
           ) {
             boss.bullets.splice(i, 1)
-            if (soundEnabledRef.current) playEnemyExplode()
-            for (let k = 0; k < 10; k++) {
-              s.particles.push({
-                x: cat.x + cat.w / 2,
-                y: cat.y + cat.h / 2,
-                vx: (Math.random() - 0.5) * 4,
-                vy: (Math.random() - 0.5) * 4,
-                color: '#ef4444',
-                life: 18,
-                size: 3,
-              })
-            }
-            if (s.lives > 0) {
-              s.lives = Math.max(0, s.lives - 1)
-              setLives(s.lives)
-              s.bubbleText = s.lives > 0 ? `OUCH! ❤️ x ${s.lives}` : `WARNING! 0 LIVES!`
-              s.bubbleTimer = 45
-              setBubbleText(s.bubbleText)
-            }
+            damageCat('BULLET')
           }
         }
       }
@@ -3201,6 +5082,47 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           en.vx = Math.abs(en.vx)
         } else if (en.x >= en.patrolRight) {
           en.vx = -Math.abs(en.vx)
+        }
+
+        // 404 Drone Laser Pulse Attack cycle
+        en.shootCooldown = (en.shootCooldown || 140) - 1
+        if (en.shootCooldown <= 0 && en.x > cat.x - 30 && en.x < 360) {
+          en.actionState = 'attack'
+          en.laserTimer = 24
+          en.shootCooldown = 160 + Math.floor(Math.random() * 60)
+        }
+
+        if (en.laserTimer > 0) {
+          en.laserTimer--
+          // 4-Phase laser breakdown
+          en.laserPhase =
+            en.laserTimer > 18 ? 0 : en.laserTimer > 12 ? 1 : en.laserTimer > 6 ? 2 : 3
+
+          // Laser beam damage detection during active blast phases
+          if (
+            (en.laserPhase === 1 || en.laserPhase === 2) &&
+            !cat.inRescueFlight &&
+            s.gameState === 'PLAYING'
+          ) {
+            const isFacingLeft = (en.vx || -1) < 0
+            const beamLen = en.laserPhase === 1 ? 55 : 95
+            const eyeY = en.y + 10.5
+            const beamMinX = isFacingLeft ? en.x - beamLen : en.x
+            const beamMaxX = isFacingLeft ? en.x : en.x + beamLen
+
+            if (
+              cat.x + cat.w > beamMinX &&
+              cat.x < beamMaxX &&
+              cat.y < eyeY + 8 &&
+              cat.y + cat.h > eyeY - 8
+            ) {
+              damageCat('LASER')
+            }
+          }
+
+          if (en.laserTimer <= 0) {
+            en.actionState = 'idle'
+          }
         }
       } else if (en.type === 'squatter_drone') {
         en.x -= s.speed
@@ -3236,7 +5158,8 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       ) {
         // If cat landed on top of bug -> stomp defeat!
         if (cat.vy > 0 && cat.y + cat.h - cat.vy <= en.y + 7) {
-          cat.vy = -6.5
+          cat.vy = -5.25
+          cat.jumpsLeft = 1
           if (soundEnabledRef.current) playEnemyExplode()
           const scoreAdd = en.scoreVal || (en.type === 'malware_golem' ? 35 : en.type === 'packet_bat' ? 25 : en.type === 'squatter_drone' ? 20 : 10)
           s.score += scoreAdd
@@ -3257,14 +5180,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         } else {
           // Side collision: take hit
           en.x -= 25
-          if (soundEnabledRef.current) playEnemyExplode()
-          if (s.lives > 0) {
-            s.lives = Math.max(0, s.lives - 1)
-            setLives(s.lives)
-            s.bubbleText = s.lives > 0 ? `OUCH! ❤️ x ${s.lives}` : `0 LIVES LEFT!`
-            s.bubbleTimer = 45
-            setBubbleText(s.bubbleText)
-          }
+          damageCat('ENEMY')
         }
       }
     }
@@ -3447,10 +5363,22 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       }
     }
 
-    // Cat Physics & Horizontal movement
+    // Cat hitFlash invulnerability countdown
+    if (cat.hitFlash > 0) cat.hitFlash--
+
+    // Cat Physics & Horizontal movement (Forward / Backward exploration)
+    if (s.moveLeft) {
+      cat.vx = Math.max(-3.5, (cat.vx || 0) - 0.55)
+    } else if (s.moveRight) {
+      cat.vx = Math.min(3.5, (cat.vx || 0) + 0.55)
+    } else if (cat.isGrounded && !cat.inRescueFlight) {
+      cat.vx = (cat.vx || 0) * 0.82
+      if (Math.abs(cat.vx) < 0.05) cat.vx = 0
+    }
+
     if (cat.vx) {
       cat.x += cat.vx
-      if (!cat.inRescueFlight) {
+      if (!cat.inRescueFlight && !s.moveLeft && !s.moveRight) {
         cat.vx *= 0.96
         if (Math.abs(cat.vx) < 0.05) cat.vx = 0
       }
@@ -3467,10 +5395,12 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       const catPrevFeet = catFeet - cat.vy
 
       if (cat.x + cat.w - 4 > p.x && cat.x + 4 < p.x + p.w) {
-        if (catFeet >= p.y - 2 && catPrevFeet <= p.y + 20 && cat.vy >= 0) {
+        if (catFeet >= p.y - 4 && catPrevFeet <= p.y + 28 && cat.vy >= 0) {
           cat.y = p.y - cat.h
           cat.vy = 0
-          cat.vx = 0
+          if (!s.moveLeft && !s.moveRight) {
+            cat.vx = 0
+          }
           cat.inRescueFlight = false
           groundedThisFrame = true
           break
@@ -3482,11 +5412,14 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     if (cat.isGrounded) {
       cat.canAirCannon = true
       cat.coyoteFrames = 8
-      // Smoothly settle cat into the comfortable left runway zone (x ~ 35-50)
-      if (cat.x > 55) {
-        cat.x -= 0.35
-      } else if (cat.x < 30) {
-        cat.x += 0.2
+      cat.jumpsLeft = 2
+      // In Auto mode only, smoothly settle cat into runway zone (x ~ 35-55)
+      if (s.isAuto) {
+        if (cat.x > 55) {
+          cat.x -= 0.35
+        } else if (cat.x < 30) {
+          cat.x += 0.2
+        }
       }
       const activePlat = s.platforms.find((p) => cat.x + cat.w > p.x && cat.x < p.x + p.w)
       if (activePlat && activePlat.isFloating) {
@@ -3496,16 +5429,45 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       if (cat.coyoteFrames > 0) cat.coyoteFrames--
     }
 
-    // Hard horizontal bounds clamp
-    cat.x = Math.max(15, Math.min(130, cat.x))
+    // Horizontal bounds clamp across generous screen runway
+    cat.x = Math.max(15, Math.min(270, cat.x))
 
     if (s.jumpBuffer > 0) {
       if (cat.isGrounded || (cat.coyoteFrames && cat.coyoteFrames > 0)) {
-        cat.vy = -7.4
+        cat.vy = -5.25
         cat.isGrounded = false
         cat.coyoteFrames = 0
+        cat.jumpsLeft = 1
         s.jumpBuffer = 0
         if (soundEnabledRef.current) playPixelJump()
+        for (let k = 0; k < 6; k++) {
+          s.particles.push({
+            x: cat.x + 8 + Math.random() * 16,
+            y: cat.y + cat.h,
+            vx: (Math.random() - 0.5) * 3,
+            vy: Math.random() * 1.5 + 0.5,
+            color: '#e2e8f0',
+            life: 14,
+            size: 2.5,
+          })
+        }
+      } else if (cat.jumpsLeft > 0) {
+        cat.vy = -5.25
+        cat.jumpsLeft = 0
+        s.jumpBuffer = 0
+        if (soundEnabledRef.current) playPixelJump()
+        for (let k = 0; k < 10; k++) {
+          const angle = (k / 10) * Math.PI * 2
+          s.particles.push({
+            x: cat.x + cat.w / 2,
+            y: cat.y + cat.h - 4,
+            vx: Math.cos(angle) * (1.8 + Math.random() * 1.2),
+            vy: Math.sin(angle) * (1.2 + Math.random() * 0.8) + 0.5,
+            color: k % 2 === 0 ? '#38bdf8' : '#fbbf24',
+            life: 18,
+            size: 2.5,
+          })
+        }
       } else {
         s.jumpBuffer--
       }
@@ -3534,9 +5496,18 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           executeJump(false)
         }
       }
+
+      // Auto-hop second jump if clearing wide gaps or picking up high powerup
+      if (!cat.isGrounded && cat.jumpsLeft === 1 && cat.vy > 0.4) {
+        const upcomingPlat = s.platforms.find((p) => p.x > cat.x && p.x - cat.x < 90)
+        const highPwr = s.powerups.find((pwr) => pwr.x > cat.x && pwr.x - cat.x < 65 && pwr.y < cat.y)
+        if (highPwr || (upcomingPlat && upcomingPlat.x - (cat.x + cat.w) > 30)) {
+          executeJump(false)
+        }
+      }
     }
 
-    // Power-Up / Domain Extension Life Catching & Weapon Equipping
+    // Power-Up / Weapon Crate vs Domain Extension Life (+1 UP) Handling
     for (let i = s.powerups.length - 1; i >= 0; i--) {
       const pwr = s.powerups[i]
       const currentY = pwr.y + Math.sin(pwr.bobAngle) * 4
@@ -3546,35 +5517,54 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         cat.y < currentY + pwr.h &&
         cat.y + cat.h > currentY
       ) {
-        s.score += pwr.score
+        s.score += pwr.score || 50
         
-        // Catching domain extensions acts as LIFE!
-        s.lives = Math.min(5, (s.lives || 0) + 1)
-        setLives(s.lives)
-
-        // Equips specific weapon if available
-        if (pwr.weapon) {
+        if (pwr.itemType === 'gun' && pwr.weapon) {
+          // Equips specific weapon
           s.weapon = pwr.weapon
+          s.bubbleText = `⚡ ${pwr.weaponName} ARMED!`
+          s.bubbleTimer = 75
+          setBubbleText(s.bubbleText)
+          if (soundEnabledRef.current) playLaserShoot(pwr.weapon)
+
+          if (s.floatingTexts) {
+            s.floatingTexts.push({
+              x: pwr.x + pwr.w / 2,
+              y: currentY - 8,
+              text: `${pwr.icon || '⚡'} ${pwr.label}`,
+              color: pwr.color || '#38bdf8',
+              vy: -1.0,
+              life: 28,
+              font: 'bold 10px "JetBrains Mono", monospace',
+            })
+          }
+        } else {
+          // Domain Extension: +1 UP Life & Changes Accessory
+          s.lives = Math.min(5, (s.lives || 0) + 1)
+          setLives(s.lives)
+
+          const newAcc = pwr.accessory || ACCESSORIES_LIST[Math.floor(Math.random() * ACCESSORIES_LIST.length)]
+          cat.accessory = newAcc
+          s.cat.accessory = newAcc
+
+          s.bubbleText = `+1 LIFE! ❤️ [${pwr.label}] ${ACCESSORY_NAMES[newAcc] || 'NEW GEAR!'}`
+          s.bubbleTimer = 85
+          setBubbleText(s.bubbleText)
+          if (soundEnabledRef.current) playPowerupChime()
+
+          if (s.floatingTexts) {
+            s.floatingTexts.push({
+              x: pwr.x + pwr.w / 2,
+              y: currentY - 8,
+              text: `+1 LIFE ❤️ [${pwr.label}]`,
+              color: '#f43f5e',
+              vy: -1.1,
+              life: 30,
+              font: 'bold 10.5px "JetBrains Mono", monospace',
+            })
+          }
         }
 
-        // Equips specific accessory gear directly to Arabella the Cat
-        const TLD_GEAR_MAP = {
-          '.AI': 'vr_visor',
-          '.COM': 'crown',
-          '.IO': 'sunglasses',
-          '.GG': 'viking_helmet',
-          '.DEV': 'wizard_hat',
-          '.APP': 'party_hat',
-        }
-        const newAcc = TLD_GEAR_MAP[pwr.label] || ACCESSORIES_LIST[Math.floor(Math.random() * ACCESSORIES_LIST.length)]
-        cat.accessory = newAcc
-        s.cat.accessory = newAcc
-
-        s.bubbleText = pwr.weaponName
-          ? `+1 LIFE! ❤️ [${pwr.label}] ${pwr.weaponName}!`
-          : `+1 LIFE! ❤️ [${pwr.label}] ${ACCESSORY_NAMES[newAcc] || 'NEW GEAR!'}`
-        s.bubbleTimer = 85
-        setBubbleText(s.bubbleText)
         setScore(s.score)
 
         if (s.score > 0) {
@@ -3617,13 +5607,17 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     }
 
     // Falling Down -> Cannon Rescue Sequence or Game Over
-    if (cat.y > 275 && !cat.inRescueFlight) {
-      if (s.gameState !== 'CANNON_RESCUE' && ((s.lives && s.lives > 0) || s.isAuto)) {
+    if (cat.y > 275) {
+      if (cat.inRescueFlight) {
+        cat.inRescueFlight = false
+      }
+
+      if (s.gameState !== 'CANNON_RESCUE' && (s.godMode || (s.lives && s.lives > 0) || s.isAuto)) {
         s.gameState = 'CANNON_RESCUE'
-        if (s.isAuto) {
-          s.lives = Math.max(1, s.lives || 1)
+        if (s.isAuto || s.godMode) {
+          s.lives = Math.max(1, s.lives || 3)
         } else {
-          s.lives = Math.max(0, (s.lives || 1) - 1)
+          s.lives = Math.max(0, (s.lives || 3) - 0.5)
         }
         setLives(s.lives)
 
@@ -3659,11 +5653,28 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         cat.vy = 0
         cat.vx = 0
         cat.inRescueFlight = false
-      } else if (!s.isAuto && (!s.lives || s.lives <= 0) && cat.y > 310 && s.gameState !== 'CANNON_RESCUE' && (!s.cannon || !s.cannon.active)) {
+      } else if (!s.isAuto && !s.godMode && (!s.lives || s.lives <= 0) && cat.y > 310 && s.gameState !== 'CANNON_RESCUE' && (!s.cannon || !s.cannon.active)) {
         s.gameState = 'GAMEOVER'
         s.gameOver = true
         setGameOver(true)
         if (soundEnabledRef.current) playGameOver()
+      }
+    }
+
+    // Absolute pit fail-safe: if cat ever slips below screen during active play, safely catch on platform
+    if (cat.y > 315 && s.gameState !== 'GAMEOVER') {
+      cat.inRescueFlight = false
+      if (s.isAuto || s.godMode || (s.lives && s.lives > 0)) {
+        const safePlat = s.platforms.find((p) => p.x + p.w > 30 && p.x < 160) || s.platforms[0] || { x: 20, y: 236, w: 120 }
+        cat.x = Math.max(30, Math.min(70, safePlat.x + 20))
+        cat.y = safePlat.y - cat.h
+        cat.vy = 0
+        cat.vx = 0
+        cat.isGrounded = true
+        if (!s.isAuto && !s.godMode) {
+          s.lives = Math.max(0, (s.lives || 3) - 0.5)
+          setLives(s.lives)
+        }
       }
     }
 
@@ -3881,29 +5892,74 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       renderBoss(ctx, s.boss)
     }
 
-    // Floating Gear & Weapon Badges
+    // Floating Weapon Supply Crates & Domain Extension Life Badges
     for (let i = 0; i < s.powerups.length; i++) {
       const pwr = s.powerups[i]
       const curY = pwr.y + Math.sin(pwr.bobAngle) * 4
 
-      // Glowing Badge Pill
-      ctx.fillStyle = pwr.color
-      roundRect(ctx, pwr.x - 2, curY, 28, 16, 4)
-      ctx.fill()
-      ctx.strokeStyle = '#0f172a'
-      ctx.lineWidth = 1.2
-      ctx.stroke()
+      if (pwr.itemType === 'gun') {
+        // --- 1. SCI-FI WEAPON CRATE ---
+        ctx.save()
+        // Drop shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)'
+        roundRect(ctx, pwr.x - 1, curY + 2, 34, 20, 3)
+        ctx.fill()
 
-      // Glint highlight
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)'
-      roundRect(ctx, pwr.x - 1, curY + 1, 26, 6, 2)
-      ctx.fill()
+        // Tactical Chassis
+        ctx.fillStyle = '#0f172a'
+        roundRect(ctx, pwr.x - 2, curY, 34, 20, 3)
+        ctx.fill()
+        ctx.strokeStyle = pwr.color || '#38bdf8'
+        ctx.lineWidth = 1.3
+        ctx.stroke()
 
-      ctx.fillStyle = '#ffffff'
-      ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(pwr.label, pwr.x + 12, curY + 8.5)
+        // Reinforced Armor Edges & Rivets
+        ctx.fillStyle = '#334155'
+        ctx.fillRect(pwr.x - 1, curY + 1, 3, 3)
+        ctx.fillRect(pwr.x + 30, curY + 1, 3, 3)
+        ctx.fillRect(pwr.x - 1, curY + 16, 3, 3)
+        ctx.fillRect(pwr.x + 30, curY + 16, 3, 3)
+
+        // Center Weapon Icon & Label
+        ctx.fillStyle = pwr.color || '#fbbf24'
+        ctx.font = 'bold 8px "JetBrains Mono", monospace'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(`${pwr.icon || '⚡'} ${pwr.label}`, pwr.x + 15, curY + 10)
+        ctx.restore()
+      } else {
+        // --- 2. DOMAIN EXTENSION LIFE BADGE (+1 UP) ---
+        ctx.save()
+        // Pulsing Life Aura
+        const pulse = 0.3 + Math.sin(pwr.bobAngle * 2) * 0.15
+        ctx.strokeStyle = pwr.color || '#f43f5e'
+        ctx.lineWidth = 2.5
+        ctx.globalAlpha = pulse
+        roundRect(ctx, pwr.x - 4, curY - 2, 38, 22, 5)
+        ctx.stroke()
+        ctx.globalAlpha = 1.0
+
+        // Badge Body
+        ctx.fillStyle = pwr.color || '#ea580c'
+        roundRect(ctx, pwr.x - 2, curY, 34, 18, 4)
+        ctx.fill()
+        ctx.strokeStyle = '#090d16'
+        ctx.lineWidth = 1.2
+        ctx.stroke()
+
+        // Glint highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'
+        roundRect(ctx, pwr.x - 1, curY + 1, 32, 6, 2)
+        ctx.fill()
+
+        // Heart Icon + TLD Label
+        ctx.fillStyle = '#ffffff'
+        ctx.font = 'bold 8.5px "JetBrains Mono", monospace'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(`❤️${pwr.label}`, pwr.x + 15, curY + 9.5)
+        ctx.restore()
+      }
     }
 
     // Player Blaster Laser & Missile Projectiles
@@ -3951,7 +6007,8 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         s.cat.vy,
         s.cat.frameCounter,
         s.gameState === 'GAMEOVER',
-        s.cat.accessory
+        s.cat.accessory,
+        s.cat.hitFlash
       )
     }
 
@@ -4019,11 +6076,24 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       ctx.font = 'bold 10px "JetBrains Mono", monospace'
       ctx.fillText(`PTS:${s.score}`, 72, 17)
 
-      // 3. Lives Counter
-      const curLives = Math.max(0, s.lives ?? 1)
-      ctx.fillStyle = curLives > 1 ? '#f43f5e' : curLives === 1 ? '#fb923c' : '#94a3b8'
-      ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
-      ctx.fillText(`❤️x${curLives}`, 148, 17)
+      // 3. Lives Counter (3 hearts initial, -0.5 hearts per hit)
+      if (s.godMode) {
+        ctx.fillStyle = '#10b981'
+        ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
+        ctx.fillText(`🛡️GOD`, 134, 17)
+      } else {
+        const curLives = Math.max(0, s.lives ?? 3)
+        const fullHearts = Math.floor(curLives)
+        const hasHalf = (curLives % 1) >= 0.5
+        let heartsStr = ''
+        for (let h = 0; h < fullHearts; h++) heartsStr += '❤️'
+        if (hasHalf) heartsStr += '💔'
+        if (!heartsStr) heartsStr = '💀'
+
+        ctx.fillStyle = curLives >= 2 ? '#f43f5e' : curLives >= 1 ? '#fb923c' : '#ef4444'
+        ctx.font = 'bold 8.5px "JetBrains Mono", monospace'
+        ctx.fillText(`${heartsStr}`, 132, 17)
+      }
 
       // 4. Equipped Weapon Indicator
       const weaponBadge =
@@ -4035,7 +6105,9 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           ? '🚀.GG'
           : '🔫PEW'
       const weaponCol =
-        s.weapon === 'railgun'
+        s.godMode
+          ? '#34d399'
+          : s.weapon === 'railgun'
           ? '#06b6d4'
           : s.weapon === 'spread'
           ? '#c084fc'
@@ -4044,7 +6116,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
           : '#94a3b8'
       ctx.fillStyle = weaponCol
       ctx.font = 'bold 9px "JetBrains Mono", monospace'
-      ctx.fillText(`${weaponBadge}`, 192, 17)
+      ctx.fillText(s.godMode ? `${weaponBadge} ∞` : `${weaponBadge}`, 196, 17)
 
       // 5. Mode Badge (Campaign / Casual)
       const isCampMode = s.gameMode === 'campaign'
@@ -4141,59 +6213,96 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       ctx.fillStyle = 'rgba(3, 7, 18, 0.88)'
       ctx.fillRect(0, 0, w, h)
 
-      const boxW = 260
+      const boxW = 270
       const boxX = (w - boxW) / 2
+      const boxY = 36
+      const boxH = 210
+
       ctx.fillStyle = '#0f172a'
-      roundRect(ctx, boxX, 38, boxW, 204, 14)
+      roundRect(ctx, boxX, boxY, boxW, boxH, 14)
       ctx.fill()
       ctx.strokeStyle = '#ef4444'
-      ctx.lineWidth = 2.5
+      ctx.lineWidth = 2.2
       ctx.stroke()
 
+      // Top-Right [✕ CLOSE] Button
       ctx.fillStyle = '#ef4444'
-      ctx.font = '800 16px "JetBrains Mono", monospace'
+      roundRect(ctx, boxX + boxW - 28, boxY + 8, 20, 20, 4)
+      ctx.fill()
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 11px "JetBrains Mono", monospace'
       ctx.textAlign = 'center'
-      ctx.textBaseline = 'alphabetic'
-      ctx.fillText('● GAME OVER ●', w / 2, 68)
+      ctx.textBaseline = 'middle'
+      ctx.fillText('✕', boxX + boxW - 18, boxY + 18)
+
+      ctx.fillStyle = '#ef4444'
+      ctx.font = '800 15px "JetBrains Mono", monospace'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('● GAME OVER ●', w / 2, boxY + 22)
 
       // Clean neatly aligned stats rows
-      ctx.font = '700 11px "JetBrains Mono", monospace'
+      ctx.font = '700 10.5px "JetBrains Mono", monospace'
 
       ctx.fillStyle = '#ffffff'
       ctx.textAlign = 'start'
-      ctx.fillText('DOMAINS HOPPED:', boxX + 16, 98)
+      ctx.fillText('DOMAINS HOPPED:', boxX + 16, boxY + 56)
       ctx.textAlign = 'end'
-      ctx.fillText(`${s.score}`, boxX + boxW - 16, 98)
+      ctx.fillText(`${s.score}`, boxX + boxW - 16, boxY + 56)
 
       ctx.fillStyle = '#38bdf8'
       ctx.textAlign = 'start'
-      ctx.fillText('ALL-TIME BEST:', boxX + 16, 120)
+      ctx.fillText('ALL-TIME BEST:', boxX + 16, boxY + 78)
       ctx.textAlign = 'end'
-      ctx.fillText(`${s.highScore}`, boxX + boxW - 16, 120)
+      ctx.fillText(`${s.highScore}`, boxX + boxW - 16, boxY + 78)
+
+      ctx.fillStyle = '#facc15'
+      ctx.textAlign = 'start'
+      ctx.fillText('BOSSES SLAIN:', boxX + 16, boxY + 100)
+      ctx.textAlign = 'end'
+      ctx.fillText(`${s.bossesDefeated || 0} / 6`, boxX + boxW - 16, boxY + 100)
 
       const biomeObj = BIOMES[s.currentBiome % BIOMES.length] || BIOMES[0]
       ctx.fillStyle = '#a78bfa'
       ctx.textAlign = 'start'
-      ctx.fillText('BIOME REACHED:', boxX + 16, 142)
+      ctx.fillText('BIOME REACHED:', boxX + 16, boxY + 122)
       ctx.textAlign = 'end'
-      ctx.fillText(`${biomeObj.badgeText || biomeObj.name}`, boxX + boxW - 16, 142)
+      ctx.fillText(`${biomeObj.badgeText || biomeObj.name}`, boxX + boxW - 16, boxY + 122)
 
+      // Dual Action Buttons: [↻ RETRY RUN] and [✕ CLOSE]
+      const btnY = boxY + 146
+      const btnH = 28
+      const btnW = 110
+
+      // 1. Retry Button
       ctx.fillStyle = '#0284c7'
-      roundRect(ctx, w / 2 - 80, 162, 160, 30, 8)
+      roundRect(ctx, w / 2 - btnW - 6, btnY, btnW, btnH, 6)
       ctx.fill()
       ctx.strokeStyle = '#38bdf8'
-      ctx.lineWidth = 1.5
+      ctx.lineWidth = 1.2
       ctx.stroke()
-
       ctx.fillStyle = '#ffffff'
-      ctx.font = '700 12px "JetBrains Mono", monospace'
+      ctx.font = '700 11px "JetBrains Mono", monospace'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      ctx.fillText('↻ RETRY RUN', w / 2, 177)
+      ctx.fillText('↻ RETRY', w / 2 - btnW / 2 - 6, btnY + btnH / 2)
+
+      // 2. Close Button
+      ctx.fillStyle = '#334155'
+      roundRect(ctx, w / 2 + 6, btnY, btnW, btnH, 6)
+      ctx.fill()
+      ctx.strokeStyle = '#64748b'
+      ctx.lineWidth = 1.2
+      ctx.stroke()
+      ctx.fillStyle = '#ffffff'
+      ctx.font = '700 11px "JetBrains Mono", monospace'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('✕ CLOSE', w / 2 + btnW / 2 + 6, btnY + btnH / 2)
 
       ctx.fillStyle = '#94a3b8'
-      ctx.font = '500 9.5px "JetBrains Mono", monospace'
-      ctx.fillText('CLICK SCREEN OR [RETRY] KEY', w / 2, 218)
+      ctx.font = '500 8.5px "JetBrains Mono", monospace'
+      ctx.fillText('HIT [✕ CLOSE] OR CLICK RETRY', w / 2, boxY + 192)
       ctx.textAlign = 'start'
       ctx.textBaseline = 'alphabetic'
     }
@@ -4203,8 +6312,8 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       ctx.fillStyle = 'rgba(2, 6, 23, 0.94)'
       ctx.fillRect(0, 0, w, h)
 
-      const boxW = 316
-      const boxH = 224
+      const boxW = 320
+      const boxH = 240
       const boxX = (w - boxW) / 2
       const boxY = (h - boxH) / 2
 
@@ -4228,74 +6337,103 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       ctx.fillRect(boxX + 6, boxY + boxH - 9, 3, 3)
       ctx.fillRect(boxX + boxW - 9, boxY + boxH - 9, 3, 3)
 
-      // Gold Trophy Icon
+      // Gold Trophy Icon with Shimmer Aura
       const tX = w / 2
-      const tY = boxY + 28
+      const tY = boxY + 30
+      // Shimmer rays
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)'
+      ctx.lineWidth = 1
+      for (let r = 0; r < 8; r++) {
+        const ang = (r / 8) * Math.PI * 2 + (Date.now() * 0.002)
+        ctx.beginPath()
+        ctx.moveTo(tX, tY)
+        ctx.lineTo(tX + Math.cos(ang) * 26, tY + Math.sin(ang) * 26)
+        ctx.stroke()
+      }
+
+      // Trophy Cup Drawing
       ctx.fillStyle = '#f59e0b'
-      roundRect(ctx, tX - 10, tY - 10, 20, 14, 2)
+      roundRect(ctx, tX - 12, tY - 12, 24, 16, 3)
       ctx.fill()
       ctx.fillStyle = '#fbbf24'
-      ctx.fillRect(tX - 4, tY + 4, 8, 5)
-      ctx.fillRect(tX - 9, tY + 9, 18, 4)
-      ctx.strokeStyle = '#f59e0b'
+      ctx.fillRect(tX - 5, tY + 4, 10, 6)
+      ctx.fillRect(tX - 11, tY + 10, 22, 5)
+      ctx.strokeStyle = '#fbbf24'
       ctx.lineWidth = 2
-      ctx.strokeRect(tX - 14, tY - 8, 4, 8)
-      ctx.strokeRect(tX + 10, tY - 8, 4, 8)
+      ctx.strokeRect(tX - 17, tY - 9, 5, 10)
+      ctx.strokeRect(tX + 12, tY - 9, 5, 10)
 
       // Headline
       ctx.fillStyle = '#fbbf24'
       ctx.font = '800 13px "JetBrains Mono", monospace'
       ctx.textAlign = 'center'
-      ctx.fillText('★ VICTORY ACHIEVED! ★', w / 2, boxY + 60)
+      ctx.fillText('🏆 ★ VICTORY ACHIEVED! ★ 🏆', w / 2, boxY + 62)
 
       ctx.fillStyle = '#38bdf8'
       ctx.font = '700 9.5px "JetBrains Mono", monospace'
-      ctx.fillText('THE DOMAIN METAVERSE IS SAVED!', w / 2, boxY + 74)
+      ctx.fillText('THE DOMAIN REALM IS LIBERATED!', w / 2, boxY + 76)
 
       // Thank You Note in styled typography
       ctx.fillStyle = '#f1f5f9'
-      ctx.font = '500 8.5px "JetBrains Mono", monospace'
-      ctx.fillText('All 6 Cyber Overlords Defeated.', w / 2, boxY + 92)
+      ctx.font = '600 8.5px "JetBrains Mono", monospace'
+      ctx.fillText(`All 6 Cyber Overlords Defeated in ${s.difficulty === 'hard' ? 'HARD [2x HP]' : 'EASY [1x HP]'} Mode!`, w / 2, boxY + 93)
       ctx.fillStyle = '#a78bfa'
       ctx.font = 'italic 8px "JetBrains Mono", monospace'
-      ctx.fillText('Thank you for playing Arabella’s Domain Odyssey!', w / 2, boxY + 105)
+      ctx.fillText('Congratulations, Grand Domain Master!', w / 2, boxY + 106)
 
       // Run Stats Box
       ctx.fillStyle = '#090d16'
-      roundRect(ctx, boxX + 16, boxY + 116, boxW - 32, 42, 6)
+      roundRect(ctx, boxX + 14, boxY + 116, boxW - 28, 44, 6)
       ctx.fill()
       ctx.strokeStyle = '#334155'
       ctx.lineWidth = 1
       ctx.stroke()
 
-      ctx.font = 'bold 9px "JetBrains Mono", monospace'
+      ctx.font = 'bold 8.5px "JetBrains Mono", monospace'
       ctx.textAlign = 'start'
       ctx.fillStyle = '#94a3b8'
-      ctx.fillText('FINAL SCORE:', boxX + 26, boxY + 132)
+      ctx.fillText('FINAL SCORE:', boxX + 22, boxY + 132)
       ctx.textAlign = 'end'
       ctx.fillStyle = '#fbbf24'
-      ctx.fillText(`${s.score} PTS`, boxX + boxW - 26, boxY + 132)
+      ctx.fillText(`${s.score} PTS`, boxX + boxW - 22, boxY + 132)
 
       ctx.textAlign = 'start'
       ctx.fillStyle = '#94a3b8'
-      ctx.fillText('OVERLORDS SLAIN:', boxX + 26, boxY + 148)
+      ctx.fillText('DIFFICULTY:', boxX + 22, boxY + 148)
       ctx.textAlign = 'end'
-      ctx.fillStyle = '#10b981'
-      ctx.fillText('6 / 6 [100%]', boxX + boxW - 26, boxY + 148)
+      ctx.fillStyle = s.difficulty === 'hard' ? '#f43f5e' : '#10b981'
+      ctx.fillText(`${(s.difficulty || 'easy').toUpperCase()} [${s.difficulty === 'hard' ? '2x HP' : '1x HP'}]`, boxX + boxW - 22, boxY + 148)
 
-      // Play Again Action Button
-      ctx.fillStyle = '#059669'
-      roundRect(ctx, w / 2 - 75, boxY + 168, 150, 28, 6)
+      // 2 Action Buttons Side-by-Side
+      const btnW = 136
+      const btnH = 26
+      const btnY = boxY + 172
+      const btn1X = boxX + 16
+      const btn2X = boxX + boxW - 16 - btnW
+
+      // Button 1: [ ↻ RETRY (MANUAL) ]
+      ctx.fillStyle = '#047857'
+      roundRect(ctx, btn1X, btnY, btnW, btnH, 6)
       ctx.fill()
       ctx.strokeStyle = '#34d399'
-      ctx.lineWidth = 1.5
+      ctx.lineWidth = 1.2
       ctx.stroke()
-
       ctx.fillStyle = '#ffffff'
-      ctx.font = '700 11px "JetBrains Mono", monospace'
+      ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      ctx.fillText('★ PLAY AGAIN ★', w / 2, boxY + 182)
+      ctx.fillText('↻ RETRY RUN', btn1X + btnW / 2, btnY + btnH / 2)
+
+      // Button 2: [ 🤖 CASUAL AUTO ]
+      ctx.fillStyle = '#4338ca'
+      roundRect(ctx, btn2X, btnY, btnW, btnH, 6)
+      ctx.fill()
+      ctx.strokeStyle = '#818cf8'
+      ctx.lineWidth = 1.2
+      ctx.stroke()
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 9.5px "JetBrains Mono", monospace'
+      ctx.fillText('🤖 CASUAL AUTO', btn2X + btnW / 2, btnY + btnH / 2)
 
       ctx.textAlign = 'start'
       ctx.textBaseline = 'alphabetic'
@@ -4327,18 +6465,19 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
 
       // Dynamic millisecond timing for biomes based on mode (55s Campaign, 45s Casual)
       const isCamp = stateRef.current.gameMode === 'campaign'
-      const curBiomeDur = isCamp ? 55000 : 45000
-
-      stateRef.current.bgTimeMs =
-        (stateRef.current.bgTimeMs + delta) % (curBiomeDur * BIOMES.length)
-      stateRef.current.currentBiome =
-        Math.floor(stateRef.current.bgTimeMs / curBiomeDur) % BIOMES.length
+      const activeDuration = isCamp ? BIOME_DURATION_MS : 45000
+      stateRef.current.bgTimeMs += delta
+      stateRef.current.currentBiome = Math.floor(stateRef.current.bgTimeMs / activeDuration) % BIOMES.length
 
       // Fixed 60Hz physics accumulator
       physicsAccumulator += delta
       let steps = 0
-      while (physicsAccumulator >= FIXED_STEP_MS && steps < 4) {
-        updateGame()
+      while (physicsAccumulator >= FIXED_STEP_MS && steps < 5) {
+        try {
+          updateGame()
+        } catch (err) {
+          console.error('Game update error:', err)
+        }
         physicsAccumulator -= FIXED_STEP_MS
         steps++
       }
@@ -4351,12 +6490,26 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
     }
 
     const handleKeyDown = (e) => {
-      if (
+      if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) return
+      if (e.repeat) return
+
+      if (e.code === 'KeyA' || e.code === 'ArrowLeft') {
+        stateRef.current.moveLeft = true
+        if (stateRef.current.isAuto && onToggleAutoMode) {
+          onToggleAutoMode(false)
+          stateRef.current.isAuto = false
+        }
+      } else if (e.code === 'KeyD' || e.code === 'ArrowRight') {
+        stateRef.current.moveRight = true
+        if (stateRef.current.isAuto && onToggleAutoMode) {
+          onToggleAutoMode(false)
+          stateRef.current.isAuto = false
+        }
+      } else if (
         e.code === 'Space' ||
         e.code === 'ArrowUp' ||
         e.code === 'KeyW'
       ) {
-        // Prevent page scroll when jumping
         if (e.code === 'Space' || e.code === 'ArrowUp') {
           e.preventDefault()
         }
@@ -4382,25 +6535,318 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
       }
     }
 
+    const handleKeyUp = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) return
+
+      if (e.code === 'KeyA' || e.code === 'ArrowLeft') {
+        stateRef.current.moveLeft = false
+      } else if (e.code === 'KeyD' || e.code === 'ArrowRight') {
+        stateRef.current.moveRight = false
+      }
+    }
+
     window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
 
     animationId = requestAnimationFrame(loop)
     return () => {
       if (animationId) cancelAnimationFrame(animationId)
       window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
     }
   }, [])
 
+  const handlePointerDown = (e) => {
+    e.preventDefault()
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = 380 / rect.width
+    const scaleY = 330 / rect.height
+    const clickX = (e.clientX - rect.left) * scaleX
+    const clickY = (e.clientY - rect.top) * scaleY
+
+    const s = stateRef.current
+    if (s.gameState === 'GAMEOVER') {
+      const boxW = 270
+      const boxX = (380 - boxW) / 2
+      const boxY = 36
+      const btnY = boxY + 146
+      const btnH = 28
+      const btnW = 110
+
+      // 1. Top-right [✕] Close button
+      if (
+        clickX >= boxX + boxW - 32 &&
+        clickX <= boxX + boxW - 4 &&
+        clickY >= boxY + 4 &&
+        clickY <= boxY + 32
+      ) {
+        startAutoMode()
+        return
+      }
+
+      // 2. Bottom [✕ CLOSE] button
+      if (
+        clickX >= 380 / 2 + 6 &&
+        clickX <= 380 / 2 + 6 + btnW &&
+        clickY >= btnY &&
+        clickY <= btnY + btnH
+      ) {
+        startAutoMode()
+        return
+      }
+
+      // 3. Bottom [↻ RETRY] button
+      if (
+        clickX >= 380 / 2 - btnW - 6 &&
+        clickX <= 380 / 2 - 6 &&
+        clickY >= btnY &&
+        clickY <= btnY + btnH
+      ) {
+        startCampaign(s.difficulty || 'easy')
+        return
+      }
+
+      startCampaign(s.difficulty || 'easy')
+      return
+    }
+
+    if (s.gameState === 'VICTORY') {
+      const boxW = 320
+      const boxH = 240
+      const boxX = (380 - boxW) / 2
+      const boxY = (330 - boxH) / 2
+      const btnW = 136
+      const btnH = 26
+      const btnY = boxY + 172
+      const btn1X = boxX + 16
+      const btn2X = boxX + boxW - 16 - btnW
+
+      // Button 1: [ ↻ RETRY RUN ]
+      if (clickX >= btn1X && clickX <= btn1X + btnW && clickY >= btnY && clickY <= btnY + btnH) {
+        startCampaign(s.difficulty || 'easy')
+        return
+      }
+
+      // Button 2: [ 🤖 CASUAL AUTO ]
+      if (clickX >= btn2X && clickX <= btn2X + btnW && clickY >= btnY && clickY <= btnY + btnH) {
+        startAutoMode()
+        return
+      }
+
+      startAutoMode()
+      return
+    }
+
+    executeJump(true)
+  }
+
+  // Testing Ground Direct Boss & Enemy Spawning Methods
+  const spawnBossDirect = (identifier) => {
+    const s = stateRef.current
+    let targetBoss = null
+    if (typeof identifier === 'number') {
+      targetBoss = BOSS_MILESTONES[identifier % BOSS_MILESTONES.length]
+    } else {
+      targetBoss =
+        BOSS_MILESTONES.find(
+          (b) =>
+            b.type === identifier ||
+            b.name.toLowerCase().includes(String(identifier).toLowerCase())
+        ) || BOSS_MILESTONES[0]
+    }
+    if (!targetBoss) return
+
+    s.gameState = 'PLAYING'
+    s.gameOver = false
+    s.countdown = 0
+    s.countdownTimer = 0
+    s.speed = BASE_SPEED
+    s.enemies = []
+    s.projectiles = []
+    s.lives = Math.max(s.lives, 3)
+    setLives(s.lives)
+    setGameOver(false)
+
+    // Ensure cat is in a valid state on platform
+    if (s.cat.isDead || s.cat.y > 230) {
+      s.cat.y = 170
+      s.cat.vy = 0
+      s.cat.isDead = false
+      s.cat.deathTimer = 0
+      s.cat.isGrounded = true
+      s.cat.hitFlash = 0
+    }
+
+    const hpMult = s.difficulty === 'hard' ? 2 : 1
+    const bossHp = targetBoss.hp * hpMult
+
+    s.boss = {
+      active: true,
+      name: targetBoss.name,
+      type: targetBoss.type,
+      x: 395,
+      targetX: 265,
+      y: 95,
+      baseY: 95,
+      w: 56,
+      h: 50,
+      hp: bossHp,
+      maxHp: bossHp,
+      floatAngle: 0,
+      attackTimer: 0,
+      attackPattern: 0,
+      actionState: '',
+      telegraph: null,
+      phase: 'enter',
+      hitFlash: 0,
+      bullets: [],
+      deathTimer: 0,
+      reward: targetBoss.reward * hpMult,
+      isFinal: Boolean(targetBoss.isFinal),
+      color: targetBoss.color,
+      teleportTimer: 0,
+    }
+
+    if (soundEnabledRef.current) playBossWarning()
+    s.bubbleText = `🧪 TEST SPAWN: ${targetBoss.name} [${s.difficulty === 'hard' ? '2x HP' : '1x HP'}]!`
+    s.bubbleTimer = 120
+    setBubbleText(s.bubbleText)
+  }
+
+  const spawnEnemyDirect = (enemyType) => {
+    const s = stateRef.current
+    s.gameState = 'PLAYING'
+    s.gameOver = false
+    setGameOver(false)
+
+    const spawnX = 360
+    const spawnY = 220
+
+    if (enemyType === 'glitch_bug') {
+      s.enemies.push({
+        type: 'glitch_bug',
+        x: spawnX,
+        y: spawnY,
+        w: 24,
+        h: 20,
+        vx: -0.6,
+        hp: 1,
+        maxHp: 1,
+        scoreVal: 10,
+        frame: 0,
+        hitFlash: 0,
+      })
+    } else if (enemyType === 'squatter_drone') {
+      s.enemies.push({
+        type: 'squatter_drone',
+        x: spawnX,
+        y: 130,
+        baseY: 130,
+        w: 26,
+        h: 22,
+        bobAngle: 0,
+        hp: 2,
+        maxHp: 2,
+        scoreVal: 20,
+        frame: 0,
+        hitFlash: 0,
+      })
+    } else if (enemyType === 'packet_bat') {
+      s.enemies.push({
+        type: 'packet_bat',
+        x: spawnX,
+        y: 110,
+        baseY: 110,
+        w: 28,
+        h: 20,
+        vx: -0.8,
+        hp: 2,
+        maxHp: 2,
+        scoreVal: 25,
+        frame: 0,
+        hitFlash: 0,
+      })
+    } else if (enemyType === 'malware_golem') {
+      s.enemies.push({
+        type: 'malware_golem',
+        x: spawnX,
+        y: 205,
+        w: 32,
+        h: 30,
+        vx: -0.35,
+        patrolLeft: spawnX - 20,
+        patrolRight: spawnX + 30,
+        hp: 3,
+        maxHp: 3,
+        scoreVal: 35,
+        frame: 0,
+        hitFlash: 0,
+      })
+    }
+
+    s.bubbleText = `👾 TEST ENEMY: ${enemyType.toUpperCase()}!`
+    s.bubbleTimer = 90
+    setBubbleText(s.bubbleText)
+  }
+
+  useImperativeHandle(ref, () => ({
+    jump: (fromUser = true) => executeJump(fromUser),
+    shoot: (fromUser = true) => executeShoot(fromUser),
+    moveLeft: (active) => {
+      stateRef.current.moveLeft = Boolean(active)
+      if (active && stateRef.current.isAuto && onToggleAutoMode) {
+        onToggleAutoMode(false)
+        stateRef.current.isAuto = false
+      }
+    },
+    moveRight: (active) => {
+      stateRef.current.moveRight = Boolean(active)
+      if (active && stateRef.current.isAuto && onToggleAutoMode) {
+        onToggleAutoMode(false)
+        stateRef.current.isAuto = false
+      }
+    },
+    closeDeathScreen: () => {
+      startAutoMode()
+    },
+    restart: (fromUser = true) => resetGame(fromUser),
+    startCampaign: (diff = 'easy') => startCampaign(diff),
+    startAutoMode: () => startAutoMode(),
+    setDifficulty: (diff) => {
+      stateRef.current.difficulty = diff
+      stateRef.current.bossHpMultiplier = diff === 'hard' ? 2 : 1
+    },
+    setGameMode: (mode) => {
+      stateRef.current.gameMode = mode
+    },
+    nextBiome: () => nextBiome(),
+    spawnBoss: spawnBossDirect,
+    spawnEnemy: spawnEnemyDirect,
+    setWeapon: (weaponType) => {
+      stateRef.current.weapon = weaponType
+      stateRef.current.bubbleText = `🔫 WEAPON: ${weaponType.toUpperCase()}`
+      stateRef.current.bubbleTimer = 80
+      setBubbleText(stateRef.current.bubbleText)
+    },
+    addLives: (amt = 3) => {
+      stateRef.current.lives += amt
+      setLives(stateRef.current.lives)
+    },
+    setGodMode: (val) => {
+      stateRef.current.godMode = Boolean(val)
+    },
+    clearArena: () => {
+      stateRef.current.boss = null
+      stateRef.current.enemies = []
+      stateRef.current.projectiles = []
+    },
+  }))
+
   return (
     <div
-      onPointerDown={(e) => {
-        e.preventDefault()
-        if (stateRef.current.gameState === 'GAMEOVER' || stateRef.current.gameState === 'VICTORY') {
-          resetGame(true)
-        } else {
-          executeJump(true)
-        }
-      }}
+      onPointerDown={handlePointerDown}
       className="relative w-full overflow-hidden rounded-xl border border-slate-700 shadow-inner cursor-pointer select-none group"
       title="Click anywhere to jump, shoot, or restart! (1-click mouse control)"
     >
