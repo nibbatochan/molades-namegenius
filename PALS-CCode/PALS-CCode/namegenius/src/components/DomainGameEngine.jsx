@@ -5479,40 +5479,43 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
             { type: 'mantis_sniper', weight: 20 },
           ]
         } else if (bossesDefeated === 3) {
-          // Post-Boss 3: Unlocks Volt-Hornet Drone
-          pool = [
-            { type: 'glitch_bug', weight: 10 },
-            { type: 'squatter_drone', weight: 10 },
-            { type: 'packet_bat', weight: 10 },
-            { type: 'malware_golem', weight: 10 },
-            { type: 'beetle_infantry', weight: 20 },
-            { type: 'mantis_sniper', weight: 20 },
-            { type: 'volt_hornet', weight: 20 },
-          ]
-        } else if (bossesDefeated === 4) {
-          // Post-Boss 4: Unlocks Centipede Artillery
+          // Post-Boss 3 (DDoS Swarm Titan Defeated): Unlocks Volt-Hornet Drone AND Quantum Moth Phantom!
           pool = [
             { type: 'glitch_bug', weight: 8 },
             { type: 'squatter_drone', weight: 8 },
             { type: 'packet_bat', weight: 8 },
             { type: 'malware_golem', weight: 8 },
-            { type: 'beetle_infantry', weight: 17 },
-            { type: 'mantis_sniper', weight: 17 },
-            { type: 'volt_hornet', weight: 17 },
-            { type: 'centipede_artillery', weight: 17 },
+            { type: 'beetle_infantry', weight: 16 },
+            { type: 'mantis_sniper', weight: 16 },
+            { type: 'volt_hornet', weight: 18 },
+            { type: 'moth_phantom', weight: 18 },
+          ]
+        } else if (bossesDefeated === 4) {
+          // Post-Boss 4: Unlocks Centipede Artillery (+ Quantum Moth Phantom)
+          pool = [
+            { type: 'glitch_bug', weight: 6 },
+            { type: 'squatter_drone', weight: 6 },
+            { type: 'packet_bat', weight: 6 },
+            { type: 'malware_golem', weight: 6 },
+            { type: 'beetle_infantry', weight: 14 },
+            { type: 'mantis_sniper', weight: 14 },
+            { type: 'volt_hornet', weight: 16 },
+            { type: 'centipede_artillery', weight: 16 },
+            { type: 'moth_phantom', weight: 16 },
           ]
         } else if (bossesDefeated === 5) {
-          // Post-Boss 5: Unlocks Crab Juggernaut
+          // Post-Boss 5: Unlocks Crab Juggernaut (+ Quantum Moth Phantom)
           pool = [
             { type: 'glitch_bug', weight: 5 },
             { type: 'squatter_drone', weight: 5 },
             { type: 'packet_bat', weight: 5 },
             { type: 'malware_golem', weight: 5 },
-            { type: 'beetle_infantry', weight: 16 },
-            { type: 'mantis_sniper', weight: 16 },
-            { type: 'volt_hornet', weight: 16 },
-            { type: 'centipede_artillery', weight: 16 },
-            { type: 'crab_juggernaut', weight: 16 },
+            { type: 'beetle_infantry', weight: 13 },
+            { type: 'mantis_sniper', weight: 13 },
+            { type: 'volt_hornet', weight: 14 },
+            { type: 'centipede_artillery', weight: 14 },
+            { type: 'crab_juggernaut', weight: 13 },
+            { type: 'moth_phantom', weight: 13 },
           ]
         } else {
           // Post-Boss 6 / Endless: All 10 enemies with rich varied combinations!
@@ -5878,7 +5881,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         boss.floatAngle += 0.04
         boss.y = boss.baseY + Math.sin(boss.floatAngle) * 18
 
-        boss.attackTimer++
+        boss.attackTimer += (s.difficulty === 'hard' ? 2 : 1)
 
         // Cycle through 3 multi-attack patterns per boss type (Calibrated for fair dodge windows & double jumps)
         if (boss.type === 'phishing_hydra') {
@@ -6239,8 +6242,11 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         }
       }
 
+      const attackRateMult = s.difficulty === 'hard' ? 2 : 1
+      const isHard = s.difficulty === 'hard'
+
       if (en.type === 'glitch_bug') {
-        en.shootCooldown = (en.shootCooldown || 120) - 1
+        en.shootCooldown = (en.shootCooldown || 120) - attackRateMult
         if (en.shootCooldown <= 0 && en.x > cat.x && en.x < 380) {
           en.actionState = 'attack'
           en.laserTimer = 22
@@ -6261,6 +6267,19 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
               life: 120,
               hp: 1,
             })
+            if (isHard) {
+              s.enemyBullets.push({
+                x: en.x - 2,
+                y: en.y + 11.5,
+                vx: -2.8,
+                vy: 0.45,
+                size: 4,
+                type: 'glitch_pulse',
+                color: '#00f0ff',
+                life: 120,
+                hp: 1,
+              })
+            }
             if (soundEnabledRef.current) playLaserShoot('plasma')
           }
           if (en.laserTimer <= 0) en.actionState = 'idle'
@@ -6270,7 +6289,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         en.bobAngle = (en.bobAngle || 0) + 0.05
         en.y = en.baseY + Math.sin(en.bobAngle) * 10
 
-        en.shootCooldown = (en.shootCooldown || 130) - 1
+        en.shootCooldown = (en.shootCooldown || 130) - attackRateMult
         if (en.shootCooldown <= 0 && en.x > cat.x && en.x < 370) {
           en.actionState = 'attack'
           en.laserTimer = 24
@@ -6291,6 +6310,19 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
               life: 120,
               hp: 1,
             })
+            if (isHard) {
+              s.enemyBullets.push({
+                x: en.x - 2,
+                y: en.y + 13,
+                vx: -2.4,
+                vy: (Math.random() - 0.5) * 0.9,
+                size: 5,
+                type: 'emp_spark',
+                color: '#facc15',
+                life: 120,
+                hp: 1,
+              })
+            }
             if (soundEnabledRef.current) playLaserShoot('plasma')
           }
           if (en.laserTimer <= 0) en.actionState = 'idle'
@@ -6299,7 +6331,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         en.x += en.vx - s.speed * 0.7
         en.y = en.baseY + Math.sin(en.frame * 0.14) * 12
 
-        en.shootCooldown = (en.shootCooldown || 120) - 1
+        en.shootCooldown = (en.shootCooldown || 120) - attackRateMult
         if (en.shootCooldown <= 0 && en.x > cat.x && en.x < 375) {
           en.actionState = 'attack'
           en.laserTimer = 24
@@ -6313,12 +6345,18 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
               { x: en.x - 2, y: en.y + 10, vx: -2.6, vy: -0.35, size: 6, type: 'sonar_wave', color: '#c084fc', life: 120, hp: 1 },
               { x: en.x - 2, y: en.y + 10, vx: -2.6, vy: 0.35, size: 6, type: 'sonar_wave', color: '#c084fc', life: 120, hp: 1 }
             )
+            if (isHard) {
+              s.enemyBullets.push(
+                { x: en.x - 2, y: en.y + 10, vx: -2.6, vy: -0.75, size: 5.5, type: 'sonar_wave', color: '#c084fc', life: 120, hp: 1 },
+                { x: en.x - 2, y: en.y + 10, vx: -2.6, vy: 0.75, size: 5.5, type: 'sonar_wave', color: '#c084fc', life: 120, hp: 1 }
+              )
+            }
             if (soundEnabledRef.current) playLaserShoot('spread')
           }
           if (en.laserTimer <= 0) en.actionState = 'idle'
         }
       } else if (en.type === 'malware_golem') {
-        en.shootCooldown = (en.shootCooldown || 140) - 1
+        en.shootCooldown = (en.shootCooldown || 140) - attackRateMult
         if (en.shootCooldown <= 0 && en.x > cat.x - 20 && en.x < 370) {
           en.actionState = 'attack'
           en.laserTimer = 26
@@ -6340,12 +6378,26 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
               life: 130,
               hp: 2,
             })
+            if (isHard) {
+              s.enemyBullets.push({
+                x: en.x - 4,
+                y: en.y + 10,
+                vx: -2.8,
+                vy: -1.7,
+                gravity: 0.13,
+                size: 6.5,
+                type: 'magma_boulder',
+                color: '#ea580c',
+                life: 130,
+                hp: 2,
+              })
+            }
             if (soundEnabledRef.current) playLaserShoot('missile')
           }
           if (en.laserTimer <= 0) en.actionState = 'idle'
         }
       } else if (en.type === 'beetle_infantry') {
-        en.shootCooldown = (en.shootCooldown || 120) - 1
+        en.shootCooldown = (en.shootCooldown || 120) - attackRateMult
         if (en.shootCooldown <= 0 && en.x > cat.x - 30 && en.x < 380) {
           en.actionState = 'attack'
           en.laserTimer = 26
@@ -6366,12 +6418,25 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
               life: 130,
               hp: 1,
             })
+            if (isHard) {
+              s.enemyBullets.push({
+                x: en.x - 4,
+                y: en.y + 7,
+                vx: -3.6,
+                vy: -0.3,
+                size: 5.5,
+                type: 'plasmic_slug',
+                color: '#ea580c',
+                life: 130,
+                hp: 1,
+              })
+            }
             if (soundEnabledRef.current) playLaserShoot('plasma')
           }
           if (en.laserTimer <= 0) en.actionState = 'idle'
         }
       } else if (en.type === 'mantis_sniper') {
-        en.shootCooldown = (en.shootCooldown || 140) - 1
+        en.shootCooldown = (en.shootCooldown || 140) - attackRateMult
         if (en.shootCooldown <= 0 && en.x > cat.x - 40 && en.x < 385) {
           en.actionState = 'attack'
           en.laserTimer = 28
@@ -6392,6 +6457,19 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
               life: 110,
               hp: 1,
             })
+            if (isHard) {
+              s.enemyBullets.push({
+                x: en.x - 6,
+                y: en.y + 8,
+                vx: -5.0,
+                vy: -0.35,
+                size: 4.5,
+                type: 'railgun_slug',
+                color: '#00f0ff',
+                life: 110,
+                hp: 1,
+              })
+            }
             if (soundEnabledRef.current) playLaserShoot('railgun')
           }
           if (en.laserTimer <= 0) en.actionState = 'idle'
@@ -6401,7 +6479,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         en.bobAngle = (en.bobAngle || 0) + 0.06
         en.y = en.baseY + Math.sin(en.bobAngle) * 12
 
-        en.shootCooldown = (en.shootCooldown || 115) - 1
+        en.shootCooldown = (en.shootCooldown || 115) - attackRateMult
         if (en.shootCooldown <= 0 && en.x > cat.x && en.x < 375) {
           en.actionState = 'attack'
           en.laserTimer = 24
@@ -6416,12 +6494,18 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
               { x: en.x - 4, y: en.y + 13, vx: -3.5, vy: 0, size: 4, type: 'volt_needle', color: '#facc15', life: 120, hp: 1 },
               { x: en.x - 4, y: en.y + 13, vx: -3.3, vy: 0.55, size: 4, type: 'volt_needle', color: '#facc15', life: 120, hp: 1 }
             )
+            if (isHard) {
+              s.enemyBullets.push(
+                { x: en.x - 4, y: en.y + 13, vx: -3.1, vy: -0.9, size: 3.5, type: 'volt_needle', color: '#facc15', life: 120, hp: 1 },
+                { x: en.x - 4, y: en.y + 13, vx: -3.1, vy: 0.9, size: 3.5, type: 'volt_needle', color: '#facc15', life: 120, hp: 1 }
+              )
+            }
             if (soundEnabledRef.current) playLaserShoot('spread')
           }
           if (en.laserTimer <= 0) en.actionState = 'idle'
         }
       } else if (en.type === 'centipede_artillery') {
-        en.shootCooldown = (en.shootCooldown || 150) - 1
+        en.shootCooldown = (en.shootCooldown || 150) - attackRateMult
         if (en.shootCooldown <= 0 && en.x > cat.x && en.x < 380) {
           en.actionState = 'attack'
           en.laserTimer = 28
@@ -6443,12 +6527,26 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
               life: 130,
               hp: 2,
             })
+            if (isHard) {
+              s.enemyBullets.push({
+                x: en.x - 4,
+                y: en.y + 4,
+                vx: -2.8,
+                vy: -3.2,
+                gravity: 0.16,
+                size: 6,
+                type: 'bio_mortar',
+                color: '#22c55e',
+                life: 130,
+                hp: 2,
+              })
+            }
             if (soundEnabledRef.current) playLaserShoot('missile')
           }
           if (en.laserTimer <= 0) en.actionState = 'idle'
         }
       } else if (en.type === 'crab_juggernaut') {
-        en.shootCooldown = (en.shootCooldown || 140) - 1
+        en.shootCooldown = (en.shootCooldown || 140) - attackRateMult
         if (en.shootCooldown <= 0 && en.x > cat.x - 20 && en.x < 370) {
           en.actionState = 'attack'
           en.laserTimer = 26
@@ -6469,6 +6567,19 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
               life: 130,
               hp: 2,
             })
+            if (isHard) {
+              s.enemyBullets.push({
+                x: en.x - 4,
+                y: en.y + 6,
+                vx: -3.4,
+                vy: -0.4,
+                size: 7,
+                type: 'seismic_shockwave',
+                color: '#fde047',
+                life: 130,
+                hp: 2,
+              })
+            }
             if (soundEnabledRef.current) playLaserShoot('missile')
           }
           if (en.laserTimer <= 0) en.actionState = 'idle'
@@ -6477,7 +6588,7 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
         en.x += en.vx - s.speed * 0.6
         en.y = en.baseY + Math.sin(en.frame * 0.12) * 12
 
-        en.shootCooldown = (en.shootCooldown || 130) - 1
+        en.shootCooldown = (en.shootCooldown || 130) - attackRateMult
         if (en.shootCooldown <= 0 && en.x > cat.x && en.x < 380) {
           en.actionState = 'attack'
           en.laserTimer = 26
@@ -6498,6 +6609,19 @@ const DomainGameEngine = forwardRef(function DomainGameEngine(
               life: 140,
               hp: 1,
             })
+            if (isHard) {
+              s.enemyBullets.push({
+                x: en.x - 4,
+                y: en.y + 14,
+                vx: -2.5,
+                vy: -0.5,
+                size: 6,
+                type: 'diamond_pulse',
+                color: '#ec4899',
+                life: 140,
+                hp: 1,
+              })
+            }
             if (soundEnabledRef.current) playLaserShoot('plasma')
           }
           if (en.laserTimer <= 0) en.actionState = 'idle'

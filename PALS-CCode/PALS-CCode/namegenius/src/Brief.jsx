@@ -77,7 +77,7 @@ export default function Brief({
             <div className="relative inline-block my-1">
               <h1 className="font-display text-4xl sm:text-5xl lg:text-[62px] font-black uppercase tracking-tight text-slate-950 leading-[0.98] [text-shadow:3px_3px_0px_rgba(245,158,11,0.3),6px_6px_0px_rgba(0,0,0,0.06)]">
                 BRAND NAMES
-                <span className="block text-amber-500 [text-shadow:3px_3px_0px_rgba(180,83,9,0.35)]">
+                <span className="block text-purple-600 [text-shadow:3px_3px_0px_rgba(126,34,206,0.3)]">
                   YOU CAN OWN.
                 </span>
               </h1>

@@ -164,7 +164,7 @@ export default function TactileCard({
           title="Click to view pricing & details"
         >
           <div className="flex items-baseline justify-between gap-2">
-            <h3 className="font-display font-normal text-2xl sm:text-3xl tracking-tight text-slate-950 uppercase deboss-light group-hover:text-blue-900 transition-colors">
+            <h3 className="font-sans font-bold text-2xl sm:text-3xl tracking-tight text-slate-950 deboss-light group-hover:text-blue-900 transition-colors">
               {item.name}
             </h3>
             <span className="font-mono text-xs text-slate-400">

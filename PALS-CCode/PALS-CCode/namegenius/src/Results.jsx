@@ -305,21 +305,6 @@ export default function Results({
                   <span>Generated brand names</span>
                 )}
               </h1>
-              {/* AI source badge (only show loading state or local fallback when needed) */}
-              <div className="mt-2 flex items-center gap-2">
-                {aiLoading && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-500/30 border border-violet-300/40 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-violet-200">
-                    <span className="h-1.5 w-1.5 rounded-full bg-violet-300 animate-pulse" />
-                    AI researching…
-                  </span>
-                )}
-                {!aiLoading && aiError && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 border border-amber-400/40 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-amber-200" title="AI unavailable — showing algorithmically generated names">
-                    <Warning weight="bold" className="text-xs" />
-                    Local mode
-                  </span>
-                )}
-              </div>
             </div>
 
             {/* Action Buttons: Terracotta Push Button for Next Batch */}
@@ -344,9 +329,6 @@ export default function Results({
                 <div className="flex items-center justify-between gap-2 mb-1.5">
                   <span className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-purple-200">
                     Exact Matches
-                  </span>
-                  <span className="font-mono text-[9.5px] text-purple-300/70">
-                    Root: "{cleanSeed}"
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -474,10 +456,10 @@ export default function Results({
                   <button
                     type="button"
                     onClick={() => handleToggleFilter(f.id)}
-                    className={`key-cap !rounded-md px-2.5 py-1 font-mono text-[11px] font-bold transition-all cursor-pointer ${
+                    className={`key-cap !rounded-md px-2.5 py-1 font-mono text-[11px] transition-all cursor-pointer ${
                       isActive
                         ? 'key-cap-active-dark ring-1 ring-amber-400 text-amber-300 font-black'
-                        : 'text-slate-700 hover:text-slate-950 font-bold'
+                        : 'text-slate-950 hover:text-black font-black'
                     }`}
                   >
                     {f.label}
@@ -486,7 +468,7 @@ export default function Results({
               )
             })}
 
-            {/* Diagnostic Console Button — Black Background with White Text */}
+            {/* Diagnostic Console Button — High Contrast Dark Mechanical Button */}
             <div className="key-socket-dark !p-[1.5px] !rounded-lg ml-auto">
               <button
                 type="button"
@@ -495,12 +477,12 @@ export default function Results({
                   setShowDiscoveryDrawer((prev) => !prev)
                 }}
                 title="Open 7-question strategic brand discovery diagnostic"
-                className={`key-cap !rounded-md px-3.5 py-1.5 font-mono text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-black text-white hover:bg-slate-900 border border-slate-700/80 active:scale-95 shadow-md ${
-                  showDiscoveryDrawer ? 'ring-2 ring-slate-400' : ''
+                className={`key-cap-active-dark !rounded-md px-3.5 py-1.5 font-mono text-[11px] font-black transition-all cursor-pointer flex items-center gap-1.5 text-white hover:text-amber-300 active:scale-95 shadow-md ${
+                  showDiscoveryDrawer ? 'ring-2 ring-amber-400' : 'ring-1 ring-slate-600'
                 }`}
               >
-                <SlidersHorizontal weight="bold" className="text-xs shrink-0 text-white" />
-                <span className="text-white font-bold">{generation >= 3 ? 'Tune Preferences (3+ Rerolls)' : 'Tune Preferences'}</span>
+                <SlidersHorizontal weight="bold" className="text-xs shrink-0 text-amber-400" />
+                <span className="text-white font-black">{generation >= 3 ? 'Tune Preferences (3+ Rerolls)' : 'Tune Preferences'}</span>
               </button>
             </div>
           </div>

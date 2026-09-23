@@ -172,46 +172,61 @@ export default async function handler(req) {
 
   const prompt = buildPrompt(brief)
 
-  const groqPayload = {
-    model: process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
-    messages: [
-      {
-        role: 'system',
-        content: 'You are an elite brand naming specialist and domain consultant. Always return valid JSON matching the requested schema without any markdown wrapping or commentary.',
-      },
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-    response_format: { type: 'json_object' },
-    temperature: 0.85,
-    max_tokens: 2400,
+  const candidateModels = [
+    process.env.GROQ_MODEL,
+    'llama-3.3-70b-versatile',
+    'llama-3.1-8b-instant',
+    'llama3-70b-8192',
+    'llama3-8b-8192',
+    'gemma2-9b-it',
+  ].filter(Boolean)
+
+  let groqRes = null
+  let lastErrText = ''
+
+  for (const modelName of candidateModels) {
+    const groqPayload = {
+      model: modelName,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an elite brand naming specialist and domain consultant. Always return valid JSON matching the requested schema without any markdown wrapping or commentary.',
+        },
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.85,
+      max_tokens: 2400,
+    }
+
+    try {
+      const res = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(groqPayload),
+      })
+      if (res.ok) {
+        groqRes = res
+        break
+      } else {
+        lastErrText = await res.text()
+        console.warn(`Groq model ${modelName} returned ${res.status}:`, lastErrText)
+      }
+    } catch (err) {
+      console.warn(`Groq fetch error with model ${modelName}:`, err)
+    }
   }
 
-  let groqRes
-  try {
-    groqRes = await fetch(GROQ_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(groqPayload),
-    })
-  } catch (err) {
-    console.error('Groq fetch error:', err)
-    return new Response(JSON.stringify({ error: 'Groq unreachable', fallback: true }), {
-      status: 502,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
-
-  if (!groqRes.ok) {
-    const errText = await groqRes.text()
-    console.error('Groq API error:', groqRes.status, errText)
+  if (!groqRes) {
+    console.error('All Groq candidate models failed. Last error:', lastErrText)
     return new Response(
-      JSON.stringify({ error: `Groq error ${groqRes.status}`, fallback: true, details: errText }),
+      JSON.stringify({ error: 'All Groq models failed', fallback: true, details: lastErrText }),
       { status: 502, headers: { 'Content-Type': 'application/json' } }
     )
   }

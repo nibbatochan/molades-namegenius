@@ -70,11 +70,21 @@ export default function MasterSynthesizer({
     if (hasNameInMind) {
       if (!name.trim() || name.trim().length < 2) {
         setError('Please enter at least 2 characters for your name or keyword.')
+        const el = document.getElementById('seed-input')
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          el.focus()
+        }
         return
       }
     } else {
       if (!description.trim() && !name.trim()) {
         setError('Please describe what your product or business is building.')
+        const el = document.getElementById('context-input')
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          el.focus()
+        }
         return
       }
     }
@@ -99,33 +109,7 @@ export default function MasterSynthesizer({
   return (
     <div id="master-synthesizer-console" className="relative mx-auto max-w-5xl px-4 pt-6 pb-16 sm:px-6">
       {/* Master Handheld Gadget Chassis (Candy Purple from Style Guide §2 & Reference Image 2) */}
-      <div className="skeuo-chassis-purple relative overflow-hidden p-6 sm:p-10 shadow-2xl">
-        {/* Left Side Lanyard Strap Bracket & Hanging Braided Cord Loop */}
-        <div className="absolute -left-4 top-1/4 -translate-y-1/2 flex items-center z-10 pointer-events-auto">
-          <div className="lanyard-bracket">
-            <div className="lanyard-bracket-slot" />
-          </div>
-          <div className="absolute left-[-22px] top-4 pointer-events-none flex flex-col items-center">
-            <svg width="44" height="96" viewBox="0 0 44 96" fill="none" className="drop-shadow-md">
-              <path
-                d="M 28 6 C 14 18, 6 36, 12 58 C 16 72, 28 84, 22 94"
-                stroke="#a855f7"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeDasharray="4 2"
-              />
-              <path
-                d="M 28 6 C 14 18, 6 36, 12 58 C 16 72, 28 84, 22 94"
-                stroke="#c084fc"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-              <circle cx="14" cy="62" r="7" fill="#7e22ce" stroke="#c084fc" strokeWidth="2" />
-              <circle cx="16" cy="64" r="4" fill="#a855f7" />
-            </svg>
-          </div>
-        </div>
-
+      <div className="skeuo-chassis-purple relative p-6 sm:p-10 shadow-2xl">
         {/* Console Header: Technical markings + 3x3 Perforated Speaker Grille */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-purple-400/30 pb-5">
           <div>
@@ -408,7 +392,7 @@ export default function MasterSynthesizer({
                         setCountrySearch('')
                       }}
                     />
-                    <div className="absolute right-0 top-full mt-2 z-50 w-72 sm:w-80 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xl animate-toast">
+                    <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 z-50 w-72 sm:w-80 max-w-[calc(100vw-3rem)] rounded-2xl border border-slate-200 bg-white p-3.5 shadow-2xl animate-toast">
                       <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2.5">
                         <span className="font-mono text-xs font-bold text-slate-900">
                           Select Country Domain

@@ -248,7 +248,11 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
   }
 
   const handleSelectDifficultyAndStart = (diff) => {
-    if (soundEnabled) playMechanicalClick('switch')
+    setSoundEnabled(true)
+    setSoundMuted(false)
+    setMusicActive(true)
+    setMusicEnabled(true)
+    try { playMechanicalClick('switch') } catch {}
     setShowDifficultyModal(false)
     setIsAutoMode(false)
     setGameMode('campaign')
@@ -532,7 +536,7 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
           {/* Authentic 16-Bit Pixel-Art Difficulty Selection Modal */}
           {showDifficultyModal && (
             <div className="absolute inset-0 z-30 bg-black/80 flex items-center justify-center p-3 animate-in fade-in duration-75">
-              <div className="w-[240px] bg-[#0f172a] border-4 border-black p-3 shadow-[inset_2px_2px_0_#38bdf8,inset_-2px_-2px_0_#0284c7,0_6px_0_#000000] flex flex-col gap-3 font-mono text-white relative select-none">
+              <div className="w-[240px] bg-[#0f172a] border-4 border-black p-3 shadow-[inset_2px_2px_0_#38bdf8,inset_-2px_-2px_0_#0284c7,0_6px_0_#000000] flex flex-col gap-2.5 font-mono text-white relative select-none">
                 {/* Pixel Close Button [✕] */}
                 <button
                   type="button"
@@ -550,8 +554,43 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                   </h3>
                 </div>
 
+                {/* Sound & Music Unified Audio Toggle */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !(soundEnabled && musicEnabled)
+                    setSoundEnabled(next)
+                    setSoundMuted(!next)
+                    setMusicActive(next)
+                    setMusicEnabled(next)
+                    if (next) {
+                      try { playMechanicalClick('switch') } catch {}
+                    }
+                  }}
+                  className={`w-full py-1.5 px-2 border-2 border-black flex items-center justify-between gap-1 cursor-pointer transition-transform active:translate-y-0.5 text-[9.5px] font-black tracking-wider ${
+                    soundEnabled && musicEnabled
+                      ? 'bg-[#1e40af] text-white shadow-[inset_2px_2px_0_#60a5fa,inset_-2px_-2px_0_#172554,0_2px_0_#000]'
+                      : 'bg-[#334155] text-slate-300 shadow-[inset_2px_2px_0_#64748b,inset_-2px_-2px_0_#0f172a,0_2px_0_#000]'
+                  }`}
+                  title="Toggle all game audio (SFX + Music)"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span>{soundEnabled && musicEnabled ? '🔊' : '🔈'}</span>
+                    <span>SOUND & MUSIC</span>
+                  </div>
+                  <span
+                    className={`px-1.5 py-0.5 text-[8px] font-black border border-black ${
+                      soundEnabled && musicEnabled
+                        ? 'bg-[#22c55e] text-black shadow-[inset_1px_1px_0_#86efac]'
+                        : 'bg-[#64748b] text-slate-200 shadow-[inset_1px_1px_0_#94a3b8]'
+                    }`}
+                  >
+                    {soundEnabled && musicEnabled ? 'ON' : 'OFF'}
+                  </span>
+                </button>
+
                 {/* Direct 1-Click Action Buttons: EASY & HARD */}
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-2 gap-2">
                   {/* EASY BUTTON */}
                   <button
                     type="button"
@@ -569,7 +608,7 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                     className="py-2.5 px-2 bg-[#dc2626] hover:bg-[#ef4444] border-2 border-black shadow-[inset_2px_2px_0_#fca5a5,inset_-2px_-2px_0_#991b1b,0_3px_0_#000000] active:translate-y-0.5 active:shadow-[inset_2px_2px_0_#fca5a5,inset_-2px_-2px_0_#991b1b,0_1px_0_#000000] transition-transform flex flex-col items-center justify-center gap-0.5 cursor-pointer text-white"
                   >
                     <span className="font-black text-xs tracking-wider drop-shadow-[1px_1px_0_#000]">HARD</span>
-                    <span className="text-[8.5px] font-bold text-[#fecdd3] drop-shadow-[1px_1px_0_#991b1b]">2x HP</span>
+                    <span className="text-[8.5px] font-bold text-[#fecdd3] drop-shadow-[1px_1px_0_#991b1b]">2x HP & ATK</span>
                   </button>
                 </div>
               </div>
