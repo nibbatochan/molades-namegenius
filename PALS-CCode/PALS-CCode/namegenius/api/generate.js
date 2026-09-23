@@ -22,6 +22,65 @@ function buildPrompt(brief) {
     ? `Competitors to differentiate from: "${brief.competitors.trim()}"`
     : 'No specific competitors mentioned — research the space broadly.'
 
+  const answersList = []
+  if (brief.answers) {
+    const a = brief.answers
+    if (a.personality !== undefined) {
+      const pVal = Number(a.personality)
+      answersList.push(`- Personality Spectrum: ${pVal < 40 ? 'Understated, quiet, utilitarian (like Stripe/Linear)' : pVal > 60 ? 'Bold, warm, expressive, playful (like Figma/Mailchimp)' : 'Balanced functional-expressive blend'}`)
+    }
+    if (a.material) {
+      const materialMap = {
+        'dark-metal': 'Dark matte metal: sharp, fast, technical precision',
+        'wood-paper': 'Warm wood & paper: calm, thoughtful, craft editorial depth',
+        'terminal': 'Bright terminal screen: cybernetic, modern, developer cred',
+        'greenhouse': 'Sunlit greenhouse: clean, organic, transparent simplicity',
+      }
+      answersList.push(`- Material & Atmosphere: ${materialMap[a.material] || a.material}`)
+    }
+    if (a.structures && a.structures.length) {
+      const structMap = {
+        made_up: 'Made-up/coined words (Spotify, Zillow)',
+        compound: 'Two real words combined (DoorDash, Basecamp)',
+        metaphor: 'Dictionary words as metaphors (Scale, Anchor)',
+        short: 'Short 3-5 letter words (Arc, Ramp, Oura)',
+        latin_roots: 'Classic Latin/Greek roots (Luminary, Veritas)',
+      }
+      answersList.push(`- Preferred Structure: ${a.structures.map((s) => structMap[s] || s).join(', ')}`)
+    }
+    if (a.sound) {
+      answersList.push(`- Phonetic Mouthfeel: ${a.sound === 'punchy' ? 'Sharp & punchy with hard consonants (K, T, P, X)' : a.sound === 'smooth' ? 'Soft & flowing with gentle sonorants (M, L, N, R, V)' : 'Everyday conversational and vowel-rich'}`)
+    }
+    if (a.avoid && a.avoid.length) {
+      const avoidMap = {
+        startup_suffixes: 'No startup clichés like -ify, -ly, or -io suffixes',
+        corporate_jargon: 'No generic corporate tech jargon like Global, Sys, Smart, Cyber',
+        hard_to_spell: 'No hard-to-spell ambiguous words that need phone explanation',
+        toy_mascots: 'No cutesy toy or mascot names',
+      }
+      answersList.push(`- STRICT AVOID BLACKLIST: ${a.avoid.map((x) => avoidMap[x] || x).join('; ')}`)
+    }
+    if (a.audience) {
+      const audMap = {
+        enterprise: 'Enterprise decision-makers (needs institutional trust & compliance aura)',
+        developers: 'Developers & builders (needs developer cred, sleek simplicity, zero fluff)',
+        consumers: 'Everyday consumers (needs warmth, memorability, instant clarity)',
+        designers: 'Designers & creatives (needs bold aesthetic courage & editorial taste)',
+      }
+      answersList.push(`- Primary Audience: ${audMap[a.audience] || a.audience}`)
+    }
+    if (a.domainStrategy) {
+      answersList.push(`- Domain Extension Appetite: ${a.domainStrategy}`)
+    }
+    if (a.contrastPowerful || a.contrastSimple) {
+      answersList.push(`- Contrast Anchor: "As powerful as ${a.contrastPowerful || 'Bloomberg'}, but as simple/warm as ${a.contrastSimple || 'Apple Notes'}."`)
+    }
+  }
+
+  const strategicContext = answersList.length
+    ? `\nSTRATEGIC FOUNDER PREFERENCES (ENFORCE STRICTLY):\n${answersList.join('\n')}\n`
+    : ''
+
   return `You are a world-class brand naming consultant. Your job is to generate exactly 18 unique, memorable, domain-safe brand names for the following brief.
 
 Use your knowledge of the market and any available search context to research:
@@ -35,7 +94,7 @@ Description: "${brief.description?.trim() || '(none)'}"
 ${competitorLine}
 Style vibe: ${vibe}
 Preferred TLD: "${brief.tld || '.com'}"
-
+${strategicContext}
 NAMING RULES:
 1. Domain-safe slugs: lowercase letters and numbers only, 3–15 characters, no hyphens
 2. Each name must be distinct — no two names from the same root word

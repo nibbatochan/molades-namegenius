@@ -44,6 +44,7 @@ export default function Results({
   const [filters, setFilters] = useState(isCacheValid?.filters || ['all'])
   const [answers, setAnswers] = useState(isCacheValid?.answers || {})
   const [dismissedQuestion, setDismissedQuestion] = useState(false)
+  const [showDiscoveryDrawer, setShowDiscoveryDrawer] = useState(() => generation >= 3)
   const [copiedDomain, setCopiedDomain] = useState(null)
   const [activeStem, setActiveStem] = useState(null)
   const [registry, setRegistry] = useState(isCacheValid?.registry || {})
@@ -58,7 +59,10 @@ export default function Results({
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
     if (document.documentElement) document.documentElement.scrollTop = 0
     if (document.body) document.body.scrollTop = 0
-  }, [generation])
+    if (generation >= 3 && !dismissedQuestion) {
+      setShowDiscoveryDrawer(true)
+    }
+  }, [generation, dismissedQuestion])
 
   // Trigger Gemini/Groq fetch only on generation bump or if not cached
   useEffect(() => {
@@ -462,15 +466,44 @@ export default function Results({
                 </div>
               )
             })}
+
+            {/* Diagnostic Console Button */}
+            <div className="key-socket-dark !p-[1px] !rounded-lg ml-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  try { playMechanicalClick('click') } catch {}
+                  setShowDiscoveryDrawer((prev) => !prev)
+                }}
+                title="Open 8-question strategic diagnostic"
+                className={`key-cap !rounded-md px-3 py-1 font-mono text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  showDiscoveryDrawer
+                    ? 'key-cap-active-dark ring-1 ring-cyan-400 text-cyan-300'
+                    : generation >= 3
+                    ? 'bg-blue-950/80 text-blue-300 ring-1 ring-blue-500/60 font-bold'
+                    : 'text-slate-700 hover:text-slate-950 font-bold'
+                }`}
+              >
+                <SlidersHorizontal weight="bold" className="text-xs" />
+                <span>{generation >= 3 ? 'Tune Preferences (3+ Rerolls)' : 'Tune Preferences'}</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Adaptive Discovery Drawer if 2+ rerolls */}
-        {currentQuestion && (
+        {/* Strategic Diagnostic Discovery Console (Home page design system) */}
+        {showDiscoveryDrawer && (
           <DiscoveryDrawer
-            question={currentQuestion}
-            onAnswer={handleAnswerQuestion}
-            onDismiss={() => setDismissedQuestion(true)}
+            initialAnswers={answers}
+            onApplyAnswers={(newAnswers) => {
+              setAnswers(newAnswers)
+              setShowDiscoveryDrawer(false)
+              onRegenerate?.(newAnswers)
+            }}
+            onDismiss={() => {
+              setDismissedQuestion(true)
+              setShowDiscoveryDrawer(false)
+            }}
           />
         )}
 
