@@ -112,12 +112,20 @@ export default async function handler(req) {
   const prompt = buildPrompt(brief)
 
   const groqPayload = {
-    model: process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.9,
-    top_p: 0.95,
-    max_completion_tokens: 8000,
-    reasoning_effort: 'low',
+    model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+    messages: [
+      {
+        role: 'system',
+        content: 'You are an elite brand naming specialist and domain consultant. Always return valid JSON matching the requested schema without any markdown wrapping or commentary.',
+      },
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+    response_format: { type: 'json_object' },
+    temperature: 0.85,
+    max_tokens: 4096,
   }
 
   let groqRes
@@ -142,7 +150,7 @@ export default async function handler(req) {
     const errText = await groqRes.text()
     console.error('Groq API error:', groqRes.status, errText)
     return new Response(
-      JSON.stringify({ error: `Groq error ${groqRes.status}`, fallback: true }),
+      JSON.stringify({ error: `Groq error ${groqRes.status}`, fallback: true, details: errText }),
       { status: 502, headers: { 'Content-Type': 'application/json' } }
     )
   }
@@ -160,21 +168,22 @@ export default async function handler(req) {
     })
   }
 
-  // Parse the JSON array from the response — extract even if wrapped in prose or markdown
+  // Parse the JSON from Groq — extract even if wrapped in markdown
   let names
   try {
-    // Strategy 1: strip markdown code fences and try direct parse
     let cleaned = rawText.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim()
-    // Strategy 2: if that fails, find the first '[' to last ']' — grounded responses sometimes add preamble
-    if (!cleaned.startsWith('[')) {
-      const start = cleaned.indexOf('[')
-      const end = cleaned.lastIndexOf(']')
-      if (start !== -1 && end !== -1 && end > start) {
-        cleaned = cleaned.slice(start, end + 1)
-      }
+    const parsed = JSON.parse(cleaned)
+    if (Array.isArray(parsed)) {
+      names = parsed
+    } else if (parsed && Array.isArray(parsed.names)) {
+      names = parsed.names
+    } else if (parsed && Array.isArray(parsed.results)) {
+      names = parsed.results
+    } else if (parsed && typeof parsed === 'object') {
+      const arrayVal = Object.values(parsed).find((v) => Array.isArray(v))
+      if (arrayVal) names = arrayVal
     }
-    names = JSON.parse(cleaned)
-    if (!Array.isArray(names)) throw new Error('Not an array')
+    if (!Array.isArray(names)) throw new Error('Could not extract names array from JSON')
   } catch (err) {
     console.error('JSON parse error from Groq:', err.message, '\nRaw (first 600 chars):', rawText.slice(0, 600))
     return new Response(JSON.stringify({ error: 'Groq returned malformed JSON', fallback: true }), {
