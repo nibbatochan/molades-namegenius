@@ -7,6 +7,7 @@ import { generateNames, CINEMATIC_ARCHETYPES } from './generator'
 import { fetchAINames } from './utils/geminiClient'
 import { QUESTIONS, TLD_ORDER } from './data'
 import { fetchAvailability } from './utils/availabilityClient'
+import { playMechanicalClick } from './utils/audio'
 import {
   ArrowsClockwise,
   SlidersHorizontal,
@@ -39,10 +40,16 @@ export default function Results({
   onNavigate,
 }) {
   const briefKey = useMemo(() => JSON.stringify(brief || {}), [brief])
-  const isCacheValid = resultsCache && resultsCache.briefKey === briefKey && resultsCache.generation === generation
+  const [answers, setAnswers] = useState(resultsCache?.answers || {})
+  const answersKey = useMemo(() => JSON.stringify(answers || {}), [answers])
+
+  const isCacheValid =
+    resultsCache &&
+    resultsCache.briefKey === briefKey &&
+    resultsCache.generation === generation &&
+    resultsCache.answersKey === answersKey
 
   const [filters, setFilters] = useState(isCacheValid?.filters || ['all'])
-  const [answers, setAnswers] = useState(isCacheValid?.answers || {})
   const [dismissedQuestion, setDismissedQuestion] = useState(false)
   const [showDiscoveryDrawer, setShowDiscoveryDrawer] = useState(() => generation >= 3)
   const [copiedDomain, setCopiedDomain] = useState(null)
@@ -64,13 +71,14 @@ export default function Results({
     }
   }, [generation, dismissedQuestion])
 
-  // Trigger Gemini/Groq fetch only on generation bump or if not cached
+  // Trigger Gemini/Groq fetch on brief, generation, or answers change
   useEffect(() => {
     if (!brief) return
     if (
       resultsCache &&
       resultsCache.briefKey === briefKey &&
       resultsCache.generation === generation &&
+      resultsCache.answersKey === answersKey &&
       (resultsCache.aiItems || resultsCache.aiError)
     ) {
       // Results already cached from previous view — preserve without re-fetching
@@ -90,6 +98,7 @@ export default function Results({
         onUpdateResultsCache?.((prev) => ({
           ...prev,
           briefKey,
+          answersKey,
           generation,
           aiItems: names,
           aiError: null,
@@ -108,6 +117,7 @@ export default function Results({
         onUpdateResultsCache?.((prev) => ({
           ...prev,
           briefKey,
+          answersKey,
           generation,
           aiItems: null,
           aiError: errType,
@@ -116,7 +126,7 @@ export default function Results({
           answers,
         }))
       })
-  }, [briefKey, generation]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [briefKey, generation, answersKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleToggleFilter = (filterId) => {
     if (filterId === 'all') {
@@ -467,38 +477,43 @@ export default function Results({
               )
             })}
 
-            {/* Diagnostic Console Button */}
-            <div className="key-socket-dark !p-[1px] !rounded-lg ml-auto">
+            {/* Diagnostic Console Button — Bright Amber/Cobalt Keycap */}
+            <div className="key-socket-dark !p-[1.5px] !rounded-lg ml-auto">
               <button
                 type="button"
                 onClick={() => {
                   try { playMechanicalClick('click') } catch {}
                   setShowDiscoveryDrawer((prev) => !prev)
                 }}
-                title="Open 8-question strategic diagnostic"
-                className={`key-cap !rounded-md px-3 py-1 font-mono text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                title="Open 7-question strategic brand discovery diagnostic"
+                className={`key-cap !rounded-md px-3.5 py-1.5 font-mono text-[11px] font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-sm ${
                   showDiscoveryDrawer
-                    ? 'key-cap-active-dark ring-1 ring-cyan-400 text-cyan-300'
+                    ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300'
                     : generation >= 3
-                    ? 'bg-blue-950/80 text-blue-300 ring-1 ring-blue-500/60 font-bold'
-                    : 'text-slate-700 hover:text-slate-950 font-bold'
+                    ? 'bg-[#fae127] text-slate-950 ring-2 ring-amber-400 hover:brightness-105 animate-pulse'
+                    : 'bg-indigo-950/90 text-amber-300 border border-amber-400/50 hover:bg-amber-400 hover:text-slate-950'
                 }`}
               >
-                <SlidersHorizontal weight="bold" className="text-xs" />
-                <span>{generation >= 3 ? 'Tune Preferences (3+ Rerolls)' : 'Tune Preferences'}</span>
+                <SlidersHorizontal weight="bold" className="text-xs shrink-0" />
+                <span>{generation >= 3 ? '★ Tune Preferences (3+ Rerolls)' : 'Tune Preferences'}</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Strategic Diagnostic Discovery Console (Home page design system) */}
+        {/* Strategic Diagnostic Discovery Console (Modal with blur behind) */}
         {showDiscoveryDrawer && (
           <DiscoveryDrawer
             initialAnswers={answers}
             onApplyAnswers={(newAnswers) => {
               setAnswers(newAnswers)
               setShowDiscoveryDrawer(false)
+              onUpdateResultsCache?.(null) // invalidate previous cache to force re-synthesis
               onRegenerate?.(newAnswers)
+            }}
+            onClose={() => {
+              setDismissedQuestion(true)
+              setShowDiscoveryDrawer(false)
             }}
             onDismiss={() => {
               setDismissedQuestion(true)

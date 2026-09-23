@@ -58,8 +58,12 @@ function cap(s) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
 }
 
-function tokens(str) {
-  return (str || '')
+function tokens(input) {
+  if (!input) return []
+  if (Array.isArray(input)) return input.flatMap(tokens)
+  if (typeof input === 'object') return Object.values(input).flatMap(tokens)
+  if (typeof input === 'number') return []
+  return String(input)
     .toLowerCase()
     .split(/[^a-z]+/)
     .filter((w) => w.length >= 3 && !STOP.has(w))

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Sparkle,
   ArrowRight,
@@ -9,7 +9,6 @@ import {
   Prohibit,
   Users,
   Globe,
-  Quotes,
   Check,
   Lightning,
   TreeStructure,
@@ -42,28 +41,28 @@ export const STRATEGIC_QUESTIONS = [
         title: 'Dark Matte Metal',
         desc: 'Sharp, fast, high-precision technical feel',
         badge: 'HIGH-PERFORMANCE',
-        accent: 'border-cyan-500/40 bg-cyan-950/20 text-cyan-300',
+        accent: 'border-blue-500/40 bg-blue-50 text-blue-900',
       },
       {
         id: 'wood-paper',
         title: 'Warm Wood & Paper',
         desc: 'Calm, thoughtful, craft-oriented editorial depth',
         badge: 'CRAFT & EDITORIAL',
-        accent: 'border-amber-500/40 bg-amber-950/20 text-amber-300',
+        accent: 'border-amber-500/40 bg-amber-50 text-amber-900',
       },
       {
         id: 'terminal',
         title: 'Bright Terminal Screen',
         desc: 'High energy, modern, developer-first cred',
         badge: 'CYBER & DEVELOPER',
-        accent: 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300',
+        accent: 'border-emerald-500/40 bg-emerald-50 text-emerald-900',
       },
       {
         id: 'greenhouse',
         title: 'Sunlit Greenhouse',
         desc: 'Clean, natural, honest, transparent simplicity',
         badge: 'ORGANIC & HONEST',
-        accent: 'border-lime-500/40 bg-lime-950/20 text-lime-300',
+        accent: 'border-lime-500/40 bg-lime-50 text-lime-900',
       },
     ],
   },
@@ -141,28 +140,28 @@ export const STRATEGIC_QUESTIONS = [
         title: 'Corporate Buyers & Executives',
         desc: 'Needs solid institutional credibility, compliance feel, and board trust',
         badge: 'ENTERPRISE',
-        accent: 'border-blue-500/40 bg-blue-950/20 text-blue-300',
+        accent: 'border-blue-500/40 bg-blue-50 text-blue-900',
       },
       {
         id: 'developers',
         title: 'Developers & Builders',
         desc: 'Needs sleek simplicity, technical taste, and zero corporate fluff',
         badge: 'PROSUMER / DEV',
-        accent: 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300',
+        accent: 'border-emerald-500/40 bg-emerald-50 text-emerald-900',
       },
       {
         id: 'consumers',
         title: 'Everyday Consumers',
         desc: 'Needs friendly warmth, clear memorability, and effortless clarity',
         badge: 'CONSUMER',
-        accent: 'border-amber-500/40 bg-amber-950/20 text-amber-300',
+        accent: 'border-amber-500/40 bg-amber-50 text-amber-900',
       },
       {
         id: 'designers',
         title: 'Designers & Creatives',
         desc: 'Needs distinct aesthetic courage, editorial tone, and visual style',
         badge: 'CREATIVE',
-        accent: 'border-purple-500/40 bg-purple-950/20 text-purple-300',
+        accent: 'border-purple-500/40 bg-purple-50 text-purple-900',
       },
     ],
   },
@@ -196,20 +195,12 @@ export const STRATEGIC_QUESTIONS = [
       },
     ],
   },
-  {
-    id: 'contrast',
-    num: '08',
-    title: 'The Contrast Anchor',
-    subtitle: 'Complete this positioning comparison to guide exact tone.',
-    icon: Quotes,
-    type: 'contrast_madlib',
-  },
 ]
 
 export default function DiscoveryDrawer({
   initialAnswers = {},
   onApplyAnswers,
-  onDismiss,
+  onClose,
 }) {
   const [activeStep, setActiveStep] = useState(0)
   const [answers, setAnswers] = useState({
@@ -220,10 +211,17 @@ export default function DiscoveryDrawer({
     avoid: ['startup_suffixes'],
     audience: 'developers',
     domainStrategy: 'modern_tlds',
-    contrastPowerful: 'Bloomberg',
-    contrastSimple: 'Apple Notes',
     ...initialAnswers,
   })
+
+  // Keyboard escape listener to close modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose?.()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
 
   const currentQ = STRATEGIC_QUESTIONS[activeStep] || STRATEGIC_QUESTIONS[0]
   const isLast = activeStep === STRATEGIC_QUESTIONS.length - 1
@@ -273,95 +271,103 @@ export default function DiscoveryDrawer({
   }
 
   return (
-    <div className="relative mx-auto my-8 max-w-4xl px-2 sm:px-4 animate-toast">
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/60 backdrop-blur-md overflow-y-auto animate-fade-in"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose?.()
+      }}
+    >
       <div
-        className="skeuo-chassis relative overflow-hidden rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-300/80"
+        className="skeuo-chassis relative w-full max-w-3xl overflow-hidden rounded-3xl p-6 sm:p-8 bg-[#f8fafc] text-slate-900 border-2 border-slate-200/90 shadow-2xl my-auto"
         style={{
-          background: 'linear-gradient(180deg, #181028 0%, #0e071a 100%)',
-          boxShadow: '0 20px 50px -10px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.15)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
         }}
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Header telemetry & LED */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+        {/* Header Telemetry & LED Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 led-glow-emerald animate-pulse" />
-              <span>Diagnostic Console · 3+ Regenerations</span>
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-[10.5px] font-mono text-emerald-800 font-bold uppercase tracking-wider shadow-xs">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 led-glow-emerald" />
+              <span>Diagnostic Console · 7 Steps</span>
             </div>
-            <span className="hidden sm:inline text-xs font-mono text-slate-400">
-              Question {activeStep + 1} of {STRATEGIC_QUESTIONS.length}
+            <span className="hidden sm:inline text-xs font-mono font-bold text-slate-500">
+              Step {activeStep + 1} of {STRATEGIC_QUESTIONS.length}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={onDismiss}
-              title="Dismiss diagnostic"
-              className="key-socket-dark !p-[1px] !rounded-lg text-slate-400 hover:text-white cursor-pointer"
+              onClick={onClose}
+              title="Close modal"
+              className="key-socket !p-[1.5px] !rounded-xl text-slate-600 hover:text-slate-950 cursor-pointer"
             >
-              <div className="key-cap-dark !rounded-md p-1.5">
+              <div className="key-cap !rounded-lg p-2">
                 <X weight="bold" className="text-sm" />
               </div>
             </button>
           </div>
         </div>
 
-        {/* Stepper keycap rail */}
-        <div className="mt-4 flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
+        {/* Stepper Keycap Rail */}
+        <div className="mt-5 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
           {STRATEGIC_QUESTIONS.map((q, idx) => {
             const isActive = idx === activeStep
             const isAnswered = Boolean(answers[q.id])
             return (
-              <button
-                key={q.id}
-                type="button"
-                onClick={() => {
-                  try { playMechanicalClick('click') } catch {}
-                  setActiveStep(idx)
-                }}
-                className={`flex-1 min-w-[38px] py-1.5 px-2 rounded-xl text-center font-mono text-[11px] font-bold transition-all cursor-pointer border ${
-                  isActive
-                    ? 'bg-blue-600 text-white border-blue-400 shadow-md ring-1 ring-blue-300'
-                    : isAnswered
-                    ? 'bg-slate-800/80 text-emerald-300 border-emerald-500/40'
-                    : 'bg-slate-900/60 text-slate-400 border-white/5 hover:border-white/20 hover:text-white'
-                }`}
-                title={q.title}
-              >
-                <span>{q.num}</span>
-              </button>
+              <div key={q.id} className="key-socket !p-[1.5px] !rounded-xl flex-1 min-w-[38px]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    try { playMechanicalClick('click') } catch {}
+                    setActiveStep(idx)
+                  }}
+                  className={`key-cap w-full py-2 rounded-lg text-center font-mono text-xs font-bold transition-all cursor-pointer ${
+                    isActive
+                      ? 'key-cap-cobalt !text-white shadow-md'
+                      : isAnswered
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
+                      : 'text-slate-700 hover:text-slate-950'
+                  }`}
+                  title={q.title}
+                >
+                  <span>{q.num}</span>
+                </button>
+              </div>
             )
           })}
         </div>
 
         {/* Question Header */}
-        <div className="mt-5">
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide">
+        <div className="mt-6">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-blue-700 uppercase tracking-wide">
             {currentQ.icon && <currentQ.icon weight="bold" className="text-sm" />}
-            <span>Step {currentQ.num} // {currentQ.type.replace('_', ' ')}</span>
+            <span>Step {currentQ.num} // {currentQ.id.toUpperCase()}</span>
           </div>
-          <h3 className="mt-1 font-display text-lg sm:text-xl font-bold uppercase tracking-tight text-white">
+          <h3 className="mt-1 font-display text-xl sm:text-2xl font-bold uppercase tracking-tight text-slate-900">
             {currentQ.title}
           </h3>
-          <p className="mt-1 text-xs sm:text-sm text-slate-300">
+          <p className="mt-1 text-xs sm:text-sm font-sans text-slate-600">
             {currentQ.subtitle}
           </p>
         </div>
 
-        {/* Question Content Body by Type */}
-        <div className="mt-6 min-h-[160px]">
+        {/* Question Content Body */}
+        <div className="mt-6 min-h-[170px]">
           {/* TYPE 1: Spectrum Slider */}
           {currentQ.type === 'slider' && (
-            <div className="key-socket-dark !p-5 !rounded-2xl bg-black/40">
-              <div className="flex items-center justify-between text-xs font-mono font-bold text-slate-300 mb-3">
+            <div className="key-socket !p-6 !rounded-2xl bg-slate-100 border border-slate-200/80 shadow-inner">
+              <div className="flex items-center justify-between text-xs font-mono font-bold text-slate-800 mb-3">
                 <div className="text-left">
-                  <span className="text-cyan-400">{currentQ.leftLabel}</span>
-                  <span className="block text-[10px] text-slate-400 font-normal">e.g. {currentQ.leftExample}</span>
+                  <span className="text-blue-700 font-bold">{currentQ.leftLabel}</span>
+                  <span className="block text-[11px] text-slate-500 font-normal">e.g. {currentQ.leftExample}</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-amber-400">{currentQ.rightLabel}</span>
-                  <span className="block text-[10px] text-slate-400 font-normal">e.g. {currentQ.rightExample}</span>
+                  <span className="text-amber-700 font-bold">{currentQ.rightLabel}</span>
+                  <span className="block text-[11px] text-slate-500 font-normal">e.g. {currentQ.rightExample}</span>
                 </div>
               </div>
 
@@ -374,20 +380,20 @@ export default function DiscoveryDrawer({
                   const val = Number(e.target.value)
                   setAnswers((prev) => ({ ...prev, personality: val }))
                 }}
-                className="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                className="w-full h-3 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-blue-600"
               />
 
-              <div className="mt-3 flex items-center justify-between font-mono text-[11px] text-slate-400">
+              <div className="mt-3 flex items-center justify-between font-mono text-[11px] text-slate-500">
                 <span>0% (Minimal)</span>
-                <span className="font-bold text-white px-2 py-0.5 rounded bg-slate-800 border border-white/10">
-                  {answers.personality ?? 50}% Dial
+                <span className="font-bold text-slate-900 px-3 py-0.5 rounded-full bg-white border border-slate-300 shadow-xs">
+                  {answers.personality ?? 50}% Dial Position
                 </span>
                 <span>100% (Expressive)</span>
               </div>
             </div>
           )}
 
-          {/* TYPE 2: Visual / Material Cards */}
+          {/* TYPE 2 & 6: Visual Cards / Persona Cards */}
           {currentQ.type === 'cards' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {currentQ.options.map((opt) => {
@@ -400,19 +406,19 @@ export default function DiscoveryDrawer({
                       try { playMechanicalClick('click') } catch {}
                       setAnswers((prev) => ({ ...prev, [currentQ.id]: opt.id }))
                     }}
-                    className={`p-4 rounded-2xl text-left transition-all cursor-pointer border ${
+                    className={`p-4 rounded-2xl text-left transition-all cursor-pointer border shadow-xs ${
                       isSelected
-                        ? 'bg-slate-800/90 border-blue-400 ring-2 ring-blue-500/50 shadow-lg'
-                        : 'bg-black/30 border-white/10 hover:border-white/20 hover:bg-slate-900/50'
+                        ? 'bg-blue-50/90 border-blue-500 ring-2 ring-blue-400 shadow-sm'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-sans text-sm font-bold text-white">{opt.title}</span>
+                      <span className="font-sans text-sm font-bold text-slate-900">{opt.title}</span>
                       <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full font-bold border ${opt.accent}`}>
                         {opt.badge}
                       </span>
                     </div>
-                    <p className="mt-1.5 text-xs text-slate-300 leading-relaxed">{opt.desc}</p>
+                    <p className="mt-1.5 text-xs text-slate-600 leading-relaxed">{opt.desc}</p>
                   </button>
                 )
               })}
@@ -430,17 +436,17 @@ export default function DiscoveryDrawer({
                     key={opt.id}
                     type="button"
                     onClick={() => toggleMultiChip(opt.id, currentQ.maxSelect)}
-                    className={`p-3.5 rounded-2xl text-left transition-all cursor-pointer border flex-1 min-w-[240px] ${
+                    className={`p-3.5 rounded-2xl text-left transition-all cursor-pointer border flex-1 min-w-[240px] shadow-xs ${
                       isSelected
-                        ? 'bg-blue-950/70 border-blue-400 ring-1 ring-blue-400 text-white shadow-md'
-                        : 'bg-black/30 border-white/10 text-slate-300 hover:border-white/20 hover:text-white'
+                        ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-400 text-blue-950'
+                        : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:text-slate-950'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-sans text-xs font-bold">{opt.label}</span>
-                      {isSelected && <Check weight="bold" className="text-cyan-300 text-sm shrink-0" />}
+                      {isSelected && <Check weight="bold" className="text-blue-600 text-sm shrink-0" />}
                     </div>
-                    <span className="block mt-1 font-mono text-[10px] text-slate-400">
+                    <span className="block mt-1 font-mono text-[10px] text-slate-500">
                       e.g. {opt.example}
                     </span>
                   </button>
@@ -462,20 +468,20 @@ export default function DiscoveryDrawer({
                       try { playMechanicalClick('click') } catch {}
                       setAnswers((prev) => ({ ...prev, sound: opt.id }))
                     }}
-                    className={`p-4 rounded-2xl text-left transition-all cursor-pointer border ${
+                    className={`p-4 rounded-2xl text-left transition-all cursor-pointer border shadow-xs ${
                       isSelected
-                        ? 'bg-blue-950/80 border-blue-400 ring-2 ring-blue-500/40 shadow-lg text-white'
-                        : 'bg-black/30 border-white/10 text-slate-300 hover:border-white/20 hover:text-white'
+                        ? 'bg-blue-50 border-blue-500 ring-2 ring-blue-400 text-blue-950'
+                        : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:text-slate-950'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-sans text-xs font-bold">{opt.title}</span>
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-white/10 font-bold">
+                      <span className="font-sans text-xs font-bold text-slate-900">{opt.title}</span>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-bold">
                         {opt.badge}
                       </span>
                     </div>
-                    <p className="mt-1.5 font-mono text-[11px] text-cyan-300">{opt.detail}</p>
-                    <span className="block mt-1 font-mono text-[10px] text-slate-400">e.g. {opt.example}</span>
+                    <p className="mt-1.5 font-mono text-[11px] text-blue-700 font-semibold">{opt.detail}</p>
+                    <span className="block mt-1 font-mono text-[10px] text-slate-500">e.g. {opt.example}</span>
                   </button>
                 )
               })}
@@ -493,18 +499,18 @@ export default function DiscoveryDrawer({
                     key={opt.id}
                     type="button"
                     onClick={() => toggleChecklist(opt.id)}
-                    className={`p-3.5 rounded-2xl text-left transition-all cursor-pointer border flex items-center justify-between gap-3 ${
+                    className={`p-3.5 rounded-2xl text-left transition-all cursor-pointer border flex items-center justify-between gap-3 shadow-xs ${
                       isSelected
-                        ? 'bg-rose-950/40 border-rose-500/70 text-rose-200 ring-1 ring-rose-500/50'
-                        : 'bg-black/30 border-white/10 text-slate-300 hover:border-white/20 hover:text-white'
+                        ? 'bg-rose-50 border-rose-400 text-rose-950 ring-1 ring-rose-400'
+                        : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:text-slate-950'
                     }`}
                   >
                     <div>
                       <span className="font-sans text-xs font-semibold">{opt.label}</span>
-                      <span className="block mt-0.5 font-mono text-[9px] text-slate-400 font-bold">{opt.tag}</span>
+                      <span className="block mt-0.5 font-mono text-[9px] text-slate-500 font-bold">{opt.tag}</span>
                     </div>
                     <div className={`h-5 w-5 rounded-md border flex items-center justify-center shrink-0 ${
-                      isSelected ? 'bg-rose-600 border-rose-400 text-white' : 'border-slate-600 bg-slate-900'
+                      isSelected ? 'bg-rose-600 border-rose-500 text-white' : 'border-slate-300 bg-white'
                     }`}>
                       {isSelected && <Check weight="bold" className="text-xs" />}
                     </div>
@@ -527,98 +533,63 @@ export default function DiscoveryDrawer({
                       try { playMechanicalClick('click') } catch {}
                       setAnswers((prev) => ({ ...prev, domainStrategy: opt.id }))
                     }}
-                    className={`p-3.5 rounded-2xl text-left transition-all cursor-pointer border ${
+                    className={`p-4 rounded-2xl text-left transition-all cursor-pointer border shadow-xs ${
                       isSelected
-                        ? 'bg-blue-950/80 border-blue-400 ring-1 ring-blue-400 text-white'
-                        : 'bg-black/30 border-white/10 text-slate-300 hover:border-white/20 hover:text-white'
+                        ? 'bg-blue-50 border-blue-500 ring-2 ring-blue-400 text-blue-950'
+                        : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:text-slate-950'
                     }`}
                   >
-                    <span className="font-sans text-xs font-bold text-white block">{opt.title}</span>
-                    <span className="mt-1 font-mono text-[11px] text-slate-400 block">{opt.desc}</span>
+                    <span className="font-sans text-xs font-bold text-slate-900 block">{opt.title}</span>
+                    <span className="mt-1 font-mono text-[11px] text-slate-600 block">{opt.desc}</span>
                   </button>
                 )
               })}
             </div>
           )}
-
-          {/* TYPE 8: Contrast Mad-Lib */}
-          {currentQ.type === 'contrast_madlib' && (
-            <div className="key-socket-dark !p-5 !rounded-2xl bg-black/40 space-y-4">
-              <p className="font-sans text-xs sm:text-sm text-slate-300">
-                Complete the contrast anchor statement to sharpen the generated positioning:
-              </p>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-[10px] font-mono uppercase text-cyan-400 font-bold mb-1">
-                    1. As capable & powerful as:
-                  </label>
-                  <input
-                    type="text"
-                    value={answers.contrastPowerful || ''}
-                    onChange={(e) => setAnswers((prev) => ({ ...prev, contrastPowerful: e.target.value }))}
-                    placeholder="e.g. Bloomberg, AWS, Salesforce, Oxford..."
-                    className="w-full rounded-xl border border-white/20 bg-slate-900/90 px-3.5 py-2 font-mono text-xs text-white focus:border-cyan-400 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono uppercase text-amber-400 font-bold mb-1">
-                    2. But as simple & warm to use as:
-                  </label>
-                  <input
-                    type="text"
-                    value={answers.contrastSimple || ''}
-                    onChange={(e) => setAnswers((prev) => ({ ...prev, contrastSimple: e.target.value }))}
-                    placeholder="e.g. Apple Notes, Linear, Notion, a local cafe..."
-                    className="w-full rounded-xl border border-white/20 bg-slate-900/90 px-3.5 py-2 font-mono text-xs text-white focus:border-amber-400 focus:outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Footer Hardware Controls */}
-        <div className="mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
           <div className="flex items-center gap-2">
             {activeStep > 0 && (
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="key-socket-dark !p-[1px] !rounded-xl cursor-pointer"
-              >
-                <div className="key-cap-dark !rounded-lg px-3 py-2 font-mono text-xs font-bold text-slate-300 flex items-center gap-1.5">
+              <div className="key-socket !p-[1.5px] !rounded-xl">
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  className="key-cap !rounded-lg px-3.5 py-2 font-mono text-xs font-bold text-slate-700 hover:text-slate-950 flex items-center gap-1.5 cursor-pointer"
+                >
                   <ArrowLeft weight="bold" />
                   <span>Previous</span>
-                </div>
-              </button>
+                </button>
+              </div>
             )}
 
             {!isLast && (
-              <button
-                type="button"
-                onClick={handleNext}
-                className="key-socket-dark !p-[1px] !rounded-xl cursor-pointer"
-              >
-                <div className="key-cap-dark !rounded-lg px-3 py-2 font-mono text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+              <div className="key-socket !p-[1.5px] !rounded-xl">
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="key-cap !rounded-lg px-4 py-2 font-mono text-xs font-bold text-blue-700 hover:text-blue-900 flex items-center gap-1.5 cursor-pointer"
+                >
                   <span>Next Step</span>
                   <ArrowRight weight="bold" />
-                </div>
-              </button>
+                </button>
+              </div>
             )}
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={handleApply}
-              className="key-socket-dark !p-[2px] !rounded-2xl cursor-pointer shadow-lg"
-            >
-              <div className="key-cap-cobalt !rounded-xl px-5 py-2.5 font-display text-xs sm:text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2">
+          <div className="flex items-center gap-2.5 ml-auto">
+            <div className="key-socket !p-[2px] !rounded-2xl shadow-md">
+              <button
+                type="button"
+                onClick={handleApply}
+                className="key-cap-cobalt !rounded-xl px-5 py-2.5 font-display text-xs sm:text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2 cursor-pointer shadow-sm hover:brightness-110 active:scale-95"
+              >
                 <Lightning weight="fill" className="text-amber-300 text-base" />
                 <span>Apply Diagnostic & Synthesize</span>
                 <ArrowRight weight="bold" />
-              </div>
-            </button>
+              </button>
+            </div>
           </div>
         </div>
       </div>
