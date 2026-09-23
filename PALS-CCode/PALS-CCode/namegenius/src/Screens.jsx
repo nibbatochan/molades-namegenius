@@ -33,7 +33,7 @@ function Shell({
   return (
     <div className="min-h-screen bg-hardware-canvas text-slate-900 selection:bg-blue-600 selection:text-white pb-24">
       {/* Sticky top navigation bar */}
-      <div className="sticky top-0 z-30 pt-2 px-4 sm:px-6">
+      <div className="sticky top-0 z-30 pt-2 px-4 sm:px-8 lg:px-12">
         <AppNavbar
           activeView={activeView}
           onNavigate={onNavigate}

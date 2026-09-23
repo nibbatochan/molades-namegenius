@@ -267,7 +267,7 @@ export default function Results({
   return (
     <div className="min-h-screen bg-hardware-canvas text-slate-900 selection:bg-blue-600 selection:text-white pb-24">
       {/* Top Sticky Navigation Bar */}
-      <div className="sticky top-0 z-30 pt-2 px-4 sm:px-6">
+      <div className="sticky top-0 z-30 pt-2 px-4 sm:px-8 lg:px-12">
         <AppNavbar
           activeView="results"
           onNavigate={onNavigate}
@@ -336,115 +336,124 @@ export default function Results({
             </div>
           </div>
 
-          {/* Compact Variations & Exact Keyword Tray (Horizontal, space-efficient) */}
+          {/* Structured Exact & High-Converting Variations Tray */}
           {hasKeyword && cleanSeed.length > 0 && (
-            <div className="mt-3.5 pt-3 border-t border-purple-400/30">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-purple-200">
-                    Exact & Variations
+            <div className="mt-4 pt-3.5 border-t border-purple-400/30 space-y-2.5">
+              {/* Row 1: Exact Domain Matches */}
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-purple-200">
+                    Exact Matches
+                  </span>
+                  <span className="font-mono text-[9.5px] text-purple-300/70">
+                    Root: "{cleanSeed}"
                   </span>
                 </div>
-                <span className="font-mono text-[9.5px] text-purple-300/70">
-                  {exactDomains.length + brandHackDomains.length} variants for "{cleanSeed}"
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {exactDomains.map((domain) => {
+                    const status = registry[domain] || 'checking'
+                    const open = status === 'available'
+                    return (
+                      <div
+                        key={domain}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950/90 border border-amber-400/50 px-2.5 py-1 text-[11px] font-mono shadow-sm"
+                      >
+                        <span
+                          className={`h-2 w-2 rounded-full shrink-0 ${
+                            open
+                              ? 'bg-emerald-400 led-glow-emerald'
+                              : status === 'taken'
+                              ? 'bg-rose-400'
+                              : 'bg-amber-400 animate-pulse'
+                          }`}
+                        />
+                        <span className="font-black text-amber-200">{domain}</span>
+                        {open ? (
+                          <a
+                            href={`https://www.namecheap.com/domains/registration/results/?domain=${domain}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ml-1 inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-300 hover:text-emerald-100 uppercase"
+                          >
+                            Buy ↗
+                          </a>
+                        ) : (
+                          <span className="ml-1 text-[9px] text-slate-400 font-semibold uppercase">
+                            {status === 'taken' ? 'Taken' : '…'}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => handleCopy(domain, e)}
+                          className="ml-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                          title="Copy domain"
+                        >
+                          {copiedDomain === domain ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
-              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-thin scrollbar-thumb-purple-500/30">
-                {/* Exact matches first */}
-                {exactDomains.map((domain) => {
-                  const status = registry[domain] || 'checking'
-                  const open = status === 'available'
-                  return (
-                    <div
-                      key={domain}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950/80 border border-amber-400/40 px-2 py-1 text-[11px] font-mono shadow-xs shrink-0"
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full shrink-0 ${
-                          open
-                            ? 'bg-emerald-400 led-glow-emerald'
-                            : status === 'taken'
-                            ? 'bg-rose-400'
-                            : 'bg-amber-400 animate-pulse'
-                        }`}
-                      />
-                      <span className="font-bold text-amber-200">{domain}</span>
-                      {open ? (
-                        <a
-                          href={`https://www.namecheap.com/domains/registration/results/?domain=${domain}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-0.5 inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-300 hover:text-emerald-100 uppercase"
-                        >
-                          Buy ↗
-                        </a>
-                      ) : (
-                        <span className="ml-0.5 text-[9px] text-slate-400 font-semibold uppercase">
-                          {status === 'taken' ? 'Taken' : '…'}
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={(e) => handleCopy(domain, e)}
-                        className="ml-0.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                        title="Copy domain"
-                      >
-                        {copiedDomain === domain ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
-                      </button>
-                    </div>
-                  )
-                })}
 
-                {/* Prefix & Suffix hacks */}
-                {brandHackDomains.map((domain) => {
-                  const status = registry[domain] || 'checking'
-                  const open = status === 'available'
-                  return (
-                    <div
-                      key={domain}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900/80 border border-purple-400/25 px-2 py-1 text-[11px] font-mono shadow-xs shrink-0"
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full shrink-0 ${
-                          open
-                            ? 'bg-emerald-400 led-glow-emerald'
-                            : status === 'taken'
-                            ? 'bg-rose-400'
-                            : 'bg-amber-400 animate-pulse'
-                        }`}
-                      />
-                      <span className="font-medium text-white">{domain}</span>
-                      {open ? (
-                        <a
-                          href={`https://www.namecheap.com/domains/registration/results/?domain=${domain}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-0.5 inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-300 hover:text-emerald-100 uppercase"
-                        >
-                          Buy ↗
-                        </a>
-                      ) : (
-                        <span className="ml-0.5 text-[9px] text-slate-400 font-semibold uppercase">
-                          {status === 'taken' ? 'Taken' : '…'}
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={(e) => handleCopy(domain, e)}
-                        className="ml-0.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                        title="Copy domain"
+              {/* Row 2: Popular Brand Variations & Prefixes (Clean Grid/Wrap) */}
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="font-mono text-[10px] font-extrabold uppercase tracking-wider text-purple-200">
+                    High-Converting Brand Variations ({brandHackDomains.length})
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5 max-h-[108px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-purple-500/40">
+                  {brandHackDomains.map((domain) => {
+                    const status = registry[domain] || 'checking'
+                    const open = status === 'available'
+                    return (
+                      <div
+                        key={domain}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900/90 border border-purple-400/30 px-2 py-0.5 text-[10.5px] font-mono shadow-xs"
                       >
-                        {copiedDomain === domain ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
-                      </button>
-                    </div>
-                  )
-                })}
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full shrink-0 ${
+                            open
+                              ? 'bg-emerald-400'
+                              : status === 'taken'
+                              ? 'bg-rose-400/80'
+                              : 'bg-amber-400'
+                          }`}
+                        />
+                        <span className="font-medium text-slate-100">{domain}</span>
+                        {open ? (
+                          <a
+                            href={`https://www.namecheap.com/domains/registration/results/?domain=${domain}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ml-0.5 inline-flex items-center gap-0.5 text-[8.5px] font-bold text-emerald-300 hover:text-emerald-100 uppercase"
+                          >
+                            Buy ↗
+                          </a>
+                        ) : (
+                          <span className="ml-0.5 text-[8.5px] text-slate-400 font-semibold uppercase">
+                            {status === 'taken' ? 'Taken' : '…'}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => handleCopy(domain, e)}
+                          className="ml-0.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                          title="Copy domain"
+                        >
+                          {copiedDomain === domain ? <Check size={10} className="text-emerald-400" /> : <Copy size={10} />}
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           )}
 
-          {/* Quick Filter Pill Rack (Scaled down by 30% with expanded options) */}
-          <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-2.5 border-t border-purple-400/30">
+          {/* Quick Filter Pill Rack */}
+          <div className="mt-3.5 flex flex-wrap items-center gap-1.5 pt-3 border-t border-purple-400/30">
             <span className="font-mono text-[10.5px] font-black text-purple-200 mr-1 uppercase tracking-wider">Filter:</span>
             {[
               { id: 'all', label: `All (${allItems.length})` },
@@ -477,7 +486,7 @@ export default function Results({
               )
             })}
 
-            {/* Diagnostic Console Button — Bright Amber/Cobalt Keycap */}
+            {/* Diagnostic Console Button — Black Background with White Text */}
             <div className="key-socket-dark !p-[1.5px] !rounded-lg ml-auto">
               <button
                 type="button"
@@ -486,16 +495,12 @@ export default function Results({
                   setShowDiscoveryDrawer((prev) => !prev)
                 }}
                 title="Open 7-question strategic brand discovery diagnostic"
-                className={`key-cap !rounded-md px-3.5 py-1.5 font-mono text-[11px] font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-sm ${
-                  showDiscoveryDrawer
-                    ? 'bg-amber-400 text-slate-950 ring-2 ring-amber-300'
-                    : generation >= 3
-                    ? 'bg-[#fae127] text-slate-950 ring-2 ring-amber-400 hover:brightness-105 animate-pulse'
-                    : 'bg-indigo-950/90 text-amber-300 border border-amber-400/50 hover:bg-amber-400 hover:text-slate-950'
+                className={`key-cap !rounded-md px-3.5 py-1.5 font-mono text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-black text-white hover:bg-slate-900 border border-slate-700/80 active:scale-95 shadow-md ${
+                  showDiscoveryDrawer ? 'ring-2 ring-slate-400' : ''
                 }`}
               >
-                <SlidersHorizontal weight="bold" className="text-xs shrink-0" />
-                <span>{generation >= 3 ? '★ Tune Preferences (3+ Rerolls)' : 'Tune Preferences'}</span>
+                <SlidersHorizontal weight="bold" className="text-xs shrink-0 text-white" />
+                <span className="text-white font-bold">{generation >= 3 ? 'Tune Preferences (3+ Rerolls)' : 'Tune Preferences'}</span>
               </button>
             </div>
           </div>

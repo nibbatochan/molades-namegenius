@@ -3332,7 +3332,7 @@ export default function TestingLab({ onNavigate, savedCount = 0, compareCount = 
       <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
 
       {/* Top Sticky Navigation Bar with Unified AppNavbar */}
-      <div className="sticky top-0 z-30 pt-2 px-4 sm:px-6 bg-slate-950/80 backdrop-blur-md pb-2 border-b border-slate-800">
+      <div className="sticky top-0 z-30 pt-2 px-4 sm:px-8 lg:px-12 bg-slate-950/80 backdrop-blur-md pb-2 border-b border-slate-800">
         <AppNavbar
           activeView="lab"
           onNavigate={onNavigate}

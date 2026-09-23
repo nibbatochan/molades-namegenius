@@ -41,19 +41,23 @@ export default function AppNavbar({
 
   return (
     <>
-      <header className="z-30 w-full max-w-7xl mx-auto flex items-center justify-between shrink-0 bg-[#fae127] border-2 border-slate-950 p-1.5 sm:p-2 rounded-2xl shadow-md select-none">
+      <header className="z-30 w-full max-w-7xl mx-auto flex items-center justify-between shrink-0 bg-[#fae127] border-2 border-slate-950 px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 rounded-2xl shadow-md select-none">
         {/* Left: Brand Logo & Title */}
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => handleNavClick('brief')}
-            className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-85 text-left"
+            className="group flex items-center gap-2.5 cursor-pointer transition-opacity hover:opacity-90 text-left"
             title="NameGenius Home"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-950 text-sm font-black text-white shadow-md border border-slate-800">
-              N
+            <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-slate-950 p-1.5 shadow-md border border-slate-800 transition-transform group-hover:scale-105">
+              <img
+                src="/logo-white.png"
+                alt="NameGenius Logo"
+                className="h-full w-full object-contain"
+              />
             </span>
-            <span className="font-display text-xl sm:text-2xl font-bold tracking-tight text-slate-950 uppercase">
+            <span className="font-display text-xl sm:text-2xl font-black tracking-tight text-slate-950 uppercase">
               NameGenius
             </span>
           </button>
@@ -204,8 +208,12 @@ export default function AppNavbar({
             {/* Pinned Modal Header — Edge-to-edge with Dedicated Padding & Centering */}
             <div className="shrink-0 px-6 py-4 sm:px-8 bg-white border-b border-slate-200 flex items-center justify-between z-20">
               <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-950 text-xs font-black text-white shadow-md border border-slate-800">
-                  N
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-950 p-1.5 shadow-md border border-slate-800">
+                  <img
+                    src="/logo-white.png"
+                    alt="NameGenius Logo"
+                    className="h-full w-full object-contain"
+                  />
                 </span>
                 <h3 className="font-display text-2xl font-normal uppercase tracking-tight text-slate-950 leading-none">
                   How NameGenius Works

@@ -54,7 +54,7 @@ export default function Brief({
       />
 
       {/* FULL-SCREEN 100vh HERO SECTION ON LOAD */}
-      <section className="relative min-h-[100dvh] h-screen flex flex-col justify-between pt-2 sm:pt-3 pb-2 sm:pb-3 px-4 sm:px-6 lg:px-8 overflow-visible select-none">
+      <section className="relative min-h-[100dvh] h-screen flex flex-col justify-between pt-2 sm:pt-3 pb-2 sm:pb-3 px-4 sm:px-8 lg:px-12 overflow-visible select-none">
         {/* Top Navigation Bar: Unified Tactile Yellow AppNavbar */}
         <div className="w-full shrink-0 mb-1 sm:mb-2">
           <AppNavbar
