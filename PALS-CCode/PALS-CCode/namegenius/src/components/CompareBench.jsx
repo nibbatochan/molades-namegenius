@@ -24,7 +24,7 @@ export default function CompareBench({ items = [], onRemove, onClear, selectedTl
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-serif text-lg font-bold text-white">
+                <span className="font-display text-lg font-normal uppercase tracking-tight text-white">
                   Compare Names
                 </span>
                 <span className="rounded bg-cyan-500/20 border border-cyan-400/30 px-2 py-0.5 font-mono text-xs font-semibold text-cyan-300">
@@ -71,7 +71,7 @@ export default function CompareBench({ items = [], onRemove, onClear, selectedTl
                   </div>
 
                   <div className="mt-2 flex items-center justify-between gap-3">
-                    <h4 className="font-serif text-3xl font-black text-white tracking-tight">
+                    <h4 className="font-display text-2xl sm:text-3xl font-normal uppercase text-white tracking-tight">
                       {item.name}
                     </h4>
                     <button
@@ -133,19 +133,32 @@ export default function CompareBench({ items = [], onRemove, onClear, selectedTl
                   </div>
                 </div>
 
-                <div className="mt-5 border-t border-slate-800 pt-3 flex items-center justify-between">
-                  <span className="font-sans text-xs text-slate-400">
+                <div className="mt-5 border-t border-slate-800 pt-3 flex items-center justify-between gap-2">
+                  <span className="font-sans text-xs text-slate-400 truncate">
                     Target: <strong className="text-white font-mono">{item.slug}{selectedTld}</strong>
                   </span>
-                  <a
-                    href={`https://porkbun.com/checkout/search?q=${item.slug}${selectedTld}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="skeuo-button-primary inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-sans text-xs font-semibold"
-                  >
-                    <span>Register</span>
-                    <ArrowSquareOut weight="bold" />
-                  </a>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <a
+                      href={`https://dash.cloudflare.com/domains/register?query=${encodeURIComponent(`${item.slug}${selectedTld}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="skeuo-push-btn inline-flex items-center gap-1 rounded-lg px-2.5 py-1 font-mono text-[11px] font-bold text-slate-200 bg-slate-800 hover:bg-slate-700"
+                      title="Register at-cost on Cloudflare"
+                    >
+                      <span>Cloudflare</span>
+                      <ArrowSquareOut weight="bold" />
+                    </a>
+                    <a
+                      href={`https://porkbun.com/checkout/search?q=${encodeURIComponent(`${item.slug}${selectedTld}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="skeuo-push-btn inline-flex items-center gap-1 rounded-lg px-2.5 py-1 font-mono text-[11px] font-bold text-slate-200 bg-slate-800 hover:bg-slate-700"
+                      title="Register on Porkbun"
+                    >
+                      <span>Porkbun</span>
+                      <ArrowSquareOut weight="bold" />
+                    </a>
+                  </div>
                 </div>
               </div>
             )

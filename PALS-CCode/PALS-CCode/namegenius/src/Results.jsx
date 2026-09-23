@@ -1,9 +1,12 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import TactileCard from './components/TactileCard'
 import CompareBench from './components/CompareBench'
 import DiscoveryDrawer from './components/DiscoveryDrawer'
+import AppNavbar from './components/AppNavbar'
 import { generateNames, CINEMATIC_ARCHETYPES } from './generator'
-import { QUESTIONS } from './data'
+import { fetchAINames } from './utils/geminiClient'
+import { QUESTIONS, TLD_ORDER } from './data'
+import { fetchAvailability } from './utils/availabilityClient'
 import {
   ArrowsClockwise,
   SlidersHorizontal,
@@ -18,6 +21,8 @@ import {
   ArrowUpRight,
   Copy,
   Check,
+  Robot,
+  Warning,
 } from '@phosphor-icons/react'
 
 export default function Results({
@@ -25,17 +30,102 @@ export default function Results({
   saved = [],
   compareSel = [],
   generation = 0,
+  resultsCache = null,
+  onUpdateResultsCache,
   onRegenerate,
   onToggleSaved,
   onToggleCompare,
   onNewSearch,
   onNavigate,
 }) {
-  const [filter, setFilter] = useState('all') // 'all', 'com', 'ai', 'short', 'kiki', 'bouba'
-  const [answers, setAnswers] = useState({})
+  const briefKey = useMemo(() => JSON.stringify(brief || {}), [brief])
+  const isCacheValid = resultsCache && resultsCache.briefKey === briefKey && resultsCache.generation === generation
+
+  const [filters, setFilters] = useState(isCacheValid?.filters || ['all'])
+  const [answers, setAnswers] = useState(isCacheValid?.answers || {})
   const [dismissedQuestion, setDismissedQuestion] = useState(false)
   const [copiedDomain, setCopiedDomain] = useState(null)
   const [activeStem, setActiveStem] = useState(null)
+  const [registry, setRegistry] = useState(isCacheValid?.registry || {})
+
+  // AI generation state (read from cache if navigating back to results)
+  const [aiItems, setAiItems] = useState(isCacheValid ? resultsCache.aiItems : null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState(isCacheValid ? resultsCache.aiError : null)
+  const fetchIdRef = useRef(0)
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    if (document.documentElement) document.documentElement.scrollTop = 0
+    if (document.body) document.body.scrollTop = 0
+  }, [generation])
+
+  // Trigger Gemini/Groq fetch only on generation bump or if not cached
+  useEffect(() => {
+    if (!brief) return
+    if (
+      resultsCache &&
+      resultsCache.briefKey === briefKey &&
+      resultsCache.generation === generation &&
+      (resultsCache.aiItems || resultsCache.aiError)
+    ) {
+      // Results already cached from previous view — preserve without re-fetching
+      return
+    }
+
+    const id = ++fetchIdRef.current
+    setAiLoading(true)
+    setAiError(null)
+    setAiItems(null)
+
+    fetchAINames({ ...brief, answers })
+      .then((names) => {
+        if (fetchIdRef.current !== id) return // stale
+        setAiItems(names)
+        setAiLoading(false)
+        onUpdateResultsCache?.((prev) => ({
+          ...prev,
+          briefKey,
+          generation,
+          aiItems: names,
+          aiError: null,
+          registry: prev?.registry || {},
+          filters,
+          answers,
+        }))
+      })
+      .catch((err) => {
+        if (fetchIdRef.current !== id) return
+        const isTimeout = err?.name === 'AbortError' || err?.message?.includes('timeout')
+        const errType = isTimeout ? 'timeout' : 'fallback'
+        setAiError(errType)
+        setAiLoading(false)
+        setAiItems(null) // will fall back to local generator
+        onUpdateResultsCache?.((prev) => ({
+          ...prev,
+          briefKey,
+          generation,
+          aiItems: null,
+          aiError: errType,
+          registry: prev?.registry || {},
+          filters,
+          answers,
+        }))
+      })
+  }, [briefKey, generation]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleToggleFilter = (filterId) => {
+    if (filterId === 'all') {
+      setFilters(['all'])
+      return
+    }
+    setFilters((prev) => {
+      const withoutAll = prev.filter((x) => x !== 'all')
+      const exists = withoutAll.includes(filterId)
+      const next = exists ? withoutAll.filter((x) => x !== filterId) : [...withoutAll, filterId]
+      return next.length === 0 ? ['all'] : next
+    })
+  }
 
   const handleCopy = (domain, e) => {
     e?.stopPropagation()
@@ -45,53 +135,104 @@ export default function Results({
     setTimeout(() => setCopiedDomain(null), 2000)
   }
 
-  // Compute brand names using the enhanced generator algorithm
-  const allItems = useMemo(() => {
+  // Local fallback: computed deterministically
+  const localItems = useMemo(() => {
     return generateNames(brief, generation, answers)
   }, [brief, generation, answers])
 
-  // Exact Match & Keyword Diagnostic data - only computed if keyword exists
+  // Primary source: AI results when available, local generator as silent fallback
+  const allItems = aiItems && aiItems.length > 0 ? aiItems : localItems
+
   const hasKeyword = Boolean(brief?.name && brief.name.trim().length > 0)
   const cleanSeed = hasKeyword ? brief.name.trim().toLowerCase().replace(/[^a-z0-9]/g, '') : ''
 
-  const exactDomainStatus = useMemo(() => {
+  const exactDomains = useMemo(() => {
+    if (!cleanSeed) return []
+    return ['.com', '.io', '.ai', '.co'].map((ext) => `${cleanSeed}${ext}`)
+  }, [cleanSeed])
+
+  // Rich set of brand hacks and prefix/suffix variations
+  const brandHackDomains = useMemo(() => {
     if (!cleanSeed) return []
     return [
-      { domain: `${cleanSeed}.com`, available: cleanSeed.length > 7 },
-      { domain: `${cleanSeed}.io`, available: true },
-      { domain: `${cleanSeed}.ai`, available: cleanSeed.length > 5 },
-      { domain: `${cleanSeed}.co`, available: false },
+      `get${cleanSeed}.com`,
+      `try${cleanSeed}.com`,
+      `use${cleanSeed}.com`,
+      `join${cleanSeed}.com`,
+      `${cleanSeed}labs.com`,
+      `${cleanSeed}hq.com`,
+      `${cleanSeed}app.com`,
+      `${cleanSeed}hub.com`,
+      `${cleanSeed}flow.com`,
+      `${cleanSeed}sync.com`,
+      `the${cleanSeed}.com`,
+      `${cleanSeed}craft.com`,
+      `meta${cleanSeed}.com`,
+      `${cleanSeed}base.com`,
     ]
   }, [cleanSeed])
 
-  const brandHacks = useMemo(() => {
-    if (!cleanSeed) return []
-    return [
-      { domain: `get${cleanSeed}.com`, available: true },
-      { domain: `try${cleanSeed}.com`, available: true },
-      { domain: `${cleanSeed}hq.com`, available: true },
-      { domain: `${cleanSeed}labs.com`, available: true },
+  const slugKey = allItems.map((item) => item.slug).join('|')
+
+  useEffect(() => {
+    if (aiLoading || !slugKey) return
+    const domains = [
+      ...allItems.flatMap((item) => TLD_ORDER.map((ext) => `${item.slug}${ext}`)),
+      ...exactDomains,
+      ...brandHackDomains,
     ]
-  }, [cleanSeed])
+    let cancel = false
+    fetchAvailability(domains)
+      .then((map) => {
+        if (!cancel) {
+          setRegistry((prev) => ({ ...prev, ...map }))
+          onUpdateResultsCache?.((prev) => prev ? ({ ...prev, registry: { ...prev.registry, ...map } }) : prev)
+        }
+      })
+      .catch(() => {
+        if (cancel) return
+        const failed = {}
+        for (const domain of domains) failed[domain] = 'unknown'
+        setRegistry((prev) => ({ ...prev, ...failed }))
+      })
+    return () => {
+      cancel = true
+    }
+  }, [slugKey, aiLoading, exactDomains, brandHackDomains]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const itemsWithRegistry = useMemo(() => {
+    return allItems.map((item) => ({
+      ...item,
+      availability: Object.fromEntries(
+        TLD_ORDER.map((ext) => [ext, registry[`${item.slug}${ext}`] || 'checking'])
+      ),
+    }))
+  }, [allItems, registry])
 
   const relatedRoots = useMemo(() => {
     return ['pulse', 'flow', 'core', 'shift', 'prime', 'base']
   }, [])
 
-  // Filter items
+  // Multi-select filtered items with comprehensive categories
   const filteredItems = useMemo(() => {
-    return allItems.filter((item) => {
-      if (filter === 'com') return Boolean(item.tlds?.['.com'])
-      if (filter === 'ai') return Boolean(item.tlds?.['.ai'])
-      if (filter === 'short') return item.slug.length <= 6
-      if (filter === 'punchy' || filter === 'kiki') return item.phonetic?.profile === 'kiki' || item.phonetic?.profile === 'punchy'
-      if (filter === 'smooth' || filter === 'bouba') return item.phonetic?.profile === 'bouba' || item.phonetic?.profile === 'smooth'
+    return itemsWithRegistry.filter((item) => {
+      if (filters.includes('all') || filters.length === 0) return true
+      if (filters.includes('com') && item.availability['.com'] !== 'available') return false
+      if (filters.includes('ai') && item.availability['.ai'] !== 'available') return false
+      if (filters.includes('io') && item.availability['.io'] !== 'available') return false
+      if (filters.includes('co') && item.availability['.co'] !== 'available') return false
+      if (filters.includes('short') && item.slug.length > 6) return false
+      if (filters.includes('one_syl') && (item.syllables || 2) !== 1) return false
+      if (filters.includes('two_syl') && (item.syllables || 2) !== 2) return false
+      if (filters.includes('punchy') && !(item.phonetic?.profile === 'kiki' || item.phonetic?.profile === 'punchy')) return false
+      if (filters.includes('smooth') && !(item.phonetic?.profile === 'bouba' || item.phonetic?.profile === 'smooth')) return false
+      if (filters.includes('saved') && !saved.some((s) => s.slug === item.slug)) return false
       return true
     })
-  }, [allItems, filter])
+  }, [itemsWithRegistry, filters, saved])
 
   const selectedTld = brief?.tld || '.com'
-  const availableCount = allItems.filter((i) => Boolean(i.tlds?.[selectedTld])).length
+  const availableCount = itemsWithRegistry.filter((i) => i.availability?.[selectedTld] === 'available').length
   const cinematicConfig = brief?.cinematic ? CINEMATIC_ARCHETYPES[brief.cinematic] : null
 
   // Progressive brand question discovery after 2 or more regenerations
@@ -111,107 +252,57 @@ export default function Results({
 
   return (
     <div className="min-h-screen bg-hardware-canvas text-slate-900 selection:bg-blue-600 selection:text-white pb-24">
-      {/* Top Sticky Header */}
-      <header className="sticky top-0 z-30 border-b border-slate-200/90 bg-white/90 backdrop-blur-md shadow-xs">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3 sm:px-8">
-          <div className="flex items-center gap-3">
+      {/* Top Sticky Navigation Bar */}
+      <div className="sticky top-0 z-30 pt-2 px-4 sm:px-6">
+        <AppNavbar
+          activeView="results"
+          onNavigate={onNavigate}
+          savedCount={saved.length}
+          compareCount={compareSel.length}
+          resultsCount={allItems.length}
+          rightExtra={
             <button
               type="button"
               onClick={onNewSearch}
-              className="flex items-center gap-2 text-base font-extrabold tracking-tight text-slate-900 transition-opacity hover:opacity-80"
-            >
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-950 text-xs font-black text-white shadow-md border border-slate-800">
-                N
-              </span>
-              <span className="font-sans text-2xl font-bold tracking-tight text-slate-950 uppercase">NameGenius</span>
-            </button>
-            <span className="hidden rounded-lg bg-slate-950/10 px-2 py-0.5 font-mono text-[10px] font-black text-slate-900 sm:inline-block border border-slate-950/20">
-              MOD. NG-01 // RESULTS
-            </span>
-          </div>
-
-          {/* Pill navigation cluster inside tactile socket recess */}
-          <nav className="flex items-center gap-1 rounded-full border border-slate-300/80 bg-slate-200/60 p-1 text-xs shadow-inner">
-            <button
-              type="button"
-              onClick={onNewSearch}
-              className="rounded-full px-3 py-1 font-semibold text-slate-700 transition-all duration-150 hover:text-slate-900 active:scale-95"
-            >
-              Generator
-            </button>
-            <button
-              type="button"
-              className="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1 font-bold text-blue-700 shadow-xs"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-blue-600 led-glow-cyan" />
-              Results ({allItems.length})
-            </button>
-            {onNavigate && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('shortlist')}
-                  className="relative rounded-full px-3 py-1 font-semibold text-slate-700 transition-all duration-150 hover:text-slate-900 active:scale-95"
-                >
-                  Saved {saved.length > 0 && <span className="ml-0.5 font-bold text-amber-600">({saved.length})</span>}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('compare')}
-                  className="rounded-full px-3 py-1 font-semibold text-slate-700 transition-all duration-150 hover:text-slate-900 active:scale-95"
-                >
-                  Compare {compareSel.length > 0 && <span className="ml-0.5 font-bold text-blue-700">({compareSel.length})</span>}
-                </button>
-              </>
-            )}
-          </nav>
-
-          {/* Header Action cluster */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onNewSearch}
-              className="skeuo-push-btn inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-mono text-xs font-bold text-slate-700 hover:text-slate-950 active:scale-95 bg-white border border-slate-200 shadow-xs"
+              className="skeuo-push-btn inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-mono text-xs font-bold text-slate-900 border border-slate-950/20 bg-white/90 active:scale-95 cursor-pointer"
             >
               <ArrowLeft weight="bold" />
-              <span>Edit Brief</span>
+              <span className="hidden sm:inline">EDIT BRIEF</span>
             </button>
-          </div>
-        </div>
-      </header>
+          }
+        />
+      </div>
 
       {/* Main Results Container */}
-      <main className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
-        {/* Telemetry Hardware Chassis Deck */}
-        <div className="skeuo-chassis relative overflow-hidden rounded-[28px] p-6 sm:p-7 shadow-xl">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+      <main className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+        {/* Telemetry Hardware Chassis Deck (Purple Header) */}
+        <div className="skeuo-chassis relative overflow-hidden rounded-[28px] p-5 sm:p-6 shadow-xl text-white">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-display text-2xl sm:text-3xl font-normal uppercase tracking-tight text-slate-950 deboss-light">
-                  {hasKeyword ? (
-                    <>
-                      Generated names for{' '}
-                      <span className="rounded-xl bg-slate-950 px-3 py-0.5 text-white border border-slate-800">
-                        "{brief.name.trim()}"
-                      </span>
-                    </>
-                  ) : (
-                    <span>Generated brand names</span>
-                  )}
-                </h1>
-              </div>
-              <div className="mt-2 flex flex-wrap items-center gap-2 font-mono text-xs text-slate-600">
-                <span className="rounded bg-white px-2.5 py-0.5 border border-slate-200 shadow-xs">
-                  {availableCount} available on {selectedTld}
-                </span>
-                {cinematicConfig && (
-                  <span className="rounded bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-0.5 font-bold shadow-xs">
-                    Tone: {cinematicConfig.label}
+              <h1 className="font-display text-2xl sm:text-3xl font-black uppercase tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]">
+                {hasKeyword ? (
+                  <>
+                    Generated names for{' '}
+                    <span className="rounded-xl bg-slate-950/80 px-3 py-0.5 text-[#fae127] border border-purple-400/40 shadow-inner">
+                      "{brief.name.trim()}"
+                    </span>
+                  </>
+                ) : (
+                  <span>Generated brand names</span>
+                )}
+              </h1>
+              {/* AI source badge (only show loading state or local fallback when needed) */}
+              <div className="mt-2 flex items-center gap-2">
+                {aiLoading && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-500/30 border border-violet-300/40 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-violet-200">
+                    <span className="h-1.5 w-1.5 rounded-full bg-violet-300 animate-pulse" />
+                    AI researching…
                   </span>
                 )}
-                {brief?.competitors && (
-                  <span className="rounded bg-slate-100 px-2 py-0.5 text-slate-700">
-                    Competitors: {brief.competitors}
+                {!aiLoading && aiError && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 border border-amber-400/40 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-amber-200" title="AI unavailable — showing algorithmically generated names">
+                    <Warning weight="bold" className="text-xs" />
+                    Local mode
                   </span>
                 )}
               </div>
@@ -222,35 +313,148 @@ export default function Results({
               <button
                 type="button"
                 onClick={onRegenerate}
-                className="skeuo-button-terracotta inline-flex items-center gap-2.5 rounded-xl px-5 py-2.5 font-mono text-xs font-bold tracking-wider uppercase text-white active:scale-95 shadow-md group"
+                disabled={aiLoading}
+                className="skeuo-button-terracotta inline-flex items-center gap-2 rounded-xl px-4 py-2 font-mono text-xs font-bold tracking-wider uppercase text-white active:scale-95 shadow-md group cursor-pointer disabled:opacity-50 disabled:cursor-wait"
               >
-                <ArrowsClockwise weight="bold" className="text-base group-hover:rotate-180 transition-transform duration-500" />
-                <span className="deboss-dark">Next Batch (#{generation + 1})</span>
+                <ArrowsClockwise weight="bold" className={`text-sm transition-transform duration-500 ${aiLoading ? 'animate-spin' : 'group-hover:rotate-180'}`} />
+                <span className="deboss-dark">{aiLoading ? 'Generating…' : `Next Batch (#${generation + 1})`}</span>
               </button>
             </div>
           </div>
 
-          {/* Quick Filter Pill Rack inside Tactile Hardware Socket */}
-          <div className="mt-5 flex flex-wrap items-center gap-2 pt-4 border-t border-slate-300/80">
-            <span className="font-mono text-xs font-bold text-slate-700 mr-1 uppercase tracking-wider">Filter:</span>
+          {/* Compact Variations & Exact Keyword Tray (Horizontal, space-efficient) */}
+          {hasKeyword && cleanSeed.length > 0 && (
+            <div className="mt-3.5 pt-3 border-t border-purple-400/30">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-purple-200">
+                    Exact & Variations
+                  </span>
+                </div>
+                <span className="font-mono text-[9.5px] text-purple-300/70">
+                  {exactDomains.length + brandHackDomains.length} variants for "{cleanSeed}"
+                </span>
+              </div>
+              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-thin scrollbar-thumb-purple-500/30">
+                {/* Exact matches first */}
+                {exactDomains.map((domain) => {
+                  const status = registry[domain] || 'checking'
+                  const open = status === 'available'
+                  return (
+                    <div
+                      key={domain}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950/80 border border-amber-400/40 px-2 py-1 text-[11px] font-mono shadow-xs shrink-0"
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full shrink-0 ${
+                          open
+                            ? 'bg-emerald-400 led-glow-emerald'
+                            : status === 'taken'
+                            ? 'bg-rose-400'
+                            : 'bg-amber-400 animate-pulse'
+                        }`}
+                      />
+                      <span className="font-bold text-amber-200">{domain}</span>
+                      {open ? (
+                        <a
+                          href={`https://www.namecheap.com/domains/registration/results/?domain=${domain}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-0.5 inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-300 hover:text-emerald-100 uppercase"
+                        >
+                          Buy ↗
+                        </a>
+                      ) : (
+                        <span className="ml-0.5 text-[9px] text-slate-400 font-semibold uppercase">
+                          {status === 'taken' ? 'Taken' : '…'}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => handleCopy(domain, e)}
+                        className="ml-0.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                        title="Copy domain"
+                      >
+                        {copiedDomain === domain ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+                      </button>
+                    </div>
+                  )
+                })}
+
+                {/* Prefix & Suffix hacks */}
+                {brandHackDomains.map((domain) => {
+                  const status = registry[domain] || 'checking'
+                  const open = status === 'available'
+                  return (
+                    <div
+                      key={domain}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900/80 border border-purple-400/25 px-2 py-1 text-[11px] font-mono shadow-xs shrink-0"
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full shrink-0 ${
+                          open
+                            ? 'bg-emerald-400 led-glow-emerald'
+                            : status === 'taken'
+                            ? 'bg-rose-400'
+                            : 'bg-amber-400 animate-pulse'
+                        }`}
+                      />
+                      <span className="font-medium text-white">{domain}</span>
+                      {open ? (
+                        <a
+                          href={`https://www.namecheap.com/domains/registration/results/?domain=${domain}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-0.5 inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-300 hover:text-emerald-100 uppercase"
+                        >
+                          Buy ↗
+                        </a>
+                      ) : (
+                        <span className="ml-0.5 text-[9px] text-slate-400 font-semibold uppercase">
+                          {status === 'taken' ? 'Taken' : '…'}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => handleCopy(domain, e)}
+                        className="ml-0.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                        title="Copy domain"
+                      >
+                        {copiedDomain === domain ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Quick Filter Pill Rack (Scaled down by 30% with expanded options) */}
+          <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-2.5 border-t border-purple-400/30">
+            <span className="font-mono text-[10.5px] font-black text-purple-200 mr-1 uppercase tracking-wider">Filter:</span>
             {[
               { id: 'all', label: `All (${allItems.length})` },
-              { id: 'com', label: `.com (${allItems.filter((i) => i.tlds?.['.com']).length})` },
-              { id: 'ai', label: `.ai (${allItems.filter((i) => i.tlds?.['.ai']).length})` },
-              { id: 'short', label: 'Short (≤6 chars)' },
+              { id: 'com', label: `.com (${itemsWithRegistry.filter((i) => i.availability['.com'] === 'available').length})` },
+              { id: 'ai', label: `.ai (${itemsWithRegistry.filter((i) => i.availability['.ai'] === 'available').length})` },
+              { id: 'io', label: `.io (${itemsWithRegistry.filter((i) => i.availability['.io'] === 'available').length})` },
+              { id: 'co', label: `.co (${itemsWithRegistry.filter((i) => i.availability['.co'] === 'available').length})` },
+              { id: 'short', label: 'Short (≤6)' },
+              { id: 'one_syl', label: '1 Syl' },
+              { id: 'two_syl', label: '2 Syl' },
               { id: 'punchy', label: '⚡ Punchy' },
               { id: 'smooth', label: '☁ Smooth' },
+              { id: 'saved', label: `★ Saved (${saved.length})` },
             ].map((f) => {
-              const isActive = filter === f.id
+              const isActive = filters.includes(f.id)
               return (
-                <div key={f.id} className="key-socket !p-[2px] !rounded-xl">
+                <div key={f.id} className="key-socket-dark !p-[1px] !rounded-lg">
                   <button
                     type="button"
-                    onClick={() => setFilter(f.id)}
-                    className={`key-cap rounded-[10px] px-3.5 py-1.5 font-mono text-xs font-bold transition-all ${
+                    onClick={() => handleToggleFilter(f.id)}
+                    className={`key-cap !rounded-md px-2.5 py-1 font-mono text-[11px] font-bold transition-all cursor-pointer ${
                       isActive
-                        ? 'key-cap-active-dark ring-1 ring-slate-400/40'
-                        : 'text-slate-800 hover:text-slate-950'
+                        ? 'key-cap-active-dark ring-1 ring-amber-400 text-amber-300 font-black'
+                        : 'text-slate-700 hover:text-slate-950 font-bold'
                     }`}
                   >
                     {f.label}
@@ -261,228 +465,6 @@ export default function Results({
           </div>
         </div>
 
-        {/* Exact Keyword & Root Diagnostic Cards - only shown when keyword is present */}
-        {hasKeyword && cleanSeed.length > 0 && (
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3 mb-4">
-              <div className="flex items-center gap-2">
-                <Sparkle weight="fill" className="text-amber-500 text-base" />
-                <h3 className="font-display text-base font-bold text-slate-900">
-                  Exact Match & Keyword Analysis
-                </h3>
-              </div>
-              <span className="font-mono text-xs font-semibold text-slate-500">
-                Keyword: <span className="text-blue-600 font-bold">{brief.name.trim()}</span>
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* 1. Exact TLD Availability for Searched Keyword */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 flex flex-col justify-between">
-                <div>
-                  <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2.5">
-                    Exact Keyword Domains
-                  </div>
-                  <div className="space-y-2">
-                    {exactDomainStatus.map((d) => (
-                      <div
-                        key={d.domain}
-                        className="flex items-center justify-between gap-2 bg-white px-3 py-2 rounded-lg border border-slate-200 text-xs shadow-xs hover:border-slate-300 transition-colors"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="font-mono font-bold text-slate-800 truncate">{d.domain}</span>
-                          <span
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold shrink-0 ${
-                              d.available
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-amber-100 text-amber-800'
-                            }`}
-                          >
-                            {d.available ? 'Available' : 'Taken'}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          {d.available ? (
-                            <a
-                              href={`https://www.namecheap.com/domains/registration/results/?domain=${d.domain}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="skeuo-button-primary inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-mono font-bold shadow-xs hover:brightness-110 active:scale-95"
-                            >
-                              <span>Register</span>
-                              <ArrowUpRight size={11} weight="bold" />
-                            </a>
-                          ) : (
-                            <a
-                              href={`https://who.is/whois/${d.domain}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2 py-1 text-[10px] font-mono font-bold text-slate-700 active:scale-95"
-                            >
-                              <span>WHOIS</span>
-                              <ArrowUpRight size={10} weight="bold" />
-                            </a>
-                          )}
-                          <button
-                            type="button"
-                            onClick={(e) => handleCopy(d.domain, e)}
-                            className="rounded p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                            title="Copy domain name"
-                          >
-                            {copiedDomain === d.domain ? (
-                              <Check size={12} weight="bold" className="text-emerald-600" />
-                            ) : (
-                              <Copy size={12} />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* 2. Prefix & Suffix Brand Additions */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 flex flex-col justify-between">
-                <div>
-                  <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2.5">
-                    Prefix / Suffix Additions
-                  </div>
-                  <div className="space-y-2">
-                    {brandHacks.map((h) => (
-                      <div
-                        key={h.domain}
-                        className="flex items-center justify-between gap-2 bg-white px-3 py-2 rounded-lg border border-slate-200 text-xs shadow-xs hover:border-slate-300 transition-colors"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="font-mono font-bold text-slate-800 truncate">{h.domain}</span>
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 shrink-0">
-                            Available
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <a
-                            href={`https://www.namecheap.com/domains/registration/results/?domain=${h.domain}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="skeuo-button-primary inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-mono font-bold shadow-xs hover:brightness-110 active:scale-95"
-                          >
-                            <span>Register</span>
-                            <ArrowUpRight size={11} weight="bold" />
-                          </a>
-                          <button
-                            type="button"
-                            onClick={(e) => handleCopy(h.domain, e)}
-                            className="rounded p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                            title="Copy domain name"
-                          >
-                            {copiedDomain === h.domain ? (
-                              <Check size={12} weight="bold" className="text-emerald-600" />
-                            ) : (
-                              <Copy size={12} />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* 3. Related Semantic Root Words with Interactive Synthesis */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-2.5">
-                    <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                      Related Root Stems
-                    </div>
-                    {activeStem && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveStem(null)}
-                        className="text-[10px] font-mono font-bold text-blue-600 hover:underline"
-                      >
-                        Reset
-                      </button>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-600 mb-3">
-                    Click a stem below to synthesize compound combinations:
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {relatedRoots.map((r) => {
-                      const isSelected = activeStem === r
-                      return (
-                        <button
-                          key={r}
-                          type="button"
-                          onClick={() => setActiveStem(isSelected ? null : r)}
-                          className={`rounded-lg border px-2.5 py-1 font-mono text-xs font-bold transition-all ${
-                            isSelected
-                              ? 'bg-blue-600 border-blue-700 text-white shadow-xs scale-105'
-                              : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50/60 active:scale-95'
-                          }`}
-                        >
-                          +{r}
-                        </button>
-                      )
-                    })}
-                  </div>
-
-                  {/* Active Stem Compound Domain Previews with Direct CTAs */}
-                  {activeStem ? (
-                    <div className="mt-3.5 space-y-2 border-t border-slate-200/80 pt-3 animate-card-enter">
-                      <div className="text-[11px] font-mono font-bold text-slate-600">
-                        Synthesized combinations for <span className="text-blue-600">"{activeStem}"</span>:
-                      </div>
-                      {[
-                        `${cleanSeed}${activeStem}.com`,
-                        `${activeStem}${cleanSeed}.com`,
-                      ].map((compound) => (
-                        <div
-                          key={compound}
-                          className="flex items-center justify-between bg-white px-2.5 py-1.5 rounded-lg border border-blue-200 text-xs shadow-xs"
-                        >
-                          <span className="font-mono font-bold text-blue-950 truncate">
-                            {compound}
-                          </span>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <a
-                              href={`https://www.namecheap.com/domains/registration/results/?domain=${compound}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="skeuo-button-primary inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-mono font-bold shadow-xs hover:brightness-110 active:scale-95"
-                            >
-                              <span>Register</span>
-                              <ArrowUpRight size={10} weight="bold" />
-                            </a>
-                            <button
-                              type="button"
-                              onClick={(e) => handleCopy(compound, e)}
-                              className="rounded p-0.5 text-slate-400 hover:text-slate-700"
-                              title="Copy domain"
-                            >
-                              {copiedDomain === compound ? (
-                                <Check size={11} weight="bold" className="text-emerald-600" />
-                              ) : (
-                                <Copy size={11} />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="mt-3 text-[11px] font-mono text-slate-500">
-                      Select any root stem above to synthesize instant compound domain names.
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Adaptive Discovery Drawer if 2+ rerolls */}
         {currentQuestion && (
           <DiscoveryDrawer
@@ -492,44 +474,53 @@ export default function Results({
           />
         )}
 
-        {/* Tactile Cards Grid */}
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredItems.map((item) => {
-            const isSaved = saved.some((s) => s.slug === item.slug)
-            const isCompared = compareSel.some((c) => c.slug === item.slug)
-            return (
-              <TactileCard
-                key={item.slug}
-                item={item}
-                isSaved={isSaved}
-                isCompared={isCompared}
-                onToggleSave={onToggleSaved}
-                onToggleCompare={onToggleCompare}
-                selectedTld={selectedTld}
-              />
-            )
-          })}
-        </div>
-
-        {filteredItems.length === 0 && (
-          <div className="skeuo-plate mt-8 rounded-2xl p-12 text-center text-slate-500">
-            <Sparkle weight="thin" className="mx-auto text-4xl text-slate-400 mb-2" />
-            <div className="font-serif text-lg font-bold text-slate-800">No names match this filter</div>
-            <p className="mt-1 font-sans text-xs text-slate-500">
-              Try selecting "All" or click "Generate more names" for a fresh batch.
-            </p>
+        {/* Tactile Cards Grid — Loading Skeleton while AI fetches */}
+        {aiLoading ? (
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="skeuo-plate rounded-2xl p-5 animate-pulse"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <div className="h-8 w-3/4 rounded-xl bg-slate-300/60 mb-3" />
+                <div className="h-3 w-1/2 rounded bg-slate-200/70 mb-2" />
+                <div className="h-3 w-2/3 rounded bg-slate-200/50 mb-5" />
+                <div className="flex gap-2">
+                  <div className="h-7 flex-1 rounded-lg bg-slate-200/60" />
+                  <div className="h-7 flex-1 rounded-lg bg-slate-200/40" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredItems.map((item) => {
+              const isSaved = saved.some((s) => s.slug === item.slug)
+              const isCompared = compareSel.some((c) => c.slug === item.slug)
+              return (
+                <TactileCard
+                  key={item.slug}
+                  item={item}
+                  isSaved={isSaved}
+                  isCompared={isCompared}
+                  onToggleSave={onToggleSaved}
+                  onToggleCompare={onToggleCompare}
+                  selectedTld={selectedTld}
+                  rationale={item.rationale || null}
+                />
+              )
+            })}
           </div>
         )}
 
-        {/* Comparison Bench (docked when items are selected) */}
-        {compareSel.length > 0 && (
-          <div className="mt-12">
-            <CompareBench
-              items={compareSel}
-              onRemove={(slug) => onToggleCompare({ slug })}
-              onClear={() => compareSel.forEach((item) => onToggleCompare(item))}
-              selectedTld={selectedTld}
-            />
+        {!aiLoading && filteredItems.length === 0 && (
+          <div className="skeuo-plate mt-8 rounded-2xl p-12 text-center text-slate-500">
+            <Sparkle weight="thin" className="mx-auto text-4xl text-slate-400 mb-2" />
+            <div className="font-display text-lg font-normal uppercase tracking-tight text-slate-800">No names match this filter</div>
+            <p className="mt-1 font-sans text-xs text-slate-500">
+              Try selecting "All" or click "Generate more names" for a fresh batch.
+            </p>
           </div>
         )}
       </main>

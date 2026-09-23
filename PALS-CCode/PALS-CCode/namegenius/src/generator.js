@@ -9,10 +9,15 @@ const STOP = new Set([
   'the', 'and', 'for', 'with', 'your', 'you', 'our', 'from', 'into', 'that',
   'this', 'are', 'app', 'name', 'names', 'like', 'want', 'need', 'make',
 ])
-const PREFIXES = ['get', 'try', 'use', 'go', 'join', 'hey']
+const PREFIXES = [
+  'get', 'try', 'use', 'go', 'join', 'hey', 'open', 'pure', 'meta', 'hyper',
+  'omni', 'super', 'the', 'my', 'run', 'on', 'pro', 'neo', 'zen', 'apex',
+]
 const SUFFIXES = [
   'ly', 'labs', 'hq', 'base', 'kit', 'hub', 'flow', 'wave', 'forge', 'craft',
-  'loop', 'works', 'peak', 'stack', 'sync', 'yard', 'pilot', 'scout', 'space', 'link',
+  'loop', 'works', 'peak', 'stack', 'sync', 'yard', 'pilot', 'scout', 'space',
+  'link', 'io', 'ai', 'zone', 'grid', 'wire', 'nest', 'shift', 'vault', 'pulse',
+  'mind', 'gen', 'bot', 'box',
 ]
 const ABSTRACT = [
   'nova', 'lumen', 'atlas', 'ferra', 'quill', 'orbit', 'nimbus', 'cadence',

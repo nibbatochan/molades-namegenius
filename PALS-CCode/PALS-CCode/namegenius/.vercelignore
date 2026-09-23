@@ -1,0 +1,7 @@
+# Local development folders and caches
+node_modules
+.git
+.vercel
+.claude
+.vscode
+dist

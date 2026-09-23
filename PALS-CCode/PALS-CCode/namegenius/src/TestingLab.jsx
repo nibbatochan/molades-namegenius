@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react'
+import AppNavbar from './components/AppNavbar'
 import {
   playLaserShoot,
   playBossHit,
   playBossDefeated,
   playMechanicalClick,
+  isSoundMuted,
   setSoundMuted,
   setMusicEnabled,
   getMasterVolume,
@@ -150,42 +152,42 @@ const BOSS_DATA = [
   },
 ]
 
-// All 4 Common Enemies
-const ENEMY_DATA = [
+// 4 Classic Foundational Common Enemies
+const CLASSIC_ENEMY_DATA = [
   {
     id: 'glitch_bug',
     type: 'glitch_bug',
-    name: '404 CYBER DRONE',
-    shortName: '404 DRONE',
-    hp: 2,
-    score: '15 PTS',
+    name: '404 GLITCH BUG',
+    shortName: 'GLITCH BUG',
+    hp: 1,
+    score: '10 PTS',
     color: '#38bdf8',
     bgBadge: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
-    icon: '🛸',
-    category: 'Laser-Armed Aerial Drone',
-    desc: 'Boxy industrial cyber drone with a golden halo rotor, "404" armor badge, bottom landing skids, and a cyclops optic that fires cyan laser pulses and plasma bullets.',
+    icon: '🐛',
+    category: 'Foundational Crawler',
+    desc: 'Industrial slate cyber-bug with gold rotor propeller, "404" side stencil, and a glowing cyclops optic core that fires cyan glitch plasma bullets.',
     attacks: [
-      { id: 'laser', name: '⚡ CYAN LASER BEAM', desc: 'Charges eye to intense cyan and fires a focused horizontal laser beam' },
-      { id: 'bullet', name: '💥 PLASMA BULLET', desc: 'Discharges rapid-fire cyan plasma projectiles with particle dash trails' },
-      { id: 'hover', name: '🛸 4-FRAME HOVER PATROL', desc: '4-frame hover cycle with golden halo rotor spin and pulsing cyclops optic' },
+      { id: 'glitch_pulse', name: '⚡ GLITCH PULSE', desc: 'Fires high-speed cyan glitch pulse projectile with particle trail' },
+      { id: 'eye_charge', name: '🔴 EYE CHARGE', desc: 'Cyclops eye blazes red before discharging plasma pulse' },
+      { id: 'rotor_spin', name: '🚁 4-FRAME ROTOR HOVER', desc: '4-frame hover locomotion with spinning golden rotor ring' },
     ],
   },
   {
     id: 'squatter_drone',
     type: 'squatter_drone',
     name: 'SQUATTER RECON DRONE',
-    shortName: 'RECON DRONE',
+    shortName: 'SQUATTER DRONE',
     hp: 2,
     score: '20 PTS',
-    color: '#38bdf8',
-    bgBadge: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
+    color: '#eab308',
+    bgBadge: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
     icon: '🛸',
-    category: 'Surveillance Scanner Drone',
-    desc: 'Spherical gunmetal drone with dual crossing halo rotors, golden padlock badge, ventral spotlight, and a rotating red radar scanner dome with EMP overcharge.',
+    category: 'Surveillance Aerial Mech',
+    desc: 'Spherical gunmetal drone with padlock insignia, cyan equator seam, ventral pulsing searchlight, and rotating radar scanner eye that fires EMP shock rings.',
     attacks: [
-      { id: 'emp', name: '⚡ EMP OVERCHARGE', desc: 'Full-body crackling cyan electrical shockwave with steam vent exhaust' },
-      { id: 'scan', name: '🚨 SURVEILLANCE FLASH', desc: 'Overcharges scanner lens to fire a wide red conical detection flashwave' },
-      { id: 'radar', name: '📡 4-FRAME RADAR SWEEP', desc: 'Rotating 360° red radar scanner sweep with pulsing ventral spotlight' },
+      { id: 'emp_spark', name: '⚡ EMP SHOCK RING', desc: 'Discharges crackling yellow EMP spark projectile' },
+      { id: 'radar_sweep', name: '📡 RADAR SCAN OVERCHARGE', desc: 'Radar needle spins into intense yellow-amber target lock' },
+      { id: 'spotlight_bob', name: '🔦 VENTRAL SPOTLIGHT BOB', desc: '4-frame floating oscillation with pulsing cyan ground spotlight' },
     ],
   },
   {
@@ -198,12 +200,12 @@ const ENEMY_DATA = [
     color: '#a855f7',
     bgBadge: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
     icon: '🦇',
-    category: 'Sine-Wave Flier',
-    desc: 'Aerodynamic royal purple cyber-bat with glowing magenta circuit veins, cyan tech visor, white vampire fangs, and high-frequency RGB glitch audio sonar screech.',
+    category: 'Aerodynamic Stalker',
+    desc: 'Indigo/purple aerial drone bat with cyan visor, white vampire fangs, and articulated wings that unleash supersonic sonar screech wave projectiles.',
     attacks: [
-      { id: 'screech', name: '🔊 RGB SONIC WAVEFORM', desc: 'Wide-frequency glitch audio blast with chromatic RGB waveform dispersion' },
-      { id: 'dive', name: '🦇 DIVE SONAR PULSE', desc: 'Tucks wings in dive stance to emit 3 heavy concentric violet sound rings' },
-      { id: 'flap', name: '✨ 4-FRAME FLAP CYCLE', desc: 'Aerodynamic 4-frame wing flap with magenta circuit glows and sonar arcs' },
+      { id: 'sonar_wave', name: '🔊 DUAL SONAR WAVES', desc: 'Emits 2 angled violet acoustic waveform arcs across the screen' },
+      { id: 'fang_screech', name: '🦷 FANG SONAR CHARGE', desc: 'Visor pulses as mouth opens to discharge sound rings' },
+      { id: 'wing_stroke', name: '🦇 4-FRAME WING STROKE', desc: 'Articulated 4-frame cybernetic flapping wing stroke flight' },
     ],
   },
   {
@@ -213,18 +215,132 @@ const ENEMY_DATA = [
     shortName: 'MALWARE GOLEM',
     hp: 3,
     score: '35 PTS',
-    color: '#f97316',
-    bgBadge: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+    color: '#ef4444',
+    bgBadge: 'bg-red-500/10 text-red-400 border-red-500/30',
     icon: '🗿',
-    category: 'Heavy Armored Stomper',
-    desc: 'Massive obsidian titan mech brute with spiked shoulder pauldrons, piston hydraulic legs, glowing chest magma reactor core, and seismic ground smash.',
+    category: 'Heavy Armored Brute',
+    desc: 'Obsidian stone walking golem with steaming smokestacks, spiked pauldrons, glowing molten magma core, and crushing fists that lob burning magma boulders.',
     attacks: [
-      { id: 'slam', name: '🌋 SEISMIC GROUND SMASH', desc: 'Heavy downward dual fist slam erupting jagged fiery magma spikes from the ground' },
-      { id: 'overheat', name: '🔥 MAGMA CORE OVERHEAT', desc: 'Chest reactor core flares to incandescent white-yellow with thermal vein pulses' },
-      { id: 'stomp', name: '💨 4-FRAME HEAVY STOMP', desc: 'Heavy walking piston stride kicking up ground dust clouds and venting steam' },
+      { id: 'magma_boulder', name: '🌋 MAGMA BOULDER LOB', desc: 'Lobs heavy molten rock in a high parabolic trajectory with smoke trail' },
+      { id: 'spiked_slam', name: '💥 SPIKED HAMMER SMASH', desc: 'Raises dual spiked fists and slams platform with explosive sparks' },
+      { id: 'hydraulic_stomp', name: '🦵 4-FRAME PISTON STOMP', desc: 'Heavy 4-frame hydraulic walking stride with foot dust puffs' },
     ],
   },
 ]
+
+// All 6 Progressive Cybernetic Enemies (Unlocked post-bosses)
+const CYBER_ENEMY_DATA = [
+  {
+    id: 'beetle_infantry',
+    type: 'beetle_infantry',
+    name: 'CYBERNETIC BEETLE INFANTRY',
+    shortName: 'BEETLE INFANTRY',
+    hp: 2,
+    score: '25 PTS',
+    color: '#ea580c',
+    bgBadge: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
+    icon: '🪲',
+    category: 'Heavy Armored Crawler',
+    desc: 'Terracotta-armored cybernetic beetle infantry with hydraulic piston legs, glowing golden circular eye lens, and a devastating 4-frame plasmic overload laser beam.',
+    attacks: [
+      { id: 'plasmic_beam', name: '⚡ PLASMIC OVERLOAD BEAM', desc: 'Charges golden eye flare and fires a solid horizontal plasma laser with radial sparks' },
+      { id: 'smoke_vent', name: '💨 EXHAUST COOLDOWN', desc: 'Dips head into cooldown stance while venting dual gray smoke clouds upward' },
+      { id: 'walk_cycle', name: '🚶 4-FRAME STRIDE', desc: '4-frame mechanical locomotion walk cycle with articulated hydraulic piston legs' },
+    ],
+  },
+  {
+    id: 'mantis_sniper',
+    type: 'mantis_sniper',
+    name: 'CYBER-MANTIS SNIPER',
+    shortName: 'MANTIS SNIPER',
+    hp: 3,
+    score: '40 PTS',
+    color: '#10b981',
+    bgBadge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+    icon: '🦗',
+    category: 'Precision Railgun Stalker',
+    desc: 'Aerodynamic metallic emerald green mantis with articulated titanium spine, red targeting optic flare, and dual folding scythe blades that fire hyper-velocity cyan railgun beams.',
+    attacks: [
+      { id: 'optic_lock', name: '🎯 RED OPTIC SNIPER FLARE', desc: 'Folds scythe blades to form rifle barrel while eye ignites in a piercing red lens flare' },
+      { id: 'railgun_blast', name: '⚡ HYPER RAILGUN BEAM', desc: 'Discharges a continuous thick cyan laser beam with explosive yellow muzzle flash' },
+      { id: 'recoil_slide', name: '💨 HEAVY RECOIL SLIDE', desc: 'Braced recoil posture with billowing white exhaust smoke blasting from rear vents' },
+    ],
+  },
+  {
+    id: 'volt_hornet',
+    type: 'volt_hornet',
+    name: 'VOLT-HORNET DRONE',
+    shortName: 'VOLT HORNET',
+    hp: 2,
+    score: '35 PTS',
+    color: '#eab308',
+    bgBadge: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
+    icon: '🐝',
+    category: 'Aerial EMP Stinger Drone',
+    desc: 'Black-and-yellow hazard striped attack drone with glowing cyan ion ports, rapid motion-blurred translucent wings, and a curling electrical stinger barrage.',
+    attacks: [
+      { id: 'arc_charge', name: '⚡ ARC CHARGE CURL', desc: 'Abdomen curls aggressively forward beneath head crackling with jagged cyan electrical lightning arcs' },
+      { id: 'needle_burst', name: '💥 3-NEEDLE VOLT BURST', desc: 'Releases a rapid triple-needle electric projectile barrage with yellow muzzle star' },
+      { id: 'hover_flutter', name: '🛸 4-FRAME HOVER FLUTTER', desc: 'High-speed 4-frame hovering cycle with blurred motion-line translucent wings' },
+    ],
+  },
+  {
+    id: 'centipede_artillery',
+    type: 'centipede_artillery',
+    name: 'CENTIPEDE ARTILLERY',
+    shortName: 'CENTIPEDE ARTILLERY',
+    hp: 4,
+    score: '55 PTS',
+    color: '#a855f7',
+    bgBadge: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+    icon: '🐛',
+    category: 'Platform Bio-Mortar Bombardier',
+    desc: 'Segmented royal purple armored centipede with 10 synchronized robotic micro-legs that arches 45° to split its dorsal shell and lob glowing green bio-mortar canisters.',
+    attacks: [
+      { id: 'petal_split', name: '🧪 DORSAL PETAL SPLIT', desc: 'Body arches 45° upward as purple dorsal plates split open to reveal glowing green chemical mortar' },
+      { id: 'mortar_lob', name: '💣 BIO-MORTAR LAUNCH', desc: 'Launches glowing green acid canister in a high parabolic trajectory with green energy arc' },
+      { id: 'gas_vent', name: '💨 TOXIC VAPOR VENT', desc: 'Settles back onto platform with toxic green vapor clouds billowing from cooling vents' },
+    ],
+  },
+  {
+    id: 'crab_juggernaut',
+    type: 'crab_juggernaut',
+    name: 'HYDRAULIC CRAB JUGGERNAUT',
+    shortName: 'CRAB JUGGERNAUT',
+    hp: 5,
+    score: '75 PTS',
+    color: '#2563eb',
+    bgBadge: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+    icon: '🦀',
+    category: 'Heavy Seismic Barrier Mech',
+    desc: 'Industrial cobalt blue tank mech with hazard warning stripes, 4 heavy walking piston legs, and dual massive hydraulic crusher claws with glowing orange pistons that execute seismic ground slams.',
+    attacks: [
+      { id: 'piston_lift', name: '🔥 PISTON OVERCHARGE LIFT', desc: 'Rears high on back legs with dual hydraulic claws raised straight up revealing glowing orange pistons' },
+      { id: 'ground_slam', name: '🌋 SEISMIC GROUND SLAM', desc: 'Down-strike impact with explosive orange flash, kinetic yellow sparks, and ground crack shockwave' },
+      { id: 'steam_recovery', name: '💨 STEAM VENT RECOVERY', desc: 'Claws rest on ground as white steam plumes puff from top chimney exhaust ports' },
+    ],
+  },
+  {
+    id: 'moth_phantom',
+    type: 'moth_phantom',
+    name: 'QUANTUM MOTH PHANTOM',
+    shortName: 'MOTH PHANTOM',
+    hp: 4,
+    score: '90 PTS',
+    color: '#ec4899',
+    bgBadge: 'bg-pink-500/10 text-pink-400 border-pink-500/30',
+    icon: '🦋',
+    category: 'Celestial Phase-Shift Spectre',
+    desc: 'Ethereal cyber moth with holographic circuit-traced violet wings, hot magenta optics, digital binary matrix glitch states, and expanding concentric diamond energy ring pulses.',
+    attacks: [
+      { id: 'glitch_matrix', name: '👾 110 MATRIX GLITCH', desc: 'Body glitches with chromatic scanlines and binary code artifacts (110, 010) with radiant eye flare' },
+      { id: 'diamond_ring', name: '💠 CONCENTRIC DIAMOND RING', desc: 'Projects an expanding concentric geometric diamond energy ring pulse wave forward' },
+      { id: 'phase_fade', name: '👻 4-FRAME SPECTRAL GLIDE', desc: 'Fades to a 35% translucent spectral silhouette while floating in gentle circuit-traced wing glide' },
+    ],
+  },
+]
+
+const ENEMY_DATA = [...CLASSIC_ENEMY_DATA, ...CYBER_ENEMY_DATA]
 
 const WEAPONS = [
   { id: 'plasma', name: 'PLASMA BLASTER', tag: 'DEFAULT', icon: '⚡', color: '#38bdf8' },
@@ -1543,7 +1659,1316 @@ function renderZeroDayOverlord(ctx, boss, customAction = null, customFrame = nul
   }
 }
 
-export default function TestingLab({ onNavigate }) {
+// ============================================================================
+// AUTHENTIC 16-BIT RETRO PIXEL ART CLASSIC COMMON MOBS
+// ============================================================================
+
+// 1. 404 Glitch Bug Sprite
+function renderGlitchBug(ctx, drone, customAction = null, customFrame = null) {
+  ctx.save()
+  const frame = customFrame !== null ? customFrame : (drone.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    (customAction && customAction.startsWith('attack')) ||
+    drone.actionState === 'attack' ||
+    (drone.laserTimer && drone.laserTimer > 0)
+
+  const cycleFrame = Math.floor(frame / 6) % 4
+  let bobY = 0
+  if (!isAttack) {
+    bobY = cycleFrame === 1 ? 2 : cycleFrame === 2 ? -2 : 0
+  }
+
+  ctx.translate(Math.round(drone.x || 0), Math.round((drone.y || 0) + bobY))
+
+  if (drone.hitFlash > 0) {
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, 0, 0, drone.w || 26, drone.h || 24, 5)
+    ctx.fill()
+    ctx.restore()
+    return
+  }
+
+  const w = drone.w || 26
+  const h = drone.h || 24
+  const centerX = w / 2
+
+  // 1. Top Propeller Halo
+  const rAng = isAttack ? frame * 0.4 : cycleFrame * (Math.PI / 2) + frame * 0.18
+  const rSpan = Math.cos(rAng) * 14
+  const rThick = Math.abs(Math.sin(rAng)) * 2 + 2
+
+  ctx.fillStyle = '#1e293b'
+  ctx.fillRect(centerX - 1, -4, 2, 5)
+  ctx.fillStyle = '#64748b'
+  ctx.fillRect(centerX - 0.5, -4, 1, 2)
+
+  ctx.strokeStyle = '#eab308'
+  ctx.lineWidth = rThick
+  ctx.beginPath()
+  ctx.ellipse(centerX, -4.5, 14, 3, 0, 0, Math.PI * 2)
+  ctx.stroke()
+
+  ctx.strokeStyle = '#fef08a'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.ellipse(centerX, -4.5, 13, 2, 0, 0, Math.PI * 2)
+  ctx.stroke()
+
+  ctx.strokeStyle = '#0f172a'
+  ctx.lineWidth = 1.2
+  ctx.beginPath()
+  ctx.moveTo(centerX - rSpan, -4.5)
+  ctx.lineTo(centerX + rSpan, -4.5)
+  ctx.stroke()
+
+  ctx.fillStyle = '#ca8a04'
+  ctx.fillRect(centerX - 1.5, -6, 3, 3)
+
+  // 2. Rear Turbine Exhaust
+  ctx.fillStyle = '#1e293b'
+  roundRect(ctx, 0, 5, 5, 12, 2)
+  ctx.fill()
+  ctx.strokeStyle = '#0f172a'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  // 3. Landing Skids
+  ctx.fillStyle = '#334155'
+  ctx.fillRect(4, h - 3, 4, 3)
+  ctx.fillRect(w - 7, h - 3, 4, 3)
+
+  // 4. Chassis
+  const grad = ctx.createLinearGradient(centerX, 0, centerX, h)
+  grad.addColorStop(0, '#475569')
+  grad.addColorStop(0.3, '#334155')
+  grad.addColorStop(0.7, '#1e293b')
+  grad.addColorStop(1, '#0f172a')
+  ctx.fillStyle = grad
+  roundRect(ctx, 4, 1, w - 6, h - 4, 5)
+  ctx.fill()
+  ctx.strokeStyle = '#020617'
+  ctx.lineWidth = 1.3
+  ctx.stroke()
+
+  // 5. Side "404"
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 6.5px "JetBrains Mono", monospace'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('404', 11.5, 11.5)
+
+  // 6. Eye
+  const eyeX = w - 6.5
+  const eyeY = 11.5
+  const eyeR = 4.5
+
+  ctx.fillStyle = '#020617'
+  roundRect(ctx, w - 10, 6, 8, 11, 2)
+  ctx.fill()
+  ctx.strokeStyle = '#334155'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  if (isAttack) {
+    ctx.fillStyle = '#00f0ff'
+    ctx.beginPath()
+    ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(eyeX - 1.5, eyeY - 1.5, 3, 3)
+  } else {
+    ctx.fillStyle = '#ef4444'
+    ctx.beginPath()
+    ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(eyeX - 1.5, eyeY - 1.5, 2, 2)
+  }
+
+  ctx.restore()
+}
+
+// 2. Squatter Recon Drone Sprite
+function renderSquatterDrone(ctx, drone, customAction = null, customFrame = null) {
+  ctx.save()
+  const frame = customFrame !== null ? customFrame : (drone.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    (customAction && customAction.startsWith('attack')) ||
+    drone.actionState === 'attack' ||
+    (drone.laserTimer && drone.laserTimer > 0)
+
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const bobY = !isAttack ? (cycleFrame === 1 ? 1.5 : cycleFrame === 2 ? -1.5 : 0) : 0
+
+  ctx.translate(Math.round(drone.x || 0), Math.round((drone.y || 0) + bobY))
+
+  if (drone.hitFlash > 0) {
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, 0, 0, drone.w || 26, drone.h || 26, 6)
+    ctx.fill()
+    ctx.restore()
+    return
+  }
+
+  const w = drone.w || 26
+  const h = drone.h || 26
+  const centerX = w / 2
+
+  // Propeller Halo
+  ctx.strokeStyle = '#38bdf8'
+  ctx.lineWidth = 1.8
+  ctx.beginPath()
+  ctx.ellipse(centerX, -4.5, 14, 3, 0, 0, Math.PI * 2)
+  ctx.stroke()
+
+  // Spotlight
+  if (!isAttack) {
+    const spotGrad = ctx.createLinearGradient(centerX, h - 2, centerX, h + 18)
+    spotGrad.addColorStop(0, 'rgba(6, 182, 212, 0.55)')
+    spotGrad.addColorStop(1, 'rgba(6, 182, 212, 0.0)')
+    ctx.fillStyle = spotGrad
+    ctx.beginPath()
+    ctx.moveTo(centerX - 2, h - 2)
+    ctx.lineTo(centerX - 10, h + 18)
+    ctx.lineTo(centerX + 10, h + 18)
+    ctx.lineTo(centerX + 2, h - 2)
+    ctx.closePath()
+    ctx.fill()
+  }
+
+  // Chassis
+  const grad = ctx.createLinearGradient(centerX, 0, centerX, h)
+  grad.addColorStop(0, '#334155')
+  grad.addColorStop(0.4, '#1e293b')
+  grad.addColorStop(1, '#0f172a')
+  ctx.fillStyle = grad
+  ctx.beginPath()
+  ctx.arc(centerX, h / 2, 11, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.strokeStyle = '#020617'
+  ctx.lineWidth = 1.4
+  ctx.stroke()
+
+  // Padlock Emblem
+  ctx.fillStyle = '#f59e0b'
+  roundRect(ctx, 3, h / 2 - 2, 5.5, 5.5, 1.5)
+  ctx.fill()
+
+  // Scanner Eye
+  const eyeX = centerX + 3.5
+  const eyeY = h / 2
+  ctx.fillStyle = isAttack ? '#00f0ff' : '#0f172a'
+  ctx.beginPath()
+  ctx.arc(eyeX, eyeY, 5.5, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.strokeStyle = '#38bdf8'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  ctx.restore()
+}
+
+// 3. Cyber Packet Bat Sprite
+function renderPacketBat(ctx, bat, customAction = null, customFrame = null) {
+  ctx.save()
+  const frame = customFrame !== null ? customFrame : (bat.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    (customAction && customAction.startsWith('attack')) ||
+    bat.actionState === 'attack' ||
+    (bat.laserTimer && bat.laserTimer > 0)
+
+  const cycleFrame = Math.floor(frame / 6) % 4
+  ctx.translate(Math.round(bat.x || 0), Math.round(bat.y || 0))
+
+  if (bat.hitFlash > 0) {
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, 0, 0, bat.w || 28, bat.h || 20, 5)
+    ctx.fill()
+    ctx.restore()
+    return
+  }
+
+  const w = bat.w || 28
+  const h = bat.h || 20
+  const centerX = w / 2
+
+  // Wings
+  const wingStrokeY = cycleFrame === 0 ? -4 : cycleFrame === 1 ? 0 : cycleFrame === 2 ? 4 : 1
+  ctx.fillStyle = '#581c87'
+  ctx.beginPath()
+  ctx.moveTo(centerX - 4, 8)
+  ctx.lineTo(0, 3 + wingStrokeY)
+  ctx.lineTo(2, 16 + wingStrokeY * 0.5)
+  ctx.lineTo(centerX - 3, 13)
+  ctx.closePath()
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.moveTo(centerX + 4, 8)
+  ctx.lineTo(w, 3 + wingStrokeY)
+  ctx.lineTo(w - 2, 16 + wingStrokeY * 0.5)
+  ctx.lineTo(centerX + 3, 13)
+  ctx.closePath()
+  ctx.fill()
+
+  // Torso
+  ctx.fillStyle = '#1e1b4b'
+  roundRect(ctx, centerX - 6, 5, 12, 13, 4)
+  ctx.fill()
+
+  // Visor
+  ctx.fillStyle = '#06b6d4'
+  roundRect(ctx, centerX - 4.5, 7, 9, 4, 1.5)
+  ctx.fill()
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(centerX - 3, 13, 1.5, 2.5)
+  ctx.fillRect(centerX + 1.5, 13, 1.5, 2.5)
+
+  ctx.restore()
+}
+
+// 4. Malware Titan Golem Sprite
+function renderMalwareGolem(ctx, golem, customAction = null, customFrame = null) {
+  ctx.save()
+  const frame = customFrame !== null ? customFrame : (golem.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    (customAction && customAction.startsWith('attack')) ||
+    golem.actionState === 'attack' ||
+    (golem.laserTimer && golem.laserTimer > 0)
+
+  const cycleFrame = Math.floor(frame / 6) % 4
+  ctx.translate(Math.round(golem.x || 0), Math.round(golem.y || 0))
+
+  if (golem.hitFlash > 0) {
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, 0, 0, golem.w || 32, golem.h || 30, 6)
+    ctx.fill()
+    ctx.restore()
+    return
+  }
+
+  const w = golem.w || 32
+  const h = golem.h || 30
+  const centerX = w / 2
+
+  // Torso
+  ctx.fillStyle = '#1e293b'
+  roundRect(ctx, centerX - 10, 3, 20, 18, 5)
+  ctx.fill()
+
+  // Molten Core
+  const coreGrad = ctx.createRadialGradient(centerX, 12, 1, centerX, 12, 6)
+  coreGrad.addColorStop(0, '#ffffff')
+  coreGrad.addColorStop(0.3, '#fbbf24')
+  coreGrad.addColorStop(0.7, '#ea580c')
+  coreGrad.addColorStop(1, '#7c2d12')
+  ctx.fillStyle = coreGrad
+  ctx.beginPath()
+  ctx.arc(centerX, 12, 5.5, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Head
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, centerX - 6, -1, 12, 7, 3)
+  ctx.fill()
+  ctx.fillStyle = '#ea580c'
+  ctx.fillRect(centerX - 4, 1, 2.5, 2)
+  ctx.fillRect(centerX + 1.5, 1, 2.5, 2)
+
+  ctx.restore()
+}
+
+// ============================================================================
+// AUTHENTIC 16-BIT RETRO PIXEL ART CYBERNETIC ENEMIES (FROM SPRITE SHEETS)
+// ============================================================================
+
+// 1. Cybernetic Beetle Infantry
+function renderBeetleInfantry(ctx, mob, customAction = null, customFrame = null) {
+  ctx.save()
+  const frame = customFrame !== null ? customFrame : (mob.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    (customAction && customAction.startsWith('attack')) ||
+    mob.actionState === 'attack' ||
+    (mob.laserTimer && mob.laserTimer > 0)
+
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const attFrame = isAttack ? (customFrame !== null ? cycleFrame : (mob.attackPhase || mob.laserPhase || 0)) : 0
+
+  const w = mob.w || 34
+  const h = mob.h || 24
+  const centerX = w / 2
+
+  let bobY = 0
+  if (!isAttack) {
+    bobY = cycleFrame === 1 ? 1 : cycleFrame === 2 ? -1 : 0
+  } else {
+    bobY = attFrame === 0 ? 1 : attFrame === 3 ? 2 : 0
+  }
+
+  ctx.translate(Math.round(mob.x || 0), Math.round((mob.y || 0) + bobY))
+
+  if (mob.hitFlash > 0) {
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, 0, 0, w, h, 4)
+    ctx.fill()
+    ctx.restore()
+    return
+  }
+
+  // Hydraulic Piston Legs
+  const legStride = !isAttack
+    ? cycleFrame === 0 ? -2 : cycleFrame === 1 ? 0 : cycleFrame === 2 ? 2 : 0
+    : attFrame === 3 ? 1 : 0
+
+  ctx.fillStyle = '#1e293b'
+  ctx.fillRect(4 + legStride, h - 8, 3, 8)
+  ctx.fillRect(w - 7 - legStride, h - 8, 3, 8)
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(3 + legStride, h - 2, 5, 2)
+  ctx.fillRect(w - 8 - legStride, h - 2, 5, 2)
+
+  ctx.fillStyle = '#94a3b8'
+  ctx.fillRect(8 - legStride, h - 7, 2.5, 7)
+  ctx.fillRect(w - 11 + legStride, h - 7, 2.5, 7)
+  ctx.fillStyle = '#ea580c'
+  roundRect(ctx, 6 - legStride, h - 3, 5, 3, 1)
+  ctx.fill()
+  roundRect(ctx, w - 13 + legStride, h - 3, 5, 3, 1)
+  ctx.fill()
+
+  // Terracotta Armored Shell Body
+  const shellGrad = ctx.createLinearGradient(0, 2, 0, h - 4)
+  shellGrad.addColorStop(0, '#f97316')
+  shellGrad.addColorStop(0.3, '#ea580c')
+  shellGrad.addColorStop(0.8, '#c2410c')
+  shellGrad.addColorStop(1, '#7c2d12')
+  ctx.fillStyle = shellGrad
+  roundRect(ctx, 4, 3, w - 8, h - 8, 6)
+  ctx.fill()
+  ctx.strokeStyle = '#0f172a'
+  ctx.lineWidth = 1.2
+  ctx.stroke()
+
+  ctx.strokeStyle = '#7c2d12'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(centerX, 4)
+  ctx.lineTo(centerX, h - 6)
+  ctx.stroke()
+
+  ctx.fillStyle = '#fbbf24'
+  ctx.fillRect(7, 6, 1.5, 1.5)
+  ctx.fillRect(w - 9, 6, 1.5, 1.5)
+  ctx.fillRect(7, h - 10, 1.5, 1.5)
+  ctx.fillRect(w - 9, h - 10, 1.5, 1.5)
+
+  ctx.fillStyle = '#fdba74'
+  ctx.fillRect(8, 4.5, w - 16, 1.5)
+
+  // Dark Slate Head Segment with Antenna Sensors
+  ctx.fillStyle = '#1e293b'
+  roundRect(ctx, 0, 7, 7, 10, 2)
+  ctx.fill()
+  ctx.strokeStyle = '#0f172a'
+  ctx.lineWidth = 0.9
+  ctx.stroke()
+
+  ctx.strokeStyle = '#64748b'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(2, 7)
+  ctx.lineTo(-2, 3)
+  ctx.moveTo(2, 17)
+  ctx.lineTo(-2, 21)
+  ctx.stroke()
+  ctx.fillStyle = '#fbbf24'
+  ctx.fillRect(-3, 2, 2, 2)
+  ctx.fillRect(-3, 20, 2, 2)
+
+  // Golden Optical Eye Lens
+  const eyeX = 3
+  const eyeY = 12
+  const eyeR = 3.5
+
+  ctx.fillStyle = '#020617'
+  ctx.beginPath()
+  ctx.arc(eyeX, eyeY, eyeR + 1, 0, Math.PI * 2)
+  ctx.fill()
+
+  ctx.fillStyle = '#fbbf24'
+  ctx.beginPath()
+  ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
+  ctx.fill()
+
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(eyeX - 1, eyeY - 1, 1.5, 1.5)
+
+  // ATTACK Dynamics
+  if (isAttack) {
+    if (attFrame === 0) {
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.8)'
+      ctx.lineWidth = 1.5
+      ctx.beginPath()
+      ctx.arc(eyeX, eyeY, eyeR + 3, 0, Math.PI * 2)
+      ctx.stroke()
+    } else if (attFrame === 1) {
+      ctx.strokeStyle = '#00f0ff'
+      ctx.lineWidth = 1.5
+      ctx.beginPath()
+      ctx.arc(eyeX - 4, eyeY, 6, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.strokeStyle = '#fbbf24'
+      ctx.beginPath()
+      ctx.arc(eyeX - 8, eyeY, 9, 0, Math.PI * 2)
+      ctx.stroke()
+    } else if (attFrame === 2) {
+      const bLen = 140
+      ctx.save()
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.45)'
+      ctx.lineWidth = 8
+      ctx.beginPath()
+      ctx.moveTo(eyeX, eyeY)
+      ctx.lineTo(eyeX - bLen, eyeY)
+      ctx.stroke()
+
+      ctx.strokeStyle = '#38bdf8'
+      ctx.lineWidth = 4.5
+      ctx.beginPath()
+      ctx.moveTo(eyeX, eyeY)
+      ctx.lineTo(eyeX - bLen, eyeY)
+      ctx.stroke()
+
+      ctx.strokeStyle = '#ffffff'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(eyeX, eyeY)
+      ctx.lineTo(eyeX - bLen, eyeY)
+      ctx.stroke()
+
+      ;[0, 45, 90, 135, 180, 225, 270, 315].forEach((deg) => {
+        const rad = (deg * Math.PI) / 180
+        ctx.fillStyle = '#fde047'
+        ctx.fillRect(eyeX + Math.cos(rad) * 6 - 1, eyeY + Math.sin(rad) * 6 - 1, 2, 2)
+      })
+      ctx.restore()
+    } else if (attFrame === 3) {
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.8)'
+      ctx.beginPath()
+      ctx.arc(w - 6, 0, 4, 0, Math.PI * 2)
+      ctx.arc(w - 2, -4, 5, 0, Math.PI * 2)
+      ctx.arc(w - 10, -3, 3.5, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+
+  ctx.restore()
+}
+
+// 2. Cyber-Mantis Sniper
+function renderMantisSniper(ctx, mob, customAction = null, customFrame = null) {
+  ctx.save()
+  const frame = customFrame !== null ? customFrame : (mob.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    (customAction && customAction.startsWith('attack')) ||
+    mob.actionState === 'attack' ||
+    (mob.laserTimer && mob.laserTimer > 0)
+
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const attFrame = isAttack ? (customFrame !== null ? cycleFrame : (mob.attackPhase || mob.laserPhase || 0)) : 0
+
+  const w = mob.w || 36
+  const h = mob.h || 32
+
+  let bobY = 0
+  if (!isAttack) {
+    bobY = cycleFrame === 1 ? -1.5 : cycleFrame === 2 ? 1 : 0
+  } else {
+    bobY = attFrame === 3 ? 2 : 0
+  }
+
+  ctx.translate(Math.round(mob.x || 0), Math.round((mob.y || 0) + bobY))
+
+  if (mob.hitFlash > 0) {
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, 0, 0, w, h, 4)
+    ctx.fill()
+    ctx.restore()
+    return
+  }
+
+  const legOffset = !isAttack
+    ? cycleFrame === 0 ? -2 : cycleFrame === 1 ? 2 : cycleFrame === 2 ? 0 : -1
+    : attFrame === 3 ? 3 : 0
+
+  ctx.strokeStyle = '#334155'
+  ctx.lineWidth = 1.6
+  ctx.beginPath()
+  ctx.moveTo(w - 12 + legOffset, h - 14)
+  ctx.lineTo(w - 6 + legOffset, h - 6)
+  ctx.lineTo(w - 8 + legOffset, h)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(w - 20 - legOffset, h - 14)
+  ctx.lineTo(w - 26 - legOffset, h - 6)
+  ctx.lineTo(w - 24 - legOffset, h)
+  ctx.stroke()
+
+  ctx.fillStyle = '#059669'
+  ctx.fillRect(w - 10 + legOffset, h - 2, 4, 2)
+  ctx.fillRect(w - 26 - legOffset, h - 2, 4, 2)
+
+  const spineGrad = ctx.createLinearGradient(0, 0, 0, h)
+  spineGrad.addColorStop(0, '#34d399')
+  spineGrad.addColorStop(0.3, '#10b981')
+  spineGrad.addColorStop(0.8, '#059669')
+  spineGrad.addColorStop(1, '#064e3b')
+  ctx.fillStyle = spineGrad
+
+  roundRect(ctx, w - 24, 10, 16, 12, 4)
+  ctx.fill()
+  ctx.strokeStyle = '#022c22'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  roundRect(ctx, w - 16, 16, 12, 12, 5)
+  ctx.fill()
+  ctx.stroke()
+
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(w - 14, 12, 6, 1.5)
+  ctx.fillRect(w - 14, 15, 6, 1.5)
+
+  const headX = w - 28
+  const headY = 6
+  ctx.fillStyle = '#059669'
+  ctx.beginPath()
+  ctx.moveTo(headX + 8, headY)
+  ctx.lineTo(headX, headY + 5)
+  ctx.lineTo(headX + 4, headY + 11)
+  ctx.lineTo(headX + 10, headY + 7)
+  ctx.closePath()
+  ctx.fill()
+  ctx.strokeStyle = '#022c22'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  ctx.fillStyle = '#ef4444'
+  ctx.beginPath()
+  ctx.arc(headX + 2, headY + 6, 2.5, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(headX + 1.5, headY + 5, 1, 1)
+
+  let scythePitch = 0
+  if (!isAttack) {
+    scythePitch = cycleFrame === 0 ? 0.1 : cycleFrame === 1 ? -0.15 : cycleFrame === 2 ? 0.2 : 0
+  } else {
+    scythePitch = attFrame === 0 ? -0.1 : attFrame === 1 ? 0 : attFrame === 2 ? 0 : 0.25
+  }
+
+  ctx.save()
+  ctx.translate(headX + 4, headY + 8)
+  ctx.rotate(scythePitch)
+
+  if (!isAttack || attFrame === 0) {
+    ctx.strokeStyle = '#10b981'
+    ctx.lineWidth = 2.5
+    ctx.beginPath()
+    ctx.moveTo(0, 0)
+    ctx.lineTo(-10, -6)
+    ctx.lineTo(-14, 4)
+    ctx.stroke()
+
+    ctx.strokeStyle = '#e2e8f0'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(-2, 0)
+    ctx.lineTo(-10, -5)
+    ctx.lineTo(-14, 4)
+    ctx.stroke()
+  } else {
+    ctx.fillStyle = '#1e293b'
+    roundRect(ctx, -20, -3, 20, 5, 1.5)
+    ctx.fill()
+    ctx.fillStyle = '#10b981'
+    ctx.fillRect(-18, -2, 16, 1.5)
+    ctx.fillStyle = '#00f0ff'
+    ctx.fillRect(-22, -1.5, 3, 2)
+  }
+  ctx.restore()
+
+  if (isAttack) {
+    if (attFrame === 0) {
+      ctx.save()
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)'
+      ctx.lineWidth = 1.2
+      ctx.beginPath()
+      ctx.moveTo(headX + 2 - 12, headY + 6)
+      ctx.lineTo(headX + 2 + 12, headY + 6)
+      ctx.moveTo(headX + 2, headY + 6 - 12)
+      ctx.lineTo(headX + 2, headY + 6 + 12)
+      ctx.stroke()
+      ctx.fillStyle = '#f87171'
+      ctx.beginPath()
+      ctx.arc(headX + 2, headY + 6, 4, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.restore()
+    } else if (attFrame === 1) {
+      ctx.fillStyle = '#00f0ff'
+      ctx.beginPath()
+      ctx.arc(headX - 16, headY + 8, 4, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.strokeStyle = '#ffffff'
+      ctx.lineWidth = 1
+      ctx.stroke()
+    } else if (attFrame === 2) {
+      const bLen = 160
+      ctx.save()
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.5)'
+      ctx.lineWidth = 7
+      ctx.beginPath()
+      ctx.moveTo(headX - 16, headY + 8)
+      ctx.lineTo(headX - 16 - bLen, headY + 8)
+      ctx.stroke()
+
+      ctx.strokeStyle = '#38bdf8'
+      ctx.lineWidth = 3.5
+      ctx.beginPath()
+      ctx.moveTo(headX - 16, headY + 8)
+      ctx.lineTo(headX - 16 - bLen, headY + 8)
+      ctx.stroke()
+
+      ctx.strokeStyle = '#ffffff'
+      ctx.lineWidth = 1.6
+      ctx.beginPath()
+      ctx.moveTo(headX - 16, headY + 8)
+      ctx.lineTo(headX - 16 - bLen, headY + 8)
+      ctx.stroke()
+
+      const starX = headX - 16
+      const starY = headY + 8
+      ctx.fillStyle = '#fde047'
+      ;[0, 45, 90, 135].forEach((deg) => {
+        const rad = (deg * Math.PI) / 180
+        ctx.fillRect(starX + Math.cos(rad) * 6 - 1, starY + Math.sin(rad) * 6 - 1, 2.5, 2.5)
+        ctx.fillRect(starX - Math.cos(rad) * 6 - 1, starY - Math.sin(rad) * 6 - 1, 2.5, 2.5)
+      })
+      ctx.restore()
+    } else if (attFrame === 3) {
+      ctx.fillStyle = 'rgba(241, 245, 249, 0.85)'
+      ctx.beginPath()
+      ctx.arc(w - 8, 8, 4.5, 0, Math.PI * 2)
+      ctx.arc(w - 2, 4, 6, 0, Math.PI * 2)
+      ctx.arc(w + 4, 6, 4, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+
+  ctx.restore()
+}
+
+// 3. Volt-Hornet Drone
+function renderVoltHornet(ctx, mob, customAction = null, customFrame = null) {
+  ctx.save()
+  const frame = customFrame !== null ? customFrame : (mob.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    (customAction && customAction.startsWith('attack')) ||
+    mob.actionState === 'attack' ||
+    (mob.laserTimer && mob.laserTimer > 0)
+
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const attFrame = isAttack ? (customFrame !== null ? cycleFrame : (mob.attackPhase || mob.laserPhase || 0)) : 0
+
+  const w = mob.w || 30
+  const h = mob.h || 26
+  const centerX = w / 2
+
+  let hoverY = 0
+  if (!isAttack) {
+    hoverY = Math.sin(frame * 0.25) * 3
+  } else {
+    hoverY = attFrame === 0 ? 2 : attFrame === 1 ? -1 : 0
+  }
+
+  ctx.translate(Math.round(mob.x || 0), Math.round((mob.y || 0) + hoverY))
+
+  if (mob.hitFlash > 0) {
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, 0, 0, w, h, 4)
+    ctx.fill()
+    ctx.restore()
+    return
+  }
+
+  const wingAngle = cycleFrame === 0 ? 0.3 : cycleFrame === 1 ? 0 : cycleFrame === 2 ? -0.3 : 0.1
+  ctx.save()
+  ctx.translate(centerX, 8)
+  ctx.rotate(wingAngle)
+
+  ctx.fillStyle = 'rgba(224, 242, 254, 0.75)'
+  ctx.beginPath()
+  ctx.ellipse(0, -10, 14, 4.5, -0.2, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.strokeStyle = '#38bdf8'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'
+  ctx.lineWidth = 0.8
+  ctx.beginPath()
+  ctx.moveTo(-10, -10)
+  ctx.lineTo(10, -10)
+  ctx.stroke()
+  ctx.restore()
+
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, 4, 10, 8, 9, 3)
+  ctx.fill()
+  ctx.strokeStyle = '#334155'
+  ctx.lineWidth = 0.9
+  ctx.stroke()
+
+  ctx.fillStyle = '#06b6d4'
+  ctx.fillRect(4, 12, 3, 4.5)
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(4.5, 12.5, 1.2, 1.2)
+
+  let abdCurl = 0
+  if (isAttack && (attFrame === 0 || attFrame === 1)) {
+    abdCurl = -0.5
+  }
+
+  ctx.save()
+  ctx.translate(12, 14)
+  ctx.rotate(abdCurl)
+
+  ctx.fillStyle = '#eab308'
+  roundRect(ctx, 0, -4, 16, 12, 4)
+  ctx.fill()
+  ctx.strokeStyle = '#020617'
+  ctx.lineWidth = 1.1
+  ctx.stroke()
+
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(4, -4, 3.5, 12)
+  ctx.fillRect(10, -4, 3.5, 12)
+
+  ctx.fillStyle = '#06b6d4'
+  ctx.fillRect(15, 0, 2, 4)
+  ctx.fillStyle = 'rgba(6, 182, 212, 0.6)'
+  ctx.fillRect(17, 0.5, 3, 3)
+
+  ctx.fillStyle = '#475569'
+  ctx.beginPath()
+  ctx.moveTo(16, 2)
+  ctx.lineTo(22, 2)
+  ctx.lineTo(16, 5)
+  ctx.closePath()
+  ctx.fill()
+  ctx.fillStyle = '#00f0ff'
+  ctx.fillRect(20, 1.5, 2, 1.5)
+  ctx.restore()
+
+  if (isAttack) {
+    if (attFrame === 1) {
+      ctx.strokeStyle = '#67e8f9'
+      ctx.lineWidth = 1.4
+      ctx.beginPath()
+      ctx.moveTo(4, 8)
+      ctx.lineTo(0, 14)
+      ctx.lineTo(6, 18)
+      ctx.lineTo(2, 22)
+      ctx.stroke()
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 13, 2, 2)
+      ctx.fillRect(2, 21, 2, 2)
+    } else if (attFrame === 2) {
+      const needles = [
+        { x: -14, y: 10, vy: -2 },
+        { x: -22, y: 14, vy: 0 },
+        { x: -14, y: 18, vy: 2 },
+      ]
+
+      ctx.save()
+      needles.forEach((nd) => {
+        ctx.fillStyle = '#00f0ff'
+        roundRect(ctx, nd.x, nd.y, 10, 2.5, 1)
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(nd.x + 2, nd.y + 0.5, 6, 1.5)
+        ctx.fillStyle = '#fde047'
+        ctx.fillRect(nd.x - 2, nd.y - 1, 3, 4.5)
+      })
+
+      ctx.fillStyle = '#facc15'
+      ctx.fillRect(0, 12, 4, 4)
+      ctx.restore()
+    } else if (attFrame === 3) {
+      ctx.fillStyle = '#67e8f9'
+      ctx.fillRect(-4, 12, 2, 2)
+      ctx.fillRect(-8, 16, 1.5, 1.5)
+      ctx.fillRect(0, 8, 1.5, 1.5)
+    }
+  }
+
+  ctx.restore()
+}
+
+// 4. Centipede Artillery
+function renderCentipedeArtillery(ctx, mob, customAction = null, customFrame = null) {
+  ctx.save()
+  const frame = customFrame !== null ? customFrame : (mob.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    (customAction && customAction.startsWith('attack')) ||
+    mob.actionState === 'attack' ||
+    (mob.laserTimer && mob.laserTimer > 0)
+
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const attFrame = isAttack ? (customFrame !== null ? cycleFrame : (mob.attackPhase || mob.laserPhase || 0)) : 0
+
+  const w = mob.w || 44
+  const h = mob.h || 22
+
+  let archAngle = 0
+  if (!isAttack) {
+    archAngle = cycleFrame === 1 ? 0.05 : cycleFrame === 2 ? -0.05 : 0
+  } else {
+    archAngle = attFrame === 0 ? -0.25 : attFrame === 1 ? -0.35 : attFrame === 2 ? -0.35 : 0
+  }
+
+  ctx.translate(Math.round(mob.x || 0), Math.round(mob.y || 0))
+
+  if (mob.hitFlash > 0) {
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, 0, 0, w, h, 4)
+    ctx.fill()
+    ctx.restore()
+    return
+  }
+
+  ctx.fillStyle = '#334155'
+  for (let l = 0; l < 5; l++) {
+    const lx = 6 + l * 8
+    const legBob = !isAttack
+      ? ((cycleFrame + l) % 2 === 0 ? 0 : -2)
+      : (attFrame > 0 && l < 2 ? -5 : 0)
+
+    ctx.fillRect(lx, h - 6 + legBob, 2.5, 6 - legBob)
+    ctx.fillStyle = '#1e1b4b'
+    ctx.fillRect(lx - 1, h - 2, 4, 2)
+    ctx.fillStyle = '#334155'
+  }
+
+  ctx.save()
+  if (archAngle !== 0) {
+    ctx.rotate(archAngle)
+  }
+
+  const pColors = ['#a855f7', '#9333ea', '#7e22ce', '#6b21a8', '#581c87']
+  for (let s = 4; s >= 0; s--) {
+    const sx = 4 + s * 7.5
+    ctx.fillStyle = pColors[s % pColors.length]
+    roundRect(ctx, sx, 4, 10, 12, 3)
+    ctx.fill()
+    ctx.strokeStyle = '#1e1b4b'
+    ctx.lineWidth = 1
+    ctx.stroke()
+
+    ctx.fillStyle = '#d8b4fe'
+    ctx.fillRect(sx + 1.5, 5, 7, 1.5)
+  }
+
+  ctx.fillStyle = '#581c87'
+  roundRect(ctx, 0, 6, 8, 9, 2)
+  ctx.fill()
+  ctx.strokeStyle = '#1e1b4b'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  ctx.fillStyle = '#22c55e'
+  ctx.fillRect(0, 8.5, 3.5, 3.5)
+  ctx.fillStyle = '#86efac'
+  ctx.fillRect(0.5, 9, 1.5, 1.5)
+
+  if (isAttack) {
+    if (attFrame === 1 || attFrame === 2) {
+      ctx.fillStyle = '#14532d'
+      roundRect(ctx, 16, 0, 12, 8, 2)
+      ctx.fill()
+      ctx.fillStyle = '#22c55e'
+      ctx.fillRect(18, 1, 8, 4)
+      ctx.fillStyle = '#86efac'
+      ctx.fillRect(20, 2, 4, 2)
+
+      ctx.fillStyle = '#9333ea'
+      ctx.beginPath()
+      ctx.moveTo(15, 2)
+      ctx.lineTo(13, -5)
+      ctx.lineTo(20, 2)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.moveTo(25, 2)
+      ctx.lineTo(30, -5)
+      ctx.lineTo(29, 2)
+      ctx.fill()
+    }
+
+    if (attFrame === 2) {
+      const mortX = -10
+      const mortY = -18
+      ctx.fillStyle = '#15803d'
+      roundRect(ctx, mortX, mortY, 8, 8, 2)
+      ctx.fill()
+      ctx.fillStyle = '#4ade80'
+      ctx.fillRect(mortX + 1.5, mortY + 1.5, 5, 5)
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(mortX + 2.5, mortY + 2.5, 2, 2)
+
+      ctx.strokeStyle = 'rgba(34, 197, 94, 0.7)'
+      ctx.lineWidth = 1.5
+      ctx.setLineDash([3, 2])
+      ctx.beginPath()
+      ctx.moveTo(20, -2)
+      ctx.quadraticCurveTo(5, -22, mortX, mortY)
+      ctx.stroke()
+      ctx.setLineDash([])
+    } else if (attFrame === 3) {
+      ctx.fillStyle = 'rgba(74, 222, 128, 0.75)'
+      ctx.beginPath()
+      ctx.arc(14, 0, 4, 0, Math.PI * 2)
+      ctx.arc(22, -3, 5, 0, Math.PI * 2)
+      ctx.arc(30, 0, 4, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+  ctx.restore()
+
+  ctx.restore()
+}
+
+// 5. Hydraulic Crab Juggernaut
+function renderCrabJuggernaut(ctx, mob, customAction = null, customFrame = null) {
+  ctx.save()
+  const frame = customFrame !== null ? customFrame : (mob.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    (customAction && customAction.startsWith('attack')) ||
+    mob.actionState === 'attack' ||
+    (mob.laserTimer && mob.laserTimer > 0)
+
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const attFrame = isAttack ? (customFrame !== null ? cycleFrame : (mob.attackPhase || mob.laserPhase || 0)) : 0
+
+  const w = mob.w || 42
+  const h = mob.h || 32
+  const centerX = w / 2
+
+  let tilt = 0
+  if (!isAttack) {
+    tilt = cycleFrame === 1 ? 0.04 : cycleFrame === 3 ? -0.04 : 0
+  } else {
+    tilt = attFrame === 0 ? -0.08 : attFrame === 1 ? 0.08 : 0
+  }
+
+  ctx.translate(Math.round(mob.x || 0), Math.round(mob.y || 0))
+
+  if (mob.hitFlash > 0) {
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, 0, 0, w, h, 6)
+    ctx.fill()
+    ctx.restore()
+    return
+  }
+
+  const lStep = !isAttack
+    ? cycleFrame === 0 ? -2 : cycleFrame === 1 ? 0 : cycleFrame === 2 ? 2 : 0
+    : 0
+
+  ctx.fillStyle = '#1e293b'
+  ctx.fillRect(4 + lStep, h - 8, 6, 8)
+  ctx.fillRect(w - 10 - lStep, h - 8, 6, 8)
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(2 + lStep, h - 2, 8, 3)
+  ctx.fillRect(w - 12 - lStep, h - 2, 8, 3)
+
+  ctx.fillStyle = '#1e293b'
+  ctx.fillRect(centerX - 8, 0, 4, 8)
+  ctx.fillRect(centerX + 4, 0, 4, 8)
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(centerX - 9, 0, 6, 2)
+  ctx.fillRect(centerX + 3, 0, 6, 2)
+
+  ctx.save()
+  if (tilt !== 0) ctx.rotate(tilt)
+
+  const crabGrad = ctx.createLinearGradient(0, 6, 0, h - 6)
+  crabGrad.addColorStop(0, '#3b82f6')
+  crabGrad.addColorStop(0.4, '#2563eb')
+  crabGrad.addColorStop(0.8, '#1d4ed8')
+  crabGrad.addColorStop(1, '#1e3a8a')
+  ctx.fillStyle = crabGrad
+  roundRect(ctx, 6, 6, w - 12, h - 12, 6)
+  ctx.fill()
+  ctx.strokeStyle = '#0f172a'
+  ctx.lineWidth = 1.4
+  ctx.stroke()
+
+  ctx.fillStyle = '#eab308'
+  roundRect(ctx, 10, 8, w - 20, 4, 1)
+  ctx.fill()
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(14, 8, 3, 4)
+  ctx.fillRect(21, 8, 3, 4)
+  ctx.fillRect(28, 8, 3, 4)
+
+  ctx.fillStyle = '#ea580c'
+  ctx.fillRect(centerX - 6, 14, 12, 3.5)
+  ctx.fillStyle = '#fde047'
+  ctx.fillRect(centerX - 4, 14.5, 8, 1.5)
+
+  let clawRaise = 0
+  if (!isAttack) {
+    clawRaise = cycleFrame === 1 ? -2 : cycleFrame === 3 ? 2 : 0
+  } else {
+    clawRaise = attFrame === 0 ? -12 : attFrame === 1 ? 4 : attFrame === 2 ? 6 : 0
+  }
+
+  ctx.fillStyle = '#2563eb'
+  roundRect(ctx, 0, 10 + clawRaise, 8, 12, 3)
+  ctx.fill()
+  ctx.strokeStyle = '#0f172a'
+  ctx.lineWidth = 1
+  ctx.stroke()
+  ctx.fillStyle = isAttack && attFrame === 0 ? '#fb923c' : '#ea580c'
+  ctx.fillRect(2, 12 + clawRaise, 4, 4)
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(3, 13 + clawRaise, 1.5, 1.5)
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(-2, 16 + clawRaise, 4, 3)
+  ctx.fillRect(1, 19 + clawRaise, 3, 3)
+
+  ctx.fillStyle = '#2563eb'
+  roundRect(ctx, w - 8, 10 - clawRaise * 0.5, 8, 12, 3)
+  ctx.fill()
+  ctx.stroke()
+  ctx.fillStyle = isAttack && attFrame === 0 ? '#fb923c' : '#ea580c'
+  ctx.fillRect(w - 6, 12 - clawRaise * 0.5, 4, 4)
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(w - 5, 13 - clawRaise * 0.5, 1.5, 1.5)
+  ctx.fillStyle = '#0f172a'
+  ctx.fillRect(w - 2, 16 - clawRaise * 0.5, 4, 3)
+  ctx.fillRect(w - 4, 19 - clawRaise * 0.5, 3, 3)
+  ctx.restore()
+
+  if (isAttack) {
+    if (attFrame === 2) {
+      ctx.save()
+      ctx.fillStyle = 'rgba(251, 146, 60, 0.45)'
+      ctx.beginPath()
+      ctx.ellipse(centerX, h, 28, 8, 0, 0, Math.PI * 2)
+      ctx.fill()
+
+      ctx.strokeStyle = '#fde047'
+      ctx.lineWidth = 1.8
+      ;[-24, -14, -4, 6, 16, 26].forEach((cx) => {
+        ctx.beginPath()
+        ctx.moveTo(centerX + cx, h)
+        ctx.lineTo(centerX + cx - 4, h + 3)
+        ctx.lineTo(centerX + cx + 2, h + 6)
+        ctx.stroke()
+      })
+
+      ctx.fillStyle = '#ffffff'
+      ;[-18, -8, 8, 18].forEach((sx) => {
+        ctx.fillRect(centerX + sx, h - 4 - Math.random() * 6, 2.5, 2.5)
+      })
+      ctx.restore()
+    } else if (attFrame === 3) {
+      ctx.fillStyle = 'rgba(241, 245, 249, 0.8)'
+      ctx.beginPath()
+      ctx.arc(centerX - 6, -4, 4, 0, Math.PI * 2)
+      ctx.arc(centerX - 8, -8, 5, 0, Math.PI * 2)
+      ctx.arc(centerX + 6, -4, 4, 0, Math.PI * 2)
+      ctx.arc(centerX + 8, -8, 5, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+
+  ctx.restore()
+}
+
+// 6. Quantum Moth Phantom
+function renderMothPhantom(ctx, mob, customAction = null, customFrame = null) {
+  ctx.save()
+  const frame = customFrame !== null ? customFrame : (mob.frame || 0)
+  const isAttack =
+    customAction === 'attack' ||
+    (customAction && customAction.startsWith('attack')) ||
+    mob.actionState === 'attack' ||
+    (mob.laserTimer && mob.laserTimer > 0)
+
+  const cycleFrame = Math.floor(frame / 6) % 4
+  const attFrame = isAttack ? (customFrame !== null ? cycleFrame : (mob.attackPhase || mob.laserPhase || 0)) : 0
+
+  const w = mob.w || 38
+  const h = mob.h || 32
+  const centerX = w / 2
+
+  let floatY = 0
+  if (!isAttack) {
+    floatY = Math.sin(frame * 0.2) * 3
+  } else {
+    floatY = attFrame === 1 ? -2 : attFrame === 3 ? 1 : 0
+  }
+
+  if (isAttack && attFrame === 3) {
+    ctx.globalAlpha = 0.38
+  }
+
+  ctx.translate(Math.round(mob.x || 0), Math.round((mob.y || 0) + floatY))
+
+  if (mob.hitFlash > 0) {
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, 0, 0, w, h, 6)
+    ctx.fill()
+    ctx.restore()
+    return
+  }
+
+  const wingSpread = !isAttack
+    ? (cycleFrame === 0 ? 1.0 : cycleFrame === 1 ? 0.75 : cycleFrame === 2 ? 0.6 : 0.85)
+    : (attFrame === 1 ? 0.5 : 1.0)
+
+  // Left Wing
+  ctx.save()
+  ctx.translate(centerX - 4, 12)
+  ctx.scale(wingSpread, 1)
+
+  const wGrad = ctx.createLinearGradient(-18, -12, 0, 14)
+  wGrad.addColorStop(0, '#ec4899')
+  wGrad.addColorStop(0.5, '#c084fc')
+  wGrad.addColorStop(1, '#7c3aed')
+  ctx.fillStyle = wGrad
+
+  ctx.beginPath()
+  ctx.moveTo(0, 0)
+  ctx.lineTo(-18, -12)
+  ctx.lineTo(-16, 6)
+  ctx.lineTo(0, 10)
+  ctx.closePath()
+  ctx.fill()
+  ctx.strokeStyle = '#4c1d95'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  ctx.strokeStyle = '#ffffff'
+  ctx.lineWidth = 0.8
+  ctx.beginPath()
+  ctx.moveTo(-2, 0)
+  ctx.lineTo(-12, -6)
+  ctx.lineTo(-10, 2)
+  ctx.stroke()
+  ctx.fillStyle = '#38bdf8'
+  ctx.fillRect(-13, -7, 2, 2)
+  ctx.fillRect(-11, 1, 2, 2)
+  ctx.restore()
+
+  // Right Wing
+  ctx.save()
+  ctx.translate(centerX + 4, 12)
+  ctx.scale(wingSpread, 1)
+
+  ctx.fillStyle = wGrad
+  ctx.beginPath()
+  ctx.moveTo(0, 0)
+  ctx.lineTo(18, -12)
+  ctx.lineTo(16, 6)
+  ctx.lineTo(0, 10)
+  ctx.closePath()
+  ctx.fill()
+  ctx.strokeStyle = '#4c1d95'
+  ctx.lineWidth = 1
+  ctx.stroke()
+
+  ctx.strokeStyle = '#ffffff'
+  ctx.lineWidth = 0.8
+  ctx.beginPath()
+  ctx.moveTo(2, 0)
+  ctx.lineTo(12, -6)
+  ctx.lineTo(10, 2)
+  ctx.stroke()
+  ctx.fillStyle = '#38bdf8'
+  ctx.fillRect(11, -7, 2, 2)
+  ctx.fillRect(9, 1, 2, 2)
+  ctx.restore()
+
+  // Obsidian Body & Hot Magenta Optics
+  ctx.fillStyle = '#0f172a'
+  roundRect(ctx, centerX - 4, 6, 8, 16, 4)
+  ctx.fill()
+  ctx.strokeStyle = '#38bdf8'
+  ctx.lineWidth = 0.8
+  ctx.stroke()
+
+  ctx.strokeStyle = '#a855f7'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(centerX - 2, 6)
+  ctx.lineTo(centerX - 6, -2)
+  ctx.moveTo(centerX + 2, 6)
+  ctx.lineTo(centerX + 6, -2)
+  ctx.stroke()
+
+  ctx.fillStyle = '#f43f5e'
+  ctx.fillRect(centerX - 3, 9, 2, 2.5)
+  ctx.fillRect(centerX + 1, 9, 2, 2.5)
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(centerX - 2.5, 9.5, 1, 1)
+  ctx.fillRect(centerX + 1.5, 9.5, 1, 1)
+
+  if (isAttack) {
+    if (attFrame === 0) {
+      ctx.fillStyle = '#22c55e'
+      ctx.font = 'bold 6px monospace'
+      ctx.fillText('110', centerX - 16, 4)
+      ctx.fillText('010', centerX + 8, 8)
+      ctx.strokeStyle = 'rgba(236, 72, 153, 0.65)'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(0, 14)
+      ctx.lineTo(w, 14)
+      ctx.stroke()
+    } else if (attFrame === 2) {
+      const dX = centerX - 18
+      const dY = 14
+      ;[6, 12, 18].forEach((dR, idx) => {
+        ctx.strokeStyle = idx === 0 ? '#ffffff' : idx === 1 ? '#38bdf8' : '#ec4899'
+        ctx.lineWidth = 1.6
+        ctx.beginPath()
+        ctx.moveTo(dX, dY - dR)
+        ctx.lineTo(dX + dR, dY)
+        ctx.lineTo(dX, dY + dR)
+        ctx.lineTo(dX - dR, dY)
+        ctx.closePath()
+        ctx.stroke()
+      })
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(dX - 1.5, dY - 1.5, 3, 3)
+    }
+  }
+
+  ctx.restore()
+}
+
+export default function TestingLab({ onNavigate, savedCount = 0, compareCount = 0 }) {
   // Main View Switch: 'arena' (Live Console Combat Duel) vs 'sprites' (Sprite Frame Inspector)
   const [viewMode, setViewMode] = useState('arena')
 
@@ -1554,7 +2979,7 @@ export default function TestingLab({ onNavigate }) {
   const [godMode, setGodMode] = useState(false)
   const [isAutoMode, setIsAutoMode] = useState(false) // Default manual in test lab so player controls directly
   const [gameMode, setGameMode] = useState('campaign')
-  const [soundEnabled, setSoundEnabled] = useState(true)
+  const [soundEnabled, setSoundEnabled] = useState(() => !isSoundMuted())
   const [musicActive, setMusicActive] = useState(false)
   const [volume, setVolume] = useState(() => getMasterVolume() || 0.75)
   const [duelCount, setDuelCount] = useState(1)
@@ -1608,7 +3033,7 @@ export default function TestingLab({ onNavigate }) {
       }
       if (category === 'bosses' && engineRef.current.spawnBoss) {
         engineRef.current.spawnBoss(target.id)
-      } else if (category === 'enemies' && engineRef.current.spawnEnemy) {
+      } else if (engineRef.current.spawnEnemy) {
         engineRef.current.spawnEnemy(target.id)
       }
     }
@@ -1820,707 +3245,44 @@ export default function TestingLab({ onNavigate }) {
           renderBossMech(ctx, dummyBoss, actionType, f)
         }
       } else {
+        const dummyMob = {
+          w: activeTarget.w || (entityId === 'centipede_artillery' ? 44 : entityId === 'crab_juggernaut' ? 42 : entityId === 'moth_phantom' ? 38 : entityId === 'mantis_sniper' ? 36 : 34),
+          h: activeTarget.h || (entityId === 'mantis_sniper' || entityId === 'crab_juggernaut' || entityId === 'moth_phantom' ? 32 : entityId === 'centipede_artillery' ? 22 : 24),
+          hp: activeTarget.hp,
+          maxHp: activeTarget.hp,
+          actionState: animState.toUpperCase(),
+          hitFlash: animState === 'hit' || animState === 'hurt' ? 10 : 0,
+          color: activeTarget.color,
+          attackPhase: Math.floor(f / 6) % 4,
+          laserPhase: Math.floor(f / 6) % 4,
+          laserTimer: animState.startsWith('attack') ? 12 : 0,
+        }
+
+        const isAtt = animState.startsWith('attack')
+        const actionType = isAtt ? 'attack' : 'idle'
+
         if (entityId === 'glitch_bug') {
-          const cycleFrame = Math.floor(f / 6) % 4
-          const isAtt = animState === 'attack'
-          const bobY = isAtt ? 0 : cycleFrame === 1 ? 2 : cycleFrame === 2 ? -2 : 0
-          const dw = 32
-          const dh = 30
-          const cX = dw / 2
-
-          ctx.save()
-          ctx.translate(0, bobY)
-
-          if (animState === 'hurt') {
-            ctx.fillStyle = '#ffffff'
-            roundRect(ctx, 4, 4, dw - 8, dh - 6, 6)
-            ctx.fill()
-            ctx.restore()
-            return
-          }
-
-          // Top Propeller Mast & Rotor
-          const rAng = isAtt ? f * 0.4 : cycleFrame * (Math.PI / 2) + f * 0.15
-          const bSpan = Math.cos(rAng) * 16
-          const bThick = Math.abs(Math.sin(rAng)) * 2.5 + 1.5
-
-          ctx.fillStyle = '#1e293b'
-          ctx.fillRect(cX - 1.5, -4, 3, 6)
-          ctx.fillStyle = '#64748b'
-          ctx.fillRect(cX - 1, -4, 2, 3)
-
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.45)'
-          ctx.beginPath()
-          ctx.ellipse(cX, -4.5, 17, 3, 0, 0, Math.PI * 2)
-          ctx.fill()
-
-          ctx.strokeStyle = '#334155'
-          ctx.lineWidth = bThick
-          ctx.beginPath()
-          ctx.moveTo(cX - bSpan, -4.5)
-          ctx.lineTo(cX + bSpan, -4.5)
-          ctx.stroke()
-
-          ctx.strokeStyle = '#cbd5e1'
-          ctx.lineWidth = 1.2
-          ctx.beginPath()
-          ctx.moveTo(cX - bSpan * 0.7, -4.5)
-          ctx.lineTo(cX + bSpan * 0.7, -4.5)
-          ctx.stroke()
-
-          ctx.fillStyle = '#94a3b8'
-          ctx.fillRect(cX - 2, -6, 4, 3)
-
-          // Clamp Arms
-          ctx.fillStyle = '#1e293b'
-          roundRect(ctx, 1, 8, 6, 14, 2)
-          ctx.fill()
-          ctx.strokeStyle = '#0f172a'
-          ctx.stroke()
-          ctx.fillStyle = '#475569'
-          ctx.fillRect(2, 10, 4, 4)
-          ctx.fillStyle = '#0f172a'
-          ctx.fillRect(2, 18, 4, 3)
-
-          ctx.fillStyle = '#1e293b'
-          roundRect(ctx, dw - 7, 8, 6, 14, 2)
-          ctx.fill()
-          ctx.strokeStyle = '#0f172a'
-          ctx.stroke()
-          ctx.fillStyle = '#475569'
-          ctx.fillRect(dw - 6, 10, 4, 4)
-          ctx.fillStyle = '#0f172a'
-          ctx.fillRect(dw - 6, 18, 4, 3)
-
-          // Spherical Chassis
-          const grad = ctx.createLinearGradient(cX, 0, cX, dh)
-          grad.addColorStop(0, '#475569')
-          grad.addColorStop(0.3, '#334155')
-          grad.addColorStop(0.7, '#1e293b')
-          grad.addColorStop(1, '#0f172a')
-          ctx.fillStyle = grad
-          roundRect(ctx, 4, 2, dw - 8, dh - 4, 8)
-          ctx.fill()
-          ctx.strokeStyle = '#020617'
-          ctx.lineWidth = 1.6
-          ctx.stroke()
-
-          // Brow & seamlines
-          ctx.fillStyle = '#64748b'
-          ctx.fillRect(cX - 8, 4, 16, 2.5)
-          ctx.fillStyle = '#94a3b8'
-          ctx.fillRect(cX - 5, 4, 4, 1.5)
-
-          ctx.strokeStyle = '#0f172a'
-          ctx.lineWidth = 1
-          ctx.beginPath()
-          ctx.moveTo(5, 11)
-          ctx.lineTo(dw - 5, 11)
-          ctx.moveTo(5, 20)
-          ctx.lineTo(dw - 5, 20)
-          ctx.stroke()
-
-          // Lower Purple Vent
-          ctx.fillStyle = '#1e1b4b'
-          roundRect(ctx, cX - 6, dh - 5, 12, 3.5, 1.5)
-          ctx.fill()
-          ctx.fillStyle = cycleFrame % 2 === 0 ? '#c084fc' : '#a855f7'
-          ctx.fillRect(cX - 5, dh - 4.5, 10, 2)
-
-          // Optic Eye
-          const eyeX = cX
-          const eyeY = 14
-          const eyeR = 6
-
-          ctx.fillStyle = '#020617'
-          ctx.beginPath()
-          ctx.arc(eyeX, eyeY, eyeR + 1.5, 0, Math.PI * 2)
-          ctx.fill()
-          ctx.strokeStyle = '#334155'
-          ctx.lineWidth = 1.2
-          ctx.stroke()
-
-          if (isAtt) {
-            if (cycleFrame === 0) {
-              // Charging Cyan
-              ctx.fillStyle = '#00f0ff'
-              ctx.beginPath()
-              ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
-              ctx.fill()
-              ctx.fillStyle = '#ffffff'
-              ctx.beginPath()
-              ctx.arc(eyeX, eyeY, 3, 0, Math.PI * 2)
-              ctx.fill()
-
-              ctx.strokeStyle = 'rgba(6, 182, 212, 0.7)'
-              ctx.lineWidth = 1.5
-              ctx.beginPath()
-              ctx.arc(eyeX, eyeY, eyeR + 4, 0, Math.PI * 2)
-              ctx.stroke()
-            } else if (cycleFrame === 1 || cycleFrame === 2) {
-              // Firing Laser
-              ctx.fillStyle = '#a5f3fc'
-              ctx.beginPath()
-              ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
-              ctx.fill()
-              ctx.fillStyle = '#ffffff'
-              ctx.beginPath()
-              ctx.arc(eyeX, eyeY, 3.5, 0, Math.PI * 2)
-              ctx.fill()
-
-              const bLen = cycleFrame === 1 ? 65 : 110
-              ctx.save()
-              ctx.strokeStyle = 'rgba(6, 182, 212, 0.45)'
-              ctx.lineWidth = cycleFrame === 2 ? 10 : 6
-              ctx.beginPath()
-              ctx.moveTo(eyeX + eyeR, eyeY)
-              ctx.lineTo(eyeX + eyeR + bLen, eyeY)
-              ctx.stroke()
-
-              ctx.strokeStyle = '#38bdf8'
-              ctx.lineWidth = cycleFrame === 2 ? 6 : 3.5
-              ctx.beginPath()
-              ctx.moveTo(eyeX + eyeR, eyeY)
-              ctx.lineTo(eyeX + eyeR + bLen, eyeY)
-              ctx.stroke()
-
-              ctx.strokeStyle = '#ffffff'
-              ctx.lineWidth = cycleFrame === 2 ? 3 : 1.6
-              ctx.beginPath()
-              ctx.moveTo(eyeX + eyeR, eyeY)
-              ctx.lineTo(eyeX + eyeR + bLen, eyeY)
-              ctx.stroke()
-
-              ctx.strokeStyle = '#22d3ee'
-              ctx.lineWidth = 1.6
-              ctx.beginPath()
-              ctx.arc(eyeX + eyeR, eyeY, 5, 0, Math.PI * 2)
-              ctx.stroke()
-              ctx.restore()
-            } else {
-              // Cooldown
-              ctx.fillStyle = '#0891b2'
-              ctx.beginPath()
-              ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
-              ctx.fill()
-              ctx.fillStyle = '#164e63'
-              ctx.fillRect(eyeX - 2, eyeY - 2, 4, 4)
-            }
-          } else {
-            // Idle red
-            let irisColor = '#ef4444'
-            let pupilColor = '#991b1b'
-            let hasGlint = true
-            if (cycleFrame === 1) {
-              irisColor = '#991b1b'
-              pupilColor = '#450a0a'
-              hasGlint = false
-            } else if (cycleFrame === 2) {
-              irisColor = '#f87171'
-              pupilColor = '#dc2626'
-              hasGlint = true
-            }
-
-            ctx.fillStyle = irisColor
-            ctx.beginPath()
-            ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
-            ctx.fill()
-
-            ctx.fillStyle = pupilColor
-            ctx.beginPath()
-            ctx.arc(eyeX, eyeY, 2.8, 0, Math.PI * 2)
-            ctx.fill()
-
-            if (hasGlint) {
-              ctx.fillStyle = '#ffffff'
-              ctx.fillRect(eyeX - 3, eyeY - 3, 2.5, 2.5)
-            }
-          }
-
-          // 404 text
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.65)'
-          ctx.font = 'bold 6px monospace'
-          ctx.textAlign = 'center'
-          ctx.fillText('404', cX, dh - 9)
-          ctx.restore()
+          renderGlitchBug(ctx, dummyMob, actionType, f)
         } else if (entityId === 'squatter_drone') {
-          const cycleFrame = Math.floor(f / 6) % 4
-          const isAtt = animState === 'attack'
-          const bobY = !isAtt ? (cycleFrame === 1 ? 2 : cycleFrame === 2 ? -2 : 0) : 0
-          const dw = 32
-          const dh = 32
-          const cX = dw / 2
-
-          ctx.save()
-          ctx.translate(0, bobY)
-
-          if (animState === 'hurt') {
-            ctx.fillStyle = '#ffffff'
-            roundRect(ctx, 4, 4, dw - 8, dh - 8, 8)
-            ctx.fill()
-            ctx.restore()
-            return
-          }
-
-          // Top Halo Rotors
-          const rPh = f * 0.35
-          const b1 = Math.cos(rPh) * 16
-          const b2 = Math.sin(rPh) * 16
-
-          ctx.fillStyle = '#1e293b'
-          ctx.fillRect(cX - 1.5, -4, 3, 6)
-
-          ctx.strokeStyle = '#38bdf8'
-          ctx.lineWidth = 2
-          ctx.beginPath()
-          ctx.ellipse(cX, -4.5, 17, 3.5, 0, 0, Math.PI * 2)
-          ctx.stroke()
-
-          ctx.strokeStyle = '#e0f2fe'
-          ctx.lineWidth = 1.2
-          ctx.beginPath()
-          ctx.moveTo(cX - b1, -4.5)
-          ctx.lineTo(cX + b1, -4.5)
-          ctx.moveTo(cX - b2 * 0.7, -4.5)
-          ctx.lineTo(cX + b2 * 0.7, -4.5)
-          ctx.stroke()
-
-          ctx.fillStyle = '#94a3b8'
-          ctx.fillRect(cX - 2, -6, 4, 2.5)
-
-          // Ventral Spotlight
-          if (!isAtt) {
-            const spSpr = 6 + cycleFrame * 4
-            const spGrad = ctx.createLinearGradient(cX, dh - 2, cX, dh + 24)
-            spGrad.addColorStop(0, 'rgba(6, 182, 212, 0.6)')
-            spGrad.addColorStop(1, 'rgba(6, 182, 212, 0.0)')
-            ctx.fillStyle = spGrad
-            ctx.beginPath()
-            ctx.moveTo(cX - 2, dh - 2)
-            ctx.lineTo(cX - spSpr, dh + 24)
-            ctx.lineTo(cX + spSpr, dh + 24)
-            ctx.lineTo(cX + 2, dh - 2)
-            ctx.closePath()
-            ctx.fill()
-          }
-
-          // Gunmetal Spherical Chassis
-          const sGrad = ctx.createLinearGradient(cX, 0, cX, dh)
-          sGrad.addColorStop(0, '#334155')
-          sGrad.addColorStop(0.4, '#1e293b')
-          sGrad.addColorStop(1, '#0f172a')
-          ctx.fillStyle = sGrad
-          ctx.beginPath()
-          ctx.arc(cX, dh / 2, 13, 0, Math.PI * 2)
-          ctx.fill()
-          ctx.strokeStyle = '#020617'
-          ctx.lineWidth = 1.6
-          ctx.stroke()
-
-          // Cyan Equator Trim
-          ctx.strokeStyle = '#06b6d4'
-          ctx.lineWidth = 1.4
-          ctx.beginPath()
-          ctx.arc(cX, dh / 2, 13, Math.PI * 0.1, Math.PI * 0.9)
-          ctx.stroke()
-
-          // Golden Padlock on side
-          ctx.fillStyle = '#f59e0b'
-          roundRect(ctx, 4, dh / 2 - 3, 6.5, 6.5, 1.5)
-          ctx.fill()
-          ctx.strokeStyle = '#d97706'
-          ctx.lineWidth = 0.9
-          ctx.stroke()
-          ctx.beginPath()
-          ctx.arc(7.25, dh / 2 - 3, 2.2, Math.PI, 0)
-          ctx.stroke()
-          ctx.fillStyle = '#0f172a'
-          ctx.fillRect(6.75, dh / 2 - 0.5, 1.2, 2.2)
-
-          // Radar Scanner Eye
-          const eyeX = cX + 4
-          const eyeY = dh / 2
-          const eyeR = 7.5
-
-          ctx.fillStyle = '#020617'
-          ctx.beginPath()
-          ctx.arc(eyeX, eyeY, eyeR + 1.5, 0, Math.PI * 2)
-          ctx.fill()
-          ctx.strokeStyle = '#38bdf8'
-          ctx.lineWidth = 1.2
-          ctx.stroke()
-
-          if (isAtt) {
-            if (cycleFrame === 0) {
-              // Amber Charge
-              ctx.fillStyle = '#f59e0b'
-              ctx.beginPath()
-              ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
-              ctx.fill()
-              const cGrad = ctx.createLinearGradient(eyeX, eyeY, eyeX + 40, eyeY)
-              cGrad.addColorStop(0, 'rgba(245, 158, 11, 0.8)')
-              cGrad.addColorStop(1, 'rgba(251, 191, 36, 0.05)')
-              ctx.fillStyle = cGrad
-              ctx.beginPath()
-              ctx.moveTo(eyeX + eyeR, eyeY)
-              ctx.lineTo(eyeX + eyeR + 38, eyeY - 16)
-              ctx.lineTo(eyeX + eyeR + 38, eyeY + 16)
-              ctx.closePath()
-              ctx.fill()
-            } else if (cycleFrame === 1) {
-              // Red Flashwave
-              ctx.fillStyle = '#ef4444'
-              ctx.beginPath()
-              ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
-              ctx.fill()
-              const rGrad = ctx.createLinearGradient(eyeX, eyeY, eyeX + 50, eyeY)
-              rGrad.addColorStop(0, 'rgba(239, 68, 68, 0.9)')
-              rGrad.addColorStop(1, 'rgba(248, 113, 113, 0.05)')
-              ctx.fillStyle = rGrad
-              ctx.beginPath()
-              ctx.moveTo(eyeX + eyeR, eyeY)
-              ctx.lineTo(eyeX + eyeR + 48, eyeY - 22)
-              ctx.lineTo(eyeX + eyeR + 48, eyeY + 22)
-              ctx.closePath()
-              ctx.fill()
-            } else if (cycleFrame === 2) {
-              // EMP Sparks
-              ctx.fillStyle = '#00f0ff'
-              ctx.beginPath()
-              ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
-              ctx.fill()
-              ctx.strokeStyle = '#38bdf8'
-              ctx.lineWidth = 1.6
-              ;[0, Math.PI * 0.35, Math.PI * 0.7, Math.PI * 1.1, Math.PI * 1.5, Math.PI * 1.85].forEach((a) => {
-                const sx = cX + Math.cos(a) * 14
-                const sy = dh / 2 + Math.sin(a) * 14
-                const ex = cX + Math.cos(a) * 26
-                const ey = dh / 2 + Math.sin(a) * 26
-                ctx.beginPath()
-                ctx.moveTo(sx, sy)
-                ctx.lineTo((sx + ex) / 2 + (Math.random() - 0.5) * 6, (sy + ey) / 2)
-                ctx.lineTo(ex, ey)
-                ctx.stroke()
-              })
-            } else {
-              // Cooldown Steam
-              ctx.fillStyle = '#0891b2'
-              ctx.beginPath()
-              ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
-              ctx.fill()
-              ctx.fillStyle = 'rgba(203, 213, 225, 0.7)'
-              ctx.beginPath()
-              ctx.arc(cX - 15, dh / 2 - 3, 3.5, 0, Math.PI * 2)
-              ctx.arc(cX - 19, dh / 2 - 7, 3, 0, Math.PI * 2)
-              ctx.fill()
-            }
-          } else {
-            // Rotating Radar Needle
-            ctx.fillStyle = '#0f172a'
-            ctx.beginPath()
-            ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
-            ctx.fill()
-            ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)'
-            ctx.lineWidth = 1
-            ctx.beginPath()
-            ctx.arc(eyeX, eyeY, 4.5, 0, Math.PI * 2)
-            ctx.stroke()
-
-            const nAngle = cycleFrame * (Math.PI / 2) - Math.PI * 0.6
-            ctx.strokeStyle = '#ef4444'
-            ctx.lineWidth = 1.6
-            ctx.beginPath()
-            ctx.moveTo(eyeX, eyeY)
-            ctx.lineTo(eyeX + Math.cos(nAngle) * 6, eyeY + Math.sin(nAngle) * 6)
-            ctx.stroke()
-            ctx.fillStyle = '#f87171'
-            ctx.fillRect(eyeX + Math.cos(nAngle) * 5 - 1, eyeY + Math.sin(nAngle) * 5 - 1, 2.5, 2.5)
-          }
-          ctx.restore()
+          renderSquatterDrone(ctx, dummyMob, actionType, f)
         } else if (entityId === 'packet_bat') {
-          const cycleFrame = Math.floor(f / 6) % 4
-          const isAtt = animState === 'attack'
-          const dw = 36
-          const dh = 28
-          const cX = dw / 2
-
-          ctx.save()
-
-          if (animState === 'hurt') {
-            ctx.fillStyle = '#ffffff'
-            roundRect(ctx, 4, 4, dw - 8, dh - 8, 6)
-            ctx.fill()
-            ctx.restore()
-            return
-          }
-
-          let wLift = !isAtt
-            ? cycleFrame === 0 ? -7 : cycleFrame === 1 ? -1 : cycleFrame === 2 ? 5 : -5
-            : cycleFrame === 0 ? 8 : cycleFrame === 1 ? -4 : cycleFrame === 2 ? -7 : -3
-
-          const isDive = isAtt && cycleFrame === 0
-
-          // Wings
-          if (!isDive) {
-            ctx.fillStyle = '#581c87'
-            ctx.beginPath()
-            ctx.moveTo(cX - 4, 12)
-            ctx.lineTo(-10, 4 + wLift)
-            ctx.lineTo(-5, 17 + wLift * 0.5)
-            ctx.lineTo(cX - 4, 17)
-            ctx.closePath()
-            ctx.fill()
-            ctx.strokeStyle = '#3b0764'
-            ctx.lineWidth = 1.4
-            ctx.stroke()
-
-            ctx.beginPath()
-            ctx.moveTo(cX + 4, 12)
-            ctx.lineTo(dw + 10, 4 + wLift)
-            ctx.lineTo(dw + 5, 17 + wLift * 0.5)
-            ctx.lineTo(cX + 4, 17)
-            ctx.closePath()
-            ctx.fill()
-            ctx.stroke()
-
-            ctx.strokeStyle = '#ec4899'
-            ctx.lineWidth = 1.2
-            ctx.beginPath()
-            ctx.moveTo(cX - 4, 13)
-            ctx.lineTo(-6, 6 + wLift)
-            ctx.moveTo(cX + 4, 13)
-            ctx.lineTo(dw + 6, 6 + wLift)
-            ctx.stroke()
-          } else {
-            ctx.fillStyle = '#3b0764'
-            roundRect(ctx, 5, 8, dw - 10, dh - 10, 6)
-            ctx.fill()
-            ctx.strokeStyle = '#ec4899'
-            ctx.lineWidth = 1.4
-            ctx.stroke()
-          }
-
-          // Torso & Ears
-          ctx.fillStyle = '#1e1b4b'
-          roundRect(ctx, cX - 7, 6, 14, 16, 5)
-          ctx.fill()
-          ctx.strokeStyle = '#581c87'
-          ctx.lineWidth = 1.4
-          ctx.stroke()
-
-          ctx.fillStyle = '#7c3aed'
-          ctx.beginPath()
-          ctx.moveTo(cX - 6, 6)
-          ctx.lineTo(cX - 8, -2)
-          ctx.lineTo(cX - 2, 6)
-          ctx.moveTo(cX + 2, 6)
-          ctx.lineTo(cX + 8, -2)
-          ctx.lineTo(cX + 6, 6)
-          ctx.fill()
-
-          ctx.strokeStyle = '#ec4899'
-          ctx.lineWidth = 1
-          ctx.beginPath()
-          ctx.moveTo(cX - 4, 15)
-          ctx.lineTo(cX, 19)
-          ctx.lineTo(cX + 4, 15)
-          ctx.stroke()
-
-          // Visor & Fangs
-          ctx.fillStyle = '#06b6d4'
-          roundRect(ctx, cX - 5.5, 8, 11, 5, 2)
-          ctx.fill()
-          ctx.fillStyle = '#a5f3fc'
-          ctx.fillRect(cX - 4, 9.5, 8, 2)
-
-          ctx.fillStyle = '#ffffff'
-          ctx.fillRect(cX - 4, 15, 2, 3)
-          ctx.fillRect(cX + 2, 15, 2, 3)
-
-          // Sonar Waves
-          if (!isAtt) {
-            const rCnt = cycleFrame + 1
-            ctx.strokeStyle = '#c084fc'
-            ctx.lineWidth = 1.4
-            for (let r = 0; r < rCnt; r++) {
-              ctx.beginPath()
-              ctx.arc(cX + 10 + r * 5, 14, 6 + r * 4, -Math.PI * 0.35, Math.PI * 0.35)
-              ctx.stroke()
-            }
-          } else {
-            if (cycleFrame === 1) {
-              ctx.strokeStyle = '#a855f7'
-              ctx.lineWidth = 2.4
-              ;[12, 22, 32].forEach((rx) => {
-                ctx.beginPath()
-                ctx.arc(cX + rx, 14, 8 + rx * 0.4, -Math.PI * 0.4, Math.PI * 0.4)
-                ctx.stroke()
-              })
-            } else if (cycleFrame === 2) {
-              const wCols = ['#00f0ff', '#ec4899', '#facc15', '#a855f7']
-              wCols.forEach((wCol, idx) => {
-                ctx.strokeStyle = wCol
-                ctx.lineWidth = 2
-                ctx.beginPath()
-                ctx.arc(cX + 16 + idx * 8, 14, 9 + idx * 6, -Math.PI * 0.45, Math.PI * 0.45)
-                ctx.stroke()
-                ctx.fillStyle = wCol
-                ctx.fillRect(cX + 18 + idx * 10, 13 + ((idx % 2) * 2 - 1) * 4, 6, 2.5)
-              })
-            } else if (cycleFrame === 3) {
-              ctx.fillStyle = '#c084fc'
-              ;[20, 28, 36].forEach((px, idx) => {
-                ctx.fillRect(cX + px, 11 + (idx % 3) * 3.5, 2.5, 2.5)
-              })
-            }
-          }
-          ctx.restore()
+          renderPacketBat(ctx, dummyMob, actionType, f)
         } else if (entityId === 'malware_golem') {
-          const cycleFrame = Math.floor(f / 6) % 4
-          const isAtt = animState === 'attack'
-          const dw = 40
-          const dh = 38
-          const cX = dw / 2
-
-          ctx.save()
-
-          if (animState === 'hurt') {
-            ctx.fillStyle = '#ffffff'
-            roundRect(ctx, 4, 4, dw - 8, dh - 8, 8)
-            ctx.fill()
-            ctx.restore()
-            return
-          }
-
-          // Exhaust Smokestacks
-          ctx.fillStyle = '#1e293b'
-          ctx.fillRect(cX - 8, -5, 4, 8)
-          ctx.fillRect(cX + 4, -5, 4, 8)
-
-          const sSteam = isAtt ? true : cycleFrame === 0 || cycleFrame === 3
-          if (sSteam) {
-            ctx.fillStyle = 'rgba(203, 213, 225, 0.75)'
-            ctx.beginPath()
-            ctx.arc(cX - 8, -10, 4, 0, Math.PI * 2)
-            ctx.arc(cX + 5, -11, 4.5, 0, Math.PI * 2)
-            ctx.fill()
-          }
-
-          // Piston Legs
-          const lStr = !isAtt
-            ? cycleFrame === 0 ? -3 : cycleFrame === 1 ? 0 : cycleFrame === 2 ? 3 : 0
-            : 0
-
-          ctx.fillStyle = '#1e293b'
-          ctx.fillRect(cX - 13 + lStr, dh - 14, 8, 9)
-          ctx.fillRect(cX + 5 - lStr, dh - 14, 8, 9)
-          ctx.fillStyle = '#0f172a'
-          roundRect(ctx, cX - 15 + lStr, dh - 5, 12, 5, 2)
-          ctx.fill()
-          roundRect(ctx, cX + 3 - lStr, dh - 5, 12, 5, 2)
-          ctx.fill()
-
-          if (!isAtt && cycleFrame === 2) {
-            ctx.fillStyle = '#d4b896'
-            ctx.beginPath()
-            ctx.arc(cX + 16, dh - 2, 5, 0, Math.PI * 2)
-            ctx.arc(cX - 18, dh - 2, 4.5, 0, Math.PI * 2)
-            ctx.fill()
-          }
-
-          // Spiked Arms & Fists
-          let aRaise = 0
-          if (isAtt) {
-            aRaise = cycleFrame === 0 ? -14 : cycleFrame === 1 ? -5 : cycleFrame === 2 ? 8 : 0
-          }
-
-          ctx.fillStyle = '#334155'
-          roundRect(ctx, 0, 5 + aRaise * 0.5, 11, 10, 3)
-          ctx.fill()
-          ctx.fillStyle = '#94a3b8'
-          ctx.beginPath()
-          ctx.moveTo(1, 5 + aRaise * 0.5)
-          ctx.lineTo(-3, 0 + aRaise * 0.5)
-          ctx.lineTo(5, 5 + aRaise * 0.5)
-          ctx.fill()
-          ctx.fillStyle = '#0f172a'
-          roundRect(ctx, -2, 15 + aRaise, 11, 12, 3)
-          ctx.fill()
-
-          ctx.fillStyle = '#334155'
-          roundRect(ctx, dw - 11, 5 + aRaise * 0.5, 11, 10, 3)
-          ctx.fill()
-          ctx.fillStyle = '#94a3b8'
-          ctx.beginPath()
-          ctx.moveTo(dw - 1, 5 + aRaise * 0.5)
-          ctx.lineTo(dw + 3, 0 + aRaise * 0.5)
-          ctx.lineTo(dw - 5, 5 + aRaise * 0.5)
-          ctx.fill()
-          ctx.fillStyle = '#0f172a'
-          roundRect(ctx, dw - 9, 15 + aRaise, 11, 12, 3)
-          ctx.fill()
-
-          // Obsidian Torso
-          ctx.fillStyle = '#1e293b'
-          roundRect(ctx, cX - 12, 4, 24, 22, 6)
-          ctx.fill()
-          ctx.strokeStyle = '#020617'
-          ctx.lineWidth = 1.8
-          ctx.stroke()
-
-          // Stone Head
-          ctx.fillStyle = '#0f172a'
-          roundRect(ctx, cX - 7, -2, 14, 8, 3)
-          ctx.fill()
-          ctx.strokeStyle = '#334155'
-          ctx.lineWidth = 1.2
-          ctx.stroke()
-
-          ctx.fillStyle = '#ea580c'
-          ctx.fillRect(cX - 5, 0.5, 3, 2.5)
-          ctx.fillRect(cX + 2, 0.5, 3, 2.5)
-          ctx.fillStyle = '#fef08a'
-          ctx.fillRect(cX - 4, 1, 1.2, 1.2)
-          ctx.fillRect(cX + 3, 1, 1.2, 1.2)
-
-          // Magma Reactor Core
-          const cFl = isAtt && cycleFrame === 0 ? 1.4 : 1.0
-          const mGrad = ctx.createRadialGradient(cX, 15, 1, cX, 15, 9 * cFl)
-          mGrad.addColorStop(0, '#ffffff')
-          mGrad.addColorStop(0.3, '#fbbf24')
-          mGrad.addColorStop(0.7, '#ea580c')
-          mGrad.addColorStop(1, '#7c2d12')
-          ctx.fillStyle = mGrad
-          ctx.beginPath()
-          ctx.arc(cX, 15, 8 * cFl, 0, Math.PI * 2)
-          ctx.fill()
-          ctx.strokeStyle = '#0f172a'
-          ctx.lineWidth = 1.4
-          ctx.stroke()
-
-          ctx.strokeStyle = '#f97316'
-          ctx.lineWidth = 1.2
-          ctx.beginPath()
-          ctx.moveTo(cX - 6, 10)
-          ctx.lineTo(cX - 2, 15)
-          ctx.lineTo(cX + 6, 19)
-          ctx.stroke()
-
-          // Erupting Magma Spikes on Ground Slam
-          if (isAtt && cycleFrame === 2) {
-            const spCols = ['#dc2626', '#f97316', '#facc15', '#ffffff']
-            ;[-20, -10, 0, 10, 20, 30].forEach((sx, idx) => {
-              const spkH = 15 + (idx % 3) * 10
-              ctx.fillStyle = spCols[idx % spCols.length]
-              ctx.beginPath()
-              ctx.moveTo(cX + sx - 6, dh)
-              ctx.lineTo(cX + sx, dh - spkH)
-              ctx.lineTo(cX + sx + 6, dh)
-              ctx.closePath()
-              ctx.fill()
-            })
-          }
-          ctx.restore()
+          renderMalwareGolem(ctx, dummyMob, actionType, f)
+        } else if (entityId === 'beetle_infantry') {
+          renderBeetleInfantry(ctx, dummyMob, actionType, f)
+        } else if (entityId === 'mantis_sniper') {
+          renderMantisSniper(ctx, dummyMob, actionType, f)
+        } else if (entityId === 'volt_hornet') {
+          renderVoltHornet(ctx, dummyMob, actionType, f)
+        } else if (entityId === 'centipede_artillery') {
+          renderCentipedeArtillery(ctx, dummyMob, actionType, f)
+        } else if (entityId === 'crab_juggernaut') {
+          renderCrabJuggernaut(ctx, dummyMob, actionType, f)
+        } else if (entityId === 'moth_phantom') {
+          renderMothPhantom(ctx, dummyMob, actionType, f)
+        } else {
+          renderGlitchBug(ctx, dummyMob, actionType, f)
         }
       }
 
@@ -2569,34 +3331,26 @@ export default function TestingLab({ onNavigate }) {
       {/* Background Matrix / Grid Accent */}
       <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
 
-      {/* Top Header Bar */}
-      <header className="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => onNavigate && onNavigate('brief')}
-              className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 font-mono text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <ArrowLeft weight="bold" />
-              <span>EXIT LAB</span>
-            </button>
-            <div className="h-4 w-px bg-slate-800" />
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded bg-[#fae127] text-slate-950 flex items-center justify-center font-black text-xs shadow-sm">
-                🧪
-              </div>
-              <h1 className="font-mono text-sm sm:text-base font-black tracking-wide text-white uppercase flex items-center gap-2">
-                <span>COMBAT TESTING ARENA</span>
-                <span className="hidden sm:inline px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] border border-purple-500/30">
-                  DUEL SIMULATOR v2.4
-                </span>
-              </h1>
-            </div>
+      {/* Top Sticky Navigation Bar with Unified AppNavbar */}
+      <div className="sticky top-0 z-30 pt-2 px-4 sm:px-6 bg-slate-950/80 backdrop-blur-md pb-2 border-b border-slate-800">
+        <AppNavbar
+          activeView="lab"
+          onNavigate={onNavigate}
+          savedCount={savedCount}
+          compareCount={compareCount}
+        />
+
+        {/* Lab Sub-Bar: Simulator Status & View Mode Switcher */}
+        <div className="max-w-7xl mx-auto mt-2 flex items-center justify-between gap-3 px-2">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 led-glow-emerald shrink-0" />
+            <span className="font-mono text-xs font-bold text-slate-300 uppercase tracking-wider">
+              TESTING LAB // DUEL SIMULATOR v2.4
+            </span>
           </div>
 
           {/* View Mode Switcher */}
-          <div className="flex items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800 shadow-inner">
             <button
               type="button"
               onClick={() => {
@@ -2629,7 +3383,7 @@ export default function TestingLab({ onNavigate }) {
             </button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Studio Viewport */}
       <main className="max-w-7xl mx-auto px-4 pt-6 relative z-10">
@@ -2978,8 +3732,8 @@ export default function TestingLab({ onNavigate }) {
               {/* Enemy Category Selector (6 Bosses vs 4 Enemies) */}
               <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl flex-1">
                 {/* Category Tabs */}
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-800">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
                       onClick={() => {
@@ -2999,16 +3753,31 @@ export default function TestingLab({ onNavigate }) {
                       type="button"
                       onClick={() => {
                         playMechanicalClick('click')
-                        setTargetCategory('enemies')
+                        setTargetCategory('classic')
                       }}
                       className={`px-3 py-1.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                        targetCategory === 'enemies'
-                          ? 'bg-amber-600 text-white shadow-md'
+                        targetCategory === 'classic'
+                          ? 'bg-cyan-600 text-white shadow-md'
                           : 'bg-slate-800 text-slate-400 hover:text-white'
                       }`}
                     >
                       <Bug weight="bold" />
-                      <span>👾 4 COMMON MOBS</span>
+                      <span>👾 4 CLASSIC MOBS</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playMechanicalClick('click')
+                        setTargetCategory('cyber')
+                      }}
+                      className={`px-3 py-1.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        targetCategory === 'cyber'
+                          ? 'bg-amber-600 text-white shadow-md'
+                          : 'bg-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Lightning weight="bold" />
+                      <span>⚡ 6 CYBERNETIC (POST-BOSS)</span>
                     </button>
                   </div>
                   <div className="text-[11px] font-mono text-slate-400">
@@ -3080,12 +3849,12 @@ export default function TestingLab({ onNavigate }) {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {ENEMY_DATA.map((enemy) => {
-                      const isSelected = activeTarget.id === enemy.id && targetCategory === 'enemies'
+                    {(targetCategory === 'classic' ? CLASSIC_ENEMY_DATA : CYBER_ENEMY_DATA).map((enemy) => {
+                      const isSelected = activeTarget.id === enemy.id && targetCategory === (targetCategory === 'classic' ? 'classic' : 'cyber')
                       return (
                         <div
                           key={enemy.id}
-                          onClick={() => handleFightTarget(enemy, 'enemies')}
+                          onClick={() => handleFightTarget(enemy, targetCategory)}
                           className={`p-3 rounded-xl border transition-all cursor-pointer relative overflow-hidden group ${
                             isSelected
                               ? 'bg-amber-950/40 border-amber-400 shadow-lg shadow-amber-500/10 ring-1 ring-amber-400'
@@ -3110,6 +3879,18 @@ export default function TestingLab({ onNavigate }) {
                           <p className="text-[11px] text-slate-300 line-clamp-2 mb-2.5 leading-relaxed">
                             {enemy.desc}
                           </p>
+
+                          {/* Attacks Pill list */}
+                          <div className="flex flex-wrap gap-1 mb-2.5">
+                            {enemy.attacks?.map((att) => (
+                              <span
+                                key={att.id}
+                                className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-[9.5px] font-mono text-slate-300"
+                              >
+                                {att.name.split(' ')[0]} {att.name.split(' ')[1] || ''}
+                              </span>
+                            ))}
+                          </div>
 
                           {/* Action Button */}
                           <button

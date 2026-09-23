@@ -379,7 +379,7 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
       <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 h-7 w-4/5 rounded-full bg-black/40 blur-lg pointer-events-none" />
 
       {/* Main Molded Plastic Chassis with Tactile Grain (No Screws) */}
-      <div className="skeuo-chassis-purple relative px-3 sm:px-4 pt-2.5 sm:pt-3 pb-2.5 sm:pb-3 shadow-2xl">
+      <div className="skeuo-chassis-purple relative px-4 sm:px-5 pt-2.5 sm:pt-3 pb-4 sm:pb-5 shadow-2xl">
         {/* Left Side: Industrial Woven Flight Ribbon Tag */}
         <div className="absolute -left-4 sm:-left-5 top-1/3 -translate-y-1/2 flex items-center z-20 pointer-events-auto">
           <div className="lanyard-bracket">
@@ -447,8 +447,8 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
           </div>
         </div>
 
-        {/* Top Header: Left Speaker Mesh + Title, Right: Volume Knob + SFX Switch + Music Switch */}
-        <div className="flex items-center justify-between px-1 pt-0 pb-1.5 sm:pb-2 border-b border-purple-400/30 gap-1.5 sm:gap-2">
+        {/* Top Header: Left Speaker Mesh + Title, Right: Volume Knob + SFX Switch + Music Switch (No dividing line, enhanced side padding) */}
+        <div className="flex items-center justify-between px-1.5 sm:px-2 pt-0.5 pb-1 gap-1.5 sm:gap-2">
           {/* Left: Compact 9x4 Perforated Acoustic Speaker Mesh pushing NG badge right */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             <div
@@ -498,8 +498,8 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
           </div>
         </div>
 
-        {/* Zone 1: Recessed Screen Housing with Expanded Tamagotchi Mini Game Engine */}
-        <div className="screen-recess mt-1.5 p-1 sm:p-1.5 rounded-2xl bg-slate-950 text-white relative shadow-inner">
+        {/* Zone 1: Recessed Screen Housing with Expanded Tamagotchi Mini Game Engine (Pushed Up) */}
+        <div className="screen-recess mt-1 p-1 sm:p-1.5 rounded-2xl bg-slate-950 text-white relative shadow-inner">
           <div className="gloss-sheen" />
           <DomainGameEngine
             ref={engineRef}
@@ -614,7 +614,7 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
         </div>
 
         {/* Top Control Sub-Deck: Mode / Campaign / Restart */}
-        <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:gap-2">
+        <div className="mt-1 grid grid-cols-3 gap-1 sm:gap-1.5">
           {/* Mode Switch (AUTO / MANUAL) */}
           <div className="key-socket-dark !p-[2px] !rounded-[9px] flex">
             <button
@@ -668,9 +668,9 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
         </div>
 
         {/* Zone 2: 4-Bay Primary Hardware Action Controls (LEFT, RIGHT, JUMP, BLAST) */}
-        <div className="mt-1.5">
+        <div className="mt-1">
           {/* 4 Precision Mechanical Action Sockets */}
-          <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+          <div className="grid grid-cols-4 gap-1 sm:gap-1.5">
             {/* Button 1: MOVE LEFT */}
             <div className="key-socket-dark !p-[2.5px] !rounded-[12px] flex">
               <button

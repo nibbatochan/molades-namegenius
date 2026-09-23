@@ -1,0 +1,10 @@
+# Ignore Next.js dependencies and heavy artifacts
+node_modules
+.next
+.git
+.vercel
+PALS-CCode/__MACOSX
+*.tar.gz
+*.zip
+scratch
+.shots

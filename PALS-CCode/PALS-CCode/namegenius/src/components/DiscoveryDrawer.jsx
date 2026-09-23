@@ -35,7 +35,7 @@ export default function DiscoveryDrawer({
           <span>Fine-tune your results</span>
         </div>
 
-        <h3 className="mt-2 font-serif text-lg font-bold text-slate-900 sm:text-xl">
+        <h3 className="mt-2 font-display text-lg font-normal uppercase tracking-tight text-slate-900 sm:text-xl">
           {question}
         </h3>
         <p className="mt-1 font-sans text-xs text-slate-600">

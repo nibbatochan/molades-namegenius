@@ -6,6 +6,7 @@ import {
   Lightning,
   Sparkle,
   ArrowRight,
+  X,
 } from '@phosphor-icons/react'
 import { BRAND_VIBES } from '../generator'
 import { TLD_ORDER, COUNTRY_TLDS } from '../data'
@@ -16,6 +17,7 @@ export default function MasterSynthesizer({
   onGenerate,
   isGenerating,
   onOpenModal,
+  onClose,
 }) {
   const [hasNameInMind, setHasNameInMind] = useState(
     initialBrief?.name ? true : initialBrief?.description ? false : true
@@ -78,6 +80,9 @@ export default function MasterSynthesizer({
     }
     setError('')
     playMechanicalClick('heavy')
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    if (document.documentElement) document.documentElement.scrollTop = 0
+    if (document.body) document.body.scrollTop = 0
     onGenerate({
       name: name.trim(),
       description: description.trim(),
@@ -125,22 +130,19 @@ export default function MasterSynthesizer({
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-purple-400/30 pb-5">
           <div>
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-950 text-xs font-black text-white shadow-md border border-slate-800">
-                N
-              </div>
               <h2 className="font-display text-3xl sm:text-4xl font-normal tracking-tight text-slate-950 uppercase deboss-light">
-                Master Synthesizer
+                Domain Synthesizer
               </h2>
             </div>
             <p className="mt-1 font-mono text-xs font-bold text-purple-950/80 uppercase tracking-wider">
-              CONFIGURE KEYWORDS, EXTENSION MATRIX & PHONETIC TONE
+              CONFIGURE KEYWORDS, EXTENSION MATRIX & BRAND TONE
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <div className="text-right font-mono text-[10px] font-black text-slate-900 uppercase tracking-wider leading-tight hidden sm:block">
               <div>NG-01 MASTER CONSOLE</div>
-              <div className="text-purple-950/70">PORKBUN REGISTRAR CONNECTED</div>
+              <div className="text-purple-950/70">MULTI-REGISTRAR SYNC (5 CONNECTED)</div>
             </div>
             {/* 3x3 Perforated Speaker Grille (from Image 2) */}
             <div
@@ -151,6 +153,18 @@ export default function MasterSynthesizer({
                 <div key={i} className="speaker-grille-dot !w-2 !h-2" />
               ))}
             </div>
+
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="skeuo-push-btn inline-flex items-center gap-1.5 rounded-xl px-4 py-2 font-mono text-xs font-bold text-slate-900 border border-slate-950/20 bg-white/95 hover:bg-white active:scale-95 cursor-pointer shadow-md"
+                title="Close console and scroll back to top"
+              >
+                <X weight="bold" />
+                <span>CLOSE</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -160,32 +174,12 @@ export default function MasterSynthesizer({
           <div className="screen-recess p-6 sm:p-7 rounded-3xl bg-slate-950 text-white relative border border-slate-800 shadow-2xl">
             <div className="gloss-sheen" />
 
-            {/* Screen Telemetry Bar */}
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-5">
-              <div className="flex items-center gap-2.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 led-glow-emerald" />
-                <span className="font-mono text-xs font-bold tracking-wider text-emerald-400 uppercase">
-                  STATUS: READY // REGISTRAR API CONNECTED
-                </span>
-              </div>
-              <div className="flex items-center gap-3 font-mono text-[10px] text-slate-400">
-                <span className="hidden sm:inline-block">LIVE AVAILABILITY CHECK</span>
-                <span className="rounded bg-slate-800 px-2 py-0.5 text-cyan-300 font-bold">
-                  MODE: {hasNameInMind ? 'SEED DIRECT' : 'CONTEXT FIRST'}
-                </span>
-              </div>
-            </div>
-
             {/* In-Screen Starting Question: Seed Name vs Context First */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800/60">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
               <div>
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
-                  <Sparkle weight="fill" className="text-amber-400 text-sm" />
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-200">
                   Do you already have a name in mind?
                 </span>
-                <p className="font-sans text-xs text-slate-400 mt-0.5">
-                  Select your intake mode — explore variations of a seed keyword or generate names from context.
-                </p>
               </div>
 
               {/* OLED Cyber Segmented Switch */}
@@ -197,18 +191,13 @@ export default function MasterSynthesizer({
                     setHasNameInMind(true)
                     setError('')
                   }}
-                  className={`flex items-center gap-2 rounded-xl px-4 py-1.5 font-mono text-xs font-bold transition-all ${
+                  className={`rounded-xl px-4 py-1.5 font-mono text-xs font-bold transition-all cursor-pointer ${
                     hasNameInMind
                       ? 'bg-cyan-500 text-slate-950 shadow-md font-black'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      hasNameInMind ? 'bg-slate-950' : 'bg-slate-600'
-                    }`}
-                  />
-                  <span>Yes, have seed</span>
+                  <span>have name</span>
                 </button>
 
                 <button
@@ -218,18 +207,13 @@ export default function MasterSynthesizer({
                     setHasNameInMind(false)
                     setError('')
                   }}
-                  className={`flex items-center gap-2 rounded-xl px-4 py-1.5 font-mono text-xs font-bold transition-all ${
+                  className={`rounded-xl px-4 py-1.5 font-mono text-xs font-bold transition-all cursor-pointer ${
                     !hasNameInMind
                       ? 'bg-cyan-500 text-slate-950 shadow-md font-black'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      !hasNameInMind ? 'bg-slate-950' : 'bg-slate-600'
-                    }`}
-                  />
-                  <span>No, start from idea</span>
+                  <span>start from brief</span>
                 </button>
               </div>
             </div>
@@ -243,7 +227,7 @@ export default function MasterSynthesizer({
                       htmlFor="seed-input"
                       className="font-mono text-xs font-bold uppercase tracking-wider text-cyan-400"
                     >
-                      1. Seed Name or Keyword
+                      1. Domain Name
                     </label>
                     <span className="font-mono text-[10px] text-slate-500">REQUIRED</span>
                   </div>
@@ -294,31 +278,6 @@ export default function MasterSynthesizer({
                 </div>
               )}
             </div>
-
-            {/* Dynamic Sound Wave Monitor inside the Screen */}
-            <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 text-cyan-400 font-mono">
-                <Waveform weight="bold" className="text-base animate-pulse" />
-                <span className="text-[11px] text-slate-300">
-                  PHONETIC TONE:
-                </span>
-                <span className="font-bold text-cyan-300">
-                  {acousticBias < 40 ? 'SMOOTH & FRIENDLY' : acousticBias > 60 ? 'SHORT & PUNCHY' : 'BALANCED TONE'}
-                </span>
-              </div>
-              <div className="h-4 flex items-center gap-1">
-                {Array.from({ length: 12 }).map((_, i) => {
-                  const height = Math.sin((i + acousticBias / 10) * 0.8) * 6 + 8
-                  return (
-                    <div
-                      key={i}
-                      className="w-1 bg-cyan-400/80 rounded-full transition-all duration-150"
-                      style={{ height: `${height}px` }}
-                    />
-                  )
-                })}
-              </div>
-            </div>
           </div>
 
           {/* ZONE 2: PHYSICAL HARDWARE CONTROLS DECK */}
@@ -349,11 +308,11 @@ export default function MasterSynthesizer({
                   : 'key-cap text-slate-800'
 
                 return (
-                  <div key={tld} className="key-socket-dark !p-[2.5px] !rounded-2xl">
+                  <div key={tld} className="key-socket-dark !p-[2.5px] !rounded-[14px]">
                     <button
                       type="button"
                       onClick={() => handleTldToggle(tld)}
-                      className={`${keycapStyle} flex items-center gap-2 rounded-[13px] px-4 py-2 font-mono text-xs font-black transition-all cursor-pointer`}
+                      className={`${keycapStyle} flex items-center gap-2 !rounded-[11px] px-4 py-2 font-mono text-xs font-black transition-all cursor-pointer`}
                     >
                       {countryMatch ? (
                         <img
@@ -375,9 +334,6 @@ export default function MasterSynthesizer({
                         />
                       )}
                       <span className="deboss-light">{tld}</span>
-                      {isSelected && (
-                        <span className="text-[10px] font-black text-cyan-200">✓</span>
-                      )}
                     </button>
                   </div>
                 )
@@ -392,7 +348,7 @@ export default function MasterSynthesizer({
                     value={newTldInput}
                     onChange={(e) => setNewTldInput(e.target.value)}
                     placeholder=".dev, .app"
-                    className="w-24 rounded-xl border border-blue-500 bg-white px-3 py-2 font-mono text-xs font-bold text-slate-900 focus:outline-none ring-2 ring-blue-400/40 shadow-inner"
+                    className="w-24 rounded-[14px] border border-blue-500 bg-white px-3 py-2 font-mono text-xs font-bold text-slate-900 focus:outline-none ring-2 ring-blue-400/40 shadow-inner"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleAddCustomTld(e)
                       if (e.key === 'Escape') setIsAddingTld(false)
@@ -401,7 +357,7 @@ export default function MasterSynthesizer({
                   <button
                     type="button"
                     onClick={handleAddCustomTld}
-                    className="skeuo-button-primary rounded-xl px-3 py-2 font-mono text-xs font-bold text-white shadow-sm"
+                    className="skeuo-button-primary rounded-[11px] px-3 py-2 font-mono text-xs font-bold text-white shadow-sm"
                   >
                     Add
                   </button>
@@ -417,7 +373,7 @@ export default function MasterSynthesizer({
                 <button
                   type="button"
                   onClick={() => setIsAddingTld(true)}
-                  className="skeuo-push-btn flex items-center gap-1.5 rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-2 font-mono text-xs font-bold text-slate-700 hover:text-slate-950 hover:border-slate-400"
+                  className="skeuo-push-btn flex items-center gap-1.5 !rounded-[14px] border border-dashed border-slate-300 bg-white px-4 py-2 font-mono text-xs font-bold text-slate-700 hover:text-slate-950 hover:border-slate-400"
                 >
                   <span className="text-sm font-black text-blue-600">+</span>
                   <span>Add extension</span>
@@ -432,7 +388,7 @@ export default function MasterSynthesizer({
                     playMechanicalClick('click')
                     setShowCountryPicker((prev) => !prev)
                   }}
-                  className={`skeuo-push-btn flex items-center gap-2 rounded-2xl px-4 py-2 font-mono text-xs font-bold transition-all border ${
+                  className={`skeuo-push-btn flex items-center gap-2 !rounded-[14px] px-4 py-2 font-mono text-xs font-bold transition-all border ${
                     showCountryPicker
                       ? 'bg-blue-50 text-blue-900 border-blue-400 ring-2 ring-blue-300/40'
                       : 'bg-white text-slate-800 border-slate-300 hover:text-slate-950'
@@ -549,13 +505,21 @@ export default function MasterSynthesizer({
 
           {/* Module B: Context / Themes & Competitor Filters */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="skeuo-plate rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-sm">
+            <div
+              className={`skeuo-plate rounded-3xl p-5 sm:p-6 flex flex-col justify-between transition-all ${
+                !hasNameInMind
+                  ? 'opacity-40 pointer-events-none select-none bg-slate-100/80 border border-dashed border-slate-300 shadow-none'
+                  : 'shadow-sm'
+              }`}
+            >
               <div>
                 <div className="flex items-center justify-between border-b border-slate-200/80 pb-2.5 mb-3">
                   <span className="font-mono text-xs font-black uppercase tracking-wider text-slate-900">
                     3. Tell me about your business, product etc.
                   </span>
-                  <span className="font-mono text-[10px] text-slate-500 uppercase">Optional</span>
+                  <span className="font-mono text-[10px] font-bold uppercase text-slate-500">
+                    {!hasNameInMind ? 'Captured in Step 1' : 'Optional'}
+                  </span>
                 </div>
                 {hasNameInMind ? (
                   <textarea
@@ -566,13 +530,9 @@ export default function MasterSynthesizer({
                     className="w-full resize-none rounded-xl border border-slate-300 bg-white p-3 font-sans text-xs text-slate-800 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none shadow-inner"
                   />
                 ) : (
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Ex: Apex, Flow, Spark, Craft..."
-                    className="w-full rounded-xl border border-slate-300 bg-white p-3 font-sans text-xs text-slate-800 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none shadow-inner"
-                  />
+                  <div className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-3.5 font-mono text-xs text-slate-500 italic">
+                    Already entered in Step 1 above. Domain names will be generated directly from your business brief.
+                  </div>
                 )}
               </div>
             </div>
@@ -789,9 +749,6 @@ export default function MasterSynthesizer({
                 </>
               ) : (
                 <>
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 bg-white/20 shadow-inner">
-                    <Check weight="bold" className="text-base" />
-                  </span>
                   <span className="deboss-dark font-black tracking-widest text-sm">
                     SYNTHESIZE NAMES ⚡
                   </span>

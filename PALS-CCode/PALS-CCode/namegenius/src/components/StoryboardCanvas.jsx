@@ -8,19 +8,19 @@ import {
   FilmStrip,
 } from '@phosphor-icons/react'
 
-export default function StoryboardCanvas({ onJumpToConsole }) {
+export default function StoryboardCanvas({ onJumpToConsole, onDone }) {
   const [activePhoneticTab, setActivePhoneticTab] = useState('sharp')
   const [interactiveSeed, setInteractiveSeed] = useState('cloud')
 
   return (
-    <section className="relative mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <section className="relative mx-auto max-w-5xl px-4 py-8 sm:px-6">
       {/* Section Header */}
-      <div className="mb-10 text-center">
+      <div className="mb-8 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-3.5 py-1 font-mono text-xs font-semibold text-slate-700 shadow-xs">
           <FilmStrip weight="fill" className="text-blue-600" />
           <span>Why NameGenius exists</span>
         </div>
-        <h2 className="mt-4 font-serif text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+        <h2 className="mt-4 font-display text-2xl sm:text-3xl font-normal uppercase tracking-tight text-slate-900">
           The naming problem and how to solve it
         </h2>
         <p className="mx-auto mt-2 max-w-xl font-sans text-sm text-slate-600 sm:text-base">
@@ -43,7 +43,7 @@ export default function StoryboardCanvas({ onJumpToConsole }) {
 
           <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-7">
-              <h3 className="font-serif text-xl font-bold text-slate-900 sm:text-2xl">
+              <h3 className="font-sans text-xl font-black text-slate-900 sm:text-2xl">
                 You find a good name, but the .com costs $75,000.
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-slate-600">
@@ -112,7 +112,7 @@ export default function StoryboardCanvas({ onJumpToConsole }) {
 
           <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-7">
-              <h3 className="font-serif text-xl font-bold text-slate-900 sm:text-2xl">
+              <h3 className="font-sans text-xl font-black text-slate-900 sm:text-2xl">
                 Linear. Stripe. Figma. Apple. Notion.
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-slate-600">
@@ -228,7 +228,7 @@ export default function StoryboardCanvas({ onJumpToConsole }) {
 
           <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-8">
-              <h3 className="font-serif text-xl font-bold text-slate-900 sm:text-2xl">
+              <h3 className="font-sans text-xl font-black text-slate-900 sm:text-2xl">
                 Combine your keywords with real styles and live availability.
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-slate-600">
@@ -256,14 +256,17 @@ export default function StoryboardCanvas({ onJumpToConsole }) {
 
             <div className="lg:col-span-4 flex flex-col items-center justify-center rounded-xl bg-gradient-to-b from-slate-900 to-slate-950 p-6 text-center text-white shadow-skeuo-recessed-dark">
               <Sparkle weight="fill" className="text-amber-400 text-3xl animate-pulse" />
-              <div className="mt-3 font-serif text-lg font-bold">Ready to find a name?</div>
+              <div className="mt-3 font-display text-lg font-normal uppercase text-white">Ready to find a name?</div>
               <p className="mt-1 font-sans text-xs text-slate-300">
                 Enter your keyword below to see available names.
               </p>
               <button
                 type="button"
-                onClick={onJumpToConsole}
-                className="skeuo-button-primary mt-5 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 font-mono text-xs font-bold"
+                onClick={() => {
+                  if (onDone) onDone()
+                  if (onJumpToConsole) onJumpToConsole()
+                }}
+                className="skeuo-button-primary mt-5 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 font-mono text-xs font-bold cursor-pointer"
               >
                 <span>Get started</span>
                 <ArrowRight weight="bold" />

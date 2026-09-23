@@ -86,7 +86,7 @@ export default function IntroPowerSwitch({ isPowered, onTogglePower, onExploreNa
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-serif text-lg font-bold tracking-tight text-slate-900">NameGenius</span>
+                <span className="font-display text-lg font-normal uppercase tracking-tight text-slate-900">NameGenius</span>
                 <span className="rounded bg-slate-200/80 px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-700">
                   Ready
                 </span>
@@ -147,7 +147,7 @@ export default function IntroPowerSwitch({ isPowered, onTogglePower, onExploreNa
             </span>
           </div>
 
-          <h1 className="mt-4 font-serif text-3xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+          <h1 className="mt-4 font-display text-3xl font-normal uppercase tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
             Find a domain name you can <span className="italic underline decoration-blue-500 decoration-wavy">actually own</span>.
           </h1>
           <p className="mt-3 max-w-2xl font-sans text-base text-slate-600 sm:text-lg">

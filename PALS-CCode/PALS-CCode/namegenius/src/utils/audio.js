@@ -2,8 +2,40 @@
 let audioCtx = null
 let soundMuted = true
 
+export function getAudioContext() {
+  if (typeof window === 'undefined') return null
+  if (!audioCtx) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext
+    if (AudioContext) {
+      audioCtx = new AudioContext()
+    }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {})
+  }
+  return audioCtx
+}
+
+// Auto-unlock audio context on first user interaction
+if (typeof window !== 'undefined') {
+  const unlockAudio = () => {
+    getAudioContext()
+    window.removeEventListener('pointerdown', unlockAudio)
+    window.removeEventListener('keydown', unlockAudio)
+    window.removeEventListener('touchstart', unlockAudio)
+    window.removeEventListener('click', unlockAudio)
+  }
+  window.addEventListener('pointerdown', unlockAudio, { passive: true })
+  window.addEventListener('keydown', unlockAudio, { passive: true })
+  window.addEventListener('touchstart', unlockAudio, { passive: true })
+  window.addEventListener('click', unlockAudio, { passive: true })
+}
+
 export function setSoundMuted(muted) {
   soundMuted = Boolean(muted)
+  if (!soundMuted) {
+    getAudioContext()
+  }
 }
 
 export function isSoundMuted() {
@@ -19,7 +51,7 @@ export function playMechanicalClick(type = 'click') {
       audioCtx = new AudioContext()
     }
     if (audioCtx.state === 'suspended') {
-      audioCtx.resume()
+      audioCtx.resume().catch(() => {})
     }
 
     const osc = audioCtx.createOscillator()

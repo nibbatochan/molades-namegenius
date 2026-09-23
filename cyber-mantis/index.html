@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cyber-Mantis Sniper — Walk &amp; Attack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #0b1020;
+        --panel: #141c33;
+        --steel: #3b4a6b;
+        --grid: #1c2744;
+        --cyan: #5ce1ff;
+        --orange: #ff9a3c;
+        --label: #c9d4f0;
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--ink);
+        color: var(--label);
+        font-family: VT323, ui-monospace, monospace;
+      }
+
+      body {
+        background-image:
+          linear-gradient(rgba(11, 16, 32, 0.55), rgba(11, 16, 32, 0.92)),
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+        background-size: auto, 28px 28px, 28px 28px;
+      }
+
+      .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 48px; }
+
+      h1 {
+        font-family: "Press Start 2P", monospace;
+        font-size: clamp(14px, 2.2vw, 22px);
+        line-height: 1.5;
+        color: #f4f7ff;
+        text-shadow: 0 0 18px rgba(92, 225, 255, 0.35);
+        margin: 0 0 8px;
+      }
+
+      .sub { font-size: 22px; letter-spacing: 0.08em; color: #8ea0c8; margin: 0 0 22px; }
+
+      .hud {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 22px;
+      }
+
+      button, label { font: inherit; font-size: 20px; }
+
+      button {
+        background: var(--panel);
+        color: var(--label);
+        border: 2px solid var(--steel);
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+
+      button[aria-pressed="true"],
+      button:hover {
+        border-color: var(--cyan);
+        color: #fff;
+        box-shadow: 0 0 0 1px var(--cyan) inset;
+      }
+
+      .speed { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+      input[type="range"] { accent-color: var(--cyan); width: 140px; }
+
+      .stage {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+      }
+
+      @media (max-width: 820px) {
+        .stage { grid-template-columns: 1fr; }
+      }
+
+      .bay {
+        background: linear-gradient(#10182c, #0c1222);
+        border: 3px solid #2a3658;
+        padding: 16px 16px 22px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .bay::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 50% 18%, rgba(92, 225, 255, 0.1), transparent 55%);
+        pointer-events: none;
+      }
+
+      .tag {
+        font-family: "Press Start 2P", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        color: var(--cyan);
+        margin: 0 0 6px;
+        position: relative;
+      }
+
+      .bay.attack .tag { color: var(--orange); }
+      .hint { font-size: 18px; color: #7f90b8; margin: 0 0 8px; position: relative; }
+
+      .runway { position: relative; height: 280px; margin-top: 4px; }
+
+      .actor {
+        position: absolute;
+        bottom: 47px;
+        width: 340px;
+        height: 210px;
+        z-index: 2;
+        transform-origin: center bottom;
+      }
+
+      .actor svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+      .walker { left: 4%; }
+      .shooter { left: 50%; margin-left: -170px; }
+
+      .platform {
+        position: absolute;
+        left: 5%;
+        right: 5%;
+        bottom: 8px;
+        height: 42px;
+        z-index: 1;
+      }
+
+      .platform .deck {
+        height: 14px;
+        background: repeating-linear-gradient(90deg, #5c6f96 0 18px, #4a5b80 18px 20px);
+        border-top: 3px solid #d7e2ff;
+        border-bottom: 3px solid #1b2438;
+        box-shadow: 0 0 0 2px #0a0f1c;
+      }
+
+      .platform .bulk {
+        height: 26px;
+        background: linear-gradient(#2d3b58, #182133);
+        border: 3px solid #0a0f1c;
+        border-top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+      }
+
+      .rivet {
+        width: 8px;
+        height: 8px;
+        background: #8ea0c4;
+        box-shadow: inset 0 -2px 0 #243049;
+      }
+
+      .shadow {
+        position: absolute;
+        left: 50%;
+        bottom: 36px;
+        width: 150px;
+        height: 16px;
+        margin-left: -75px;
+        background: radial-gradient(ellipse, rgba(0, 0, 0, 0.55), transparent 70%);
+        z-index: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>CYBER-MANTIS SNIPER</h1>
+      <p class="sub">Drawn in code · 4-pose walk · 4-pose railgun charge · on a platform</p>
+
+      <div class="hud">
+        <button id="btn-play" type="button" aria-pressed="true">Pause</button>
+        <button id="btn-reset" type="button">Reset</button>
+        <label class="speed">
+          Speed
+          <input id="speed" type="range" min="0.4" max="2.2" step="0.1" value="1" />
+          <span id="speed-read">1.0x</span>
+        </label>
+      </div>
+
+      <div class="stage">
+        <section class="bay" aria-label="Walk cycle">
+          <p class="tag">WALK · 4-POSE LOCOMOTION</p>
+          <p class="hint">Jointed stride on the catwalk. No sprite sheet.</p>
+          <div class="runway" id="walk-runway">
+            <div class="actor walker" id="walker"></div>
+            <div class="shadow" id="walk-shadow"></div>
+            <div class="platform" aria-hidden="true">
+              <div class="deck"></div>
+              <div class="bulk">
+                <span class="rivet"></span><span class="rivet"></span>
+                <span class="rivet"></span><span class="rivet"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="bay attack" aria-label="Attack cycle">
+          <p class="tag">ATTACK · 4-POSE RAILGUN CHARGE</p>
+          <p class="hint">Aim · charge · fire · recoil.</p>
+          <div class="runway">
+            <div class="actor shooter" id="shooter"></div>
+            <div class="shadow"></div>
+            <div class="platform" aria-hidden="true">
+              <div class="deck"></div>
+              <div class="bulk">
+                <span class="rivet"></span><span class="rivet"></span>
+                <span class="rivet"></span><span class="rivet"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      function buildMantis(id) {
+        const p = id + "-";
+        const steel = `url(#${p}steel)`;
+        const shell = `url(#${p}shell)`;
+        const edge = `url(#${p}edge)`;
+        const blade = `url(#${p}blade)`;
+        const beam = `url(#${p}beam)`;
+
+        function cap(len, w = 13) {
+          return `
+            <rect x="${-w / 2}" y="0" width="${w}" height="${len}" rx="${w / 2}"
+              fill="${steel}" stroke="#0d1c22" stroke-width="2.4"/>
+            <rect x="${-w / 2 + 2.4}" y="6" width="${w * 0.28}" height="${len - 12}" rx="2"
+              fill="#d5e7ee" opacity="0.32"/>
+          `;
+        }
+
+        function joint(r = 9) {
+          return `
+            <circle r="${r}" fill="${steel}" stroke="#0d1c22" stroke-width="2.4"/>
+            <circle r="${r * 0.34}" fill="#152226"/>
+          `;
+        }
+
+        function foot() {
+          return `<path d="M-4 0 L 14 8 L 6 14 L -8 6 Z" fill="${steel}" stroke="#0d1c22" stroke-width="2.2" stroke-linejoin="round"/>`;
+        }
+
+        function scythe() {
+          return `
+            <path d="M 0 0 C 14 10 20 36 10 78 C 6 54 -10 30 -16 10 C -10 2 -2 0 0 0 Z"
+              fill="${blade}" stroke="#0d1c22" stroke-width="2.3" stroke-linejoin="round"/>
+            <path d="M 2 10 C 10 26 12 50 6 70" fill="none" stroke="#fff" stroke-width="1.6" opacity="0.4"/>
+          `;
+        }
+
+        function leg(cls, x, y, femur, tibia) {
+          return `
+            <g class="${cls}" transform="translate(${x} ${y})">
+              <g class="hip">
+                ${cap(femur, 14)}
+                ${joint(10)}
+                <g class="knee" transform="translate(0 ${femur})">
+                  ${joint(9)}
+                  ${cap(tibia, 12)}
+                  <g class="foot" transform="translate(0 ${tibia})">
+                    ${joint(7)}
+                    ${foot()}
+                  </g>
+                </g>
+              </g>
+            </g>
+          `;
+        }
+
+        function arm(cls, x, y, upper, lower) {
+          return `
+            <g class="${cls}" transform="translate(${x} ${y})">
+              <g class="shoulder">
+                ${cap(upper, 15)}
+                ${joint(10)}
+                <g class="elbow" transform="translate(0 ${upper})">
+                  ${joint(9)}
+                  ${cap(lower, 13)}
+                  <g class="hand" transform="translate(0 ${lower})">
+                    ${joint(8)}
+                    <g class="scythe">${scythe()}</g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          `;
+        }
+
+        return `
+<svg viewBox="0 0 420 240" aria-hidden="true">
+  <defs>
+    <linearGradient id="${p}shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b7ffcb"/>
+      <stop offset="18%" stop-color="#46e07c"/>
+      <stop offset="48%" stop-color="#17a34e"/>
+      <stop offset="100%" stop-color="#0a4d2c"/>
+    </linearGradient>
+    <linearGradient id="${p}edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7af0a2"/>
+      <stop offset="100%" stop-color="#0c3f26"/>
+    </linearGradient>
+    <linearGradient id="${p}steel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c3d4dc"/>
+      <stop offset="40%" stop-color="#5b7380"/>
+      <stop offset="100%" stop-color="#24343c"/>
+    </linearGradient>
+    <linearGradient id="${p}blade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f3f7fa"/>
+      <stop offset="55%" stop-color="#9aadb8"/>
+      <stop offset="100%" stop-color="#4e616c"/>
+    </linearGradient>
+    <linearGradient id="${p}beam" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#fff"/>
+      <stop offset="40%" stop-color="#7ef6ff"/>
+      <stop offset="100%" stop-color="#1aa8ff"/>
+    </linearGradient>
+    <filter id="${p}glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <g class="rig" transform="translate(200 128)">
+    <g class="bob"><g class="lean">
+
+      ${leg("leg hind-far", -46, 10, 52, 46)}
+      ${leg("leg fore-far", 28, 16, 48, 42)}
+
+      <g class="abdomen">
+        <path d="M 22 2
+          C 8 -30  -52 -46  -148 -22
+          C -168 -14 -170 8  -148 22
+          C -100 40  -20 28  24 12
+          C 34 8 32 -4 22 2 Z"
+          fill="${shell}" stroke="#07160e" stroke-width="3.2" stroke-linejoin="round"/>
+        <path d="M 8 -8 C -20 -32 -80 -38 -140 -16"
+          fill="none" stroke="#eaffef" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+        <path d="M -36 -2 C -52 12 -86 18 -122 10"
+          fill="none" stroke="#08351f" stroke-width="2.4" opacity="0.5"/>
+        <path d="M -72 -6 C -86 8 -112 12 -138 6"
+          fill="none" stroke="#08351f" stroke-width="2.2" opacity="0.4"/>
+        <ellipse cx="10" cy="4" rx="16" ry="14" fill="${steel}" stroke="#0d1c22" stroke-width="2.4"/>
+        <circle cx="10" cy="4" r="5.5" fill="#152226"/>
+      </g>
+
+      ${leg("leg hind-near", -28, 18, 54, 48)}
+      ${leg("leg fore-near", 42, 22, 50, 44)}
+
+      <g class="head" transform="translate(36 -22)">
+        <rect x="-2" y="-5" width="34" height="16" rx="8" fill="${steel}" stroke="#0d1c22" stroke-width="2.3" transform="rotate(-16)"/>
+        <g class="skull" transform="translate(30 -18) rotate(-10)">
+          <path d="M 0 12 C 6 -12 36 -18 58 4 C 64 14 56 28 32 32 C 10 34 -4 24 0 12 Z"
+            fill="${edge}" stroke="#07160e" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M 12 -2 C 30 -12 48 0 54 10" fill="none" stroke="#eaffef" stroke-width="2.4" opacity="0.45"/>
+          <g class="eye">
+            <ellipse cx="44" cy="8" rx="10" ry="8" fill="#08140c" stroke="#07160e" stroke-width="2"/>
+            <ellipse class="lens" cx="45" cy="7" rx="6.4" ry="5.2" fill="#d6ff4a"/>
+            <ellipse cx="48" cy="5" rx="2" ry="1.4" fill="#fff" opacity="0.85"/>
+          </g>
+          <path d="M 10 -4 C -8 -38 18 -50 36 -28" fill="none" stroke="#0d1c22" stroke-width="3.2" stroke-linecap="round"/>
+          <path d="M 20 -2 C 28 -36 58 -40 54 -14" fill="none" stroke="#0d1c22" stroke-width="3.2" stroke-linecap="round"/>
+          <circle cx="36" cy="-28" r="2.5" fill="#3fe07a"/>
+          <circle cx="54" cy="-14" r="2.5" fill="#3fe07a"/>
+        </g>
+
+        ${arm("arm arm-far", 22, 4, 44, 36)}
+        ${arm("arm arm-near", 32, 12, 46, 38)}
+
+        <g class="gun" opacity="0">
+          <g transform="translate(44 6) rotate(8)">
+            <rect x="0" y="-14" width="72" height="12" rx="6" fill="${steel}" stroke="#0d1c22" stroke-width="2.3"/>
+            <rect x="0" y="4" width="72" height="12" rx="6" fill="${steel}" stroke="#0d1c22" stroke-width="2.3"/>
+            <rect x="56" y="-17" width="20" height="36" rx="4" fill="#22333a" stroke="#0d1c22" stroke-width="2.3"/>
+            <g class="muzzle-flash" opacity="0">
+              <rect x="76" y="-12" width="132" height="10" rx="5" fill="${beam}" filter="url(#${p}glow)"/>
+              <rect x="76" y="6" width="132" height="10" rx="5" fill="${beam}" filter="url(#${p}glow)"/>
+              <g fill="#ffb14a" stroke="#ff7a1a" stroke-width="1.3">
+                <polygon points="76,-4 94,-26 84,-2"/>
+                <polygon points="78,16 102,34 86,18"/>
+                <polygon points="82,-10 114,-6 86,2"/>
+                <polygon points="74,10 90,28 80,12"/>
+              </g>
+            </g>
+          </g>
+        </g>
+
+        <g class="charge-flare" opacity="0">
+          <circle cx="78" cy="8" r="11" fill="#ff2a2a" filter="url(#${p}glow)"/>
+          <circle cx="80" cy="7" r="4.2" fill="#ffe566"/>
+        </g>
+      </g>
+
+      <g class="smoke" opacity="0">
+        <g fill="#d9e2ea" stroke="#8a97a4" stroke-width="1.6">
+          <ellipse cx="-78" cy="8" rx="18" ry="13"/>
+          <ellipse cx="-104" cy="-10" rx="15" ry="12"/>
+          <ellipse cx="-52" cy="-22" rx="13" ry="10"/>
+          <ellipse cx="-24" cy="30" rx="14" ry="9"/>
+        </g>
+      </g>
+
+    </g></g>
+  </g>
+</svg>`;
+      }
+
+      const walker = document.getElementById("walker");
+      const shooter = document.getElementById("shooter");
+      walker.innerHTML = buildMantis("w");
+      shooter.innerHTML = buildMantis("a");
+
+      const WALK = [
+        { bob: 0, lean: -4, hf: [38, 28], hn: [-22, 46], ff: [10, 32], fn: [-34, 44], af: [-108, 118], an: [-98, 124], gun: 0, flash: 0, charge: 0, smoke: 0, eye: "#d6ff4a" },
+        { bob: 6, lean: 3, hf: [6, 52], hn: [30, 24], ff: [-30, 46], fn: [16, 28], af: [-100, 112], an: [-90, 118], gun: 0, flash: 0, charge: 0, smoke: 0, eye: "#d6ff4a" },
+        { bob: 1, lean: -6, hf: [-26, 48], hn: [40, 20], ff: [24, 24], fn: [-12, 52], af: [-114, 122], an: [-104, 128], gun: 0, flash: 0, charge: 0, smoke: 0, eye: "#d6ff4a" },
+        { bob: 5, lean: 4, hf: [32, 22], hn: [-8, 50], ff: [-16, 48], fn: [28, 22], af: [-96, 108], an: [-86, 114], gun: 0, flash: 0, charge: 0, smoke: 0, eye: "#d6ff4a" },
+      ];
+
+      const ATK = [
+        { bob: 2, lean: -3, hf: [20, 34], hn: [-12, 44], ff: [8, 34], fn: [-24, 42], af: [-102, 100], an: [-94, 106], gun: 0, flash: 0, charge: 0, smoke: 0, eye: "#d6ff4a" },
+        { bob: 4, lean: 8, hf: [24, 30], hn: [4, 38], ff: [14, 28], fn: [-8, 36], af: [-86, 18], an: [-78, 22], gun: 1, flash: 0, charge: 1, smoke: 0, eye: "#ff2a2a" },
+        { bob: 3, lean: 12, hf: [28, 28], hn: [8, 36], ff: [16, 26], fn: [-2, 34], af: [-88, 14], an: [-80, 18], gun: 1, flash: 1, charge: 0.35, smoke: 0, eye: "#ffe566" },
+        { bob: 0, lean: -14, hf: [6, 46], hn: [-20, 50], ff: [-6, 42], fn: [-30, 48], af: [-70, 36], an: [-62, 40], gun: 0.45, flash: 0, charge: 0, smoke: 1, eye: "#d6ff4a" },
+      ];
+
+      function setPose(root, pose) {
+        const $ = (s) => root.querySelector(s);
+        $(".bob").setAttribute("transform", `translate(0 ${pose.bob})`);
+        $(".lean").setAttribute("transform", `rotate(${pose.lean})`);
+        const map = [
+          [".hind-far .hip", pose.hf[0]],
+          [".hind-far .knee", pose.hf[1]],
+          [".hind-near .hip", pose.hn[0]],
+          [".hind-near .knee", pose.hn[1]],
+          [".fore-far .hip", pose.ff[0]],
+          [".fore-far .knee", pose.ff[1]],
+          [".fore-near .hip", pose.fn[0]],
+          [".fore-near .knee", pose.fn[1]],
+          [".arm-far .shoulder", pose.af[0]],
+          [".arm-far .elbow", pose.af[1]],
+          [".arm-near .shoulder", pose.an[0]],
+          [".arm-near .elbow", pose.an[1]],
+        ];
+        for (const [sel, rot] of map) {
+          const node = $(sel);
+          if (!node) continue;
+          const base = node.getAttribute("data-base") || "";
+          node.setAttribute("transform", `${base} rotate(${rot})`.trim());
+        }
+        $(".gun")?.setAttribute("opacity", String(pose.gun));
+        $(".muzzle-flash")?.setAttribute("opacity", String(pose.flash));
+        $(".charge-flare")?.setAttribute("opacity", String(pose.charge));
+        $(".smoke")?.setAttribute("opacity", String(pose.smoke));
+        $(".lens")?.setAttribute("fill", pose.eye);
+        const hideBlades = pose.gun > 0.6;
+        root.querySelectorAll(".scythe").forEach((n) => n.setAttribute("opacity", hideBlades ? "0" : "1"));
+      }
+
+      document.querySelectorAll(".knee, .elbow, .foot, .hand").forEach((node) => {
+        node.setAttribute("data-base", node.getAttribute("transform") || "");
+      });
+
+      const walkRoot = walker.querySelector("svg");
+      const atkRoot = shooter.querySelector("svg");
+      setPose(walkRoot, WALK[0]);
+      setPose(atkRoot, ATK[0]);
+
+      const walkRunway = document.getElementById("walk-runway");
+      const walkShadow = document.getElementById("walk-shadow");
+      const btnPlay = document.getElementById("btn-play");
+      const btnReset = document.getElementById("btn-reset");
+      const speed = document.getElementById("speed");
+      const speedRead = document.getElementById("speed-read");
+
+      const state = {
+        playing: true,
+        rate: 1,
+        walkFrame: 0,
+        walkAcc: 0,
+        walkX: 0.04,
+        walkDir: 1,
+        atkFrame: 0,
+        atkAcc: 0,
+        last: performance.now(),
+      };
+
+      const WALK_MS = 140;
+      const ATK_MS = [190, 320, 130, 340];
+
+      function placeWalker() {
+        const w = walkRunway.clientWidth;
+        const spriteW = walker.offsetWidth || 340;
+        const min = 0.01;
+        const max = Math.max(min, 1 - spriteW / w - 0.01);
+        state.walkX = Math.min(max, Math.max(min, state.walkX));
+        walker.style.left = state.walkX * 100 + "%";
+        walker.style.transform = state.walkDir < 0 ? "scaleX(-1)" : "scaleX(1)";
+        walkShadow.style.left = state.walkX * 100 + "%";
+        walkShadow.style.marginLeft = spriteW * 0.22 + "px";
+      }
+
+      function tick(now) {
+        const dt = now - state.last;
+        state.last = now;
+        if (state.playing) {
+          const step = dt * state.rate;
+          state.walkAcc += step;
+          if (state.walkAcc >= WALK_MS) {
+            state.walkAcc = 0;
+            state.walkFrame = (state.walkFrame + 1) % 4;
+            setPose(walkRoot, WALK[state.walkFrame]);
+          }
+          state.walkX += state.walkDir * 0.00018 * step;
+          const w = walkRunway.clientWidth;
+          const spriteW = walker.offsetWidth || 340;
+          const min = 0.01;
+          const max = Math.max(min, 1 - spriteW / w - 0.01);
+          if (state.walkX > max) { state.walkX = max; state.walkDir = -1; }
+          else if (state.walkX < min) { state.walkX = min; state.walkDir = 1; }
+          placeWalker();
+
+          state.atkAcc += step;
+          if (state.atkAcc >= ATK_MS[state.atkFrame]) {
+            state.atkAcc = 0;
+            state.atkFrame = (state.atkFrame + 1) % 4;
+            setPose(atkRoot, ATK[state.atkFrame]);
+          }
+        }
+        requestAnimationFrame(tick);
+      }
+
+      btnPlay.addEventListener("click", () => {
+        state.playing = !state.playing;
+        btnPlay.textContent = state.playing ? "Pause" : "Play";
+        btnPlay.setAttribute("aria-pressed", String(state.playing));
+      });
+
+      btnReset.addEventListener("click", () => {
+        Object.assign(state, { walkFrame: 0, atkFrame: 0, walkAcc: 0, atkAcc: 0, walkX: 0.04, walkDir: 1 });
+        setPose(walkRoot, WALK[0]);
+        setPose(atkRoot, ATK[0]);
+        placeWalker();
+      });
+
+      speed.addEventListener("input", () => {
+        state.rate = Number(speed.value);
+        speedRead.textContent = state.rate.toFixed(1) + "x";
+      });
+
+      window.addEventListener("resize", placeWalker);
+      placeWalker();
+      requestAnimationFrame(tick);
+      window.__mantis = { setPose, WALK, ATK, walkRoot, atkRoot, state };
+    </script>
+  </body>
+</html>

@@ -33,11 +33,15 @@ function App() {
   const [saved, setSaved] = useState([]) // name items on the shortlist
   const [compareSel, setCompareSel] = useState([]) // up to 2 name items
   const [generation, setGeneration] = useState(0) // bump to reshuffle results
+  const [resultsCache, setResultsCache] = useState(null) // persistent results cache across navigation
 
   // History-aware navigation: Back always returns to the previous screen.
   const navigate = (next) => {
     setHistory((h) => [...h, view])
     setView(next)
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    if (document.documentElement) document.documentElement.scrollTop = 0
+    if (document.body) document.body.scrollTop = 0
   }
 
   const back = () => {
@@ -49,6 +53,9 @@ function App() {
       const copy = h.slice()
       const prev = copy.pop()
       setView(prev)
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+      if (document.documentElement) document.documentElement.scrollTop = 0
+      if (document.body) document.body.scrollTop = 0
       return copy
     })
   }
@@ -56,7 +63,11 @@ function App() {
   const startSearch = (values) => {
     setBrief(values)
     setGeneration(0)
+    setResultsCache(null) // clear cache on new search brief
     navigate('results')
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    if (document.documentElement) document.documentElement.scrollTop = 0
+    if (document.body) document.body.scrollTop = 0
   }
 
   const regenerate = () => {
@@ -88,6 +99,8 @@ function App() {
             saved={saved}
             compareSel={compareSel}
             generation={generation}
+            resultsCache={resultsCache}
+            onUpdateResultsCache={setResultsCache}
             onRegenerate={regenerate}
             onToggleSaved={toggleSaved}
             onToggleCompare={toggleCompare}
@@ -99,7 +112,9 @@ function App() {
         return (
           <Shortlist
             saved={saved}
+            compareSel={compareSel}
             onRemove={toggleSaved}
+            onToggleCompare={toggleCompare}
             onBack={back}
             onNavigate={navigate}
           />
@@ -107,14 +122,23 @@ function App() {
       case 'compare':
         return (
           <Compare
+            saved={saved}
             compareSel={compareSel}
+            onToggleCompare={toggleCompare}
+            onSelectCompare={setCompareSel}
             onClear={() => setCompareSel([])}
             onBack={back}
             onNavigate={navigate}
           />
         )
       case 'lab':
-        return <TestingLab onNavigate={navigate} />
+        return (
+          <TestingLab
+            onNavigate={navigate}
+            savedCount={saved.length}
+            compareCount={compareSel.length}
+          />
+        )
       case 'brief':
       default:
         return (
