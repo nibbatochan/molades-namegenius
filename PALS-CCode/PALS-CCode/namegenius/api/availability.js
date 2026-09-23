@@ -1,6 +1,10 @@
 // Real-time DNS over HTTPS & RDAP Domain Availability Resolver
 // Returns 'available' (NXDOMAIN / not registered), 'taken' (registered / active DNS), or 'unknown'
 
+export const config = {
+  runtime: 'edge',
+}
+
 const CACHE = new Map()
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes cache
 

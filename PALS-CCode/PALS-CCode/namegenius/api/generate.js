@@ -2,7 +2,7 @@
 // Proxies brand name generation to Groq. The API key stays on the server.
 
 export const config = {
-  runtime: 'nodejs', // Node.js runtime for reliable process.env access
+  runtime: 'edge',
 }
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
@@ -45,22 +45,24 @@ NAMING RULES:
 6. Phonetic profile: classify each name as "punchy" (hard consonants: k, t, p, x), "smooth" (soft sounds: m, l, n, r), or "balanced"
 7. Syllable count must be accurate
 
-RETURN FORMAT — respond with ONLY a valid JSON array, no markdown, no explanation outside the array:
-[
-  {
-    "name": "BrandName",
-    "slug": "brandname",
-    "rationale": "One concrete sentence explaining why this name fits the brief and stands out in the space.",
-    "tags": ["brandable"],
-    "syllables": 2,
-    "phonetic": { "profile": "punchy", "label": "Short & punchy", "score": 72 },
-    "tldSuggestion": ".com"
-  }
-]
+RETURN FORMAT — respond with ONLY a valid JSON object with a "names" array containing exactly 18 brand objects:
+{
+  "names": [
+    {
+      "name": "BrandName",
+      "slug": "brandname",
+      "rationale": "One concrete sentence explaining why this name fits the brief and stands out in the space.",
+      "tags": ["brandable"],
+      "syllables": 2,
+      "phonetic": { "profile": "punchy", "label": "Short & punchy", "score": 72 },
+      "tldSuggestion": ".com"
+    }
+  ]
+}
 
 Valid tag values (pick 1–2 per name): "short" (slug ≤ 6 chars), "punchy", "smooth", "descriptive", "catchy", "brandable"
 
-Generate exactly 18 names now.`
+Generate exactly 18 names now in this JSON format.`
 }
 
 export default async function handler(req) {
@@ -112,7 +114,7 @@ export default async function handler(req) {
   const prompt = buildPrompt(brief)
 
   const groqPayload = {
-    model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+    model: process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
     messages: [
       {
         role: 'system',
@@ -125,7 +127,7 @@ export default async function handler(req) {
     ],
     response_format: { type: 'json_object' },
     temperature: 0.85,
-    max_tokens: 4096,
+    max_tokens: 2400,
   }
 
   let groqRes
