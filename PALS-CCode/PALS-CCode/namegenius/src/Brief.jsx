@@ -53,10 +53,10 @@ export default function Brief({
         }}
       />
 
-      {/* FULL-SCREEN 100vh HERO SECTION ON LOAD */}
-      <section className="relative min-h-[100dvh] h-screen flex flex-col justify-between pt-2 sm:pt-3 pb-2 sm:pb-3 px-4 sm:px-8 lg:px-12 overflow-visible select-none">
+      {/* RESPONSIVE FULL-HEIGHT HERO SECTION */}
+      <section className="relative min-h-[100dvh] h-auto lg:h-screen flex flex-col justify-between pt-2 sm:pt-3 pb-3 sm:pb-3 px-3 sm:px-8 lg:px-12 overflow-visible select-none">
         {/* Top Navigation Bar: Unified Tactile Yellow AppNavbar */}
-        <div className="w-full shrink-0 mb-1 sm:mb-2">
+        <div className="w-full shrink-0 mb-3 sm:mb-2">
           <AppNavbar
             activeView="home"
             onNavigate={onNavigate}
@@ -65,44 +65,44 @@ export default function Brief({
           />
         </div>
 
-        {/* Hero Center Stage: Neo-Pop Typography Left + Hardware Gadget Right (Tightened center gap by 16px) */}
-        <div className="w-full max-w-6xl mx-auto my-auto grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-2 items-center py-0.5 sm:py-1">
+        {/* Hero Center Stage: Neo-Pop Typography Left + Hardware Gadget Right (Mobile Stack / Desktop Grid) */}
+        <div className="w-full max-w-6xl mx-auto my-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-2 items-center py-2 sm:py-4 lg:py-1">
           {/* Left Column: Bold Neo-Pop Headline with Zentarch Font */}
           <div className="lg:col-span-7 flex flex-col justify-center text-left">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-950/30 bg-slate-950/10 px-4 py-1.5 font-mono text-xs font-black text-slate-900 mb-4 backdrop-blur-xs w-fit">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-950/30 bg-slate-950/10 px-3.5 py-1 sm:px-4 sm:py-1.5 font-mono text-[11px] sm:text-xs font-black text-slate-900 mb-3 sm:mb-4 backdrop-blur-xs w-fit">
               <Sparkle weight="fill" className="text-amber-600 text-sm" />
               <span>TACTILE DOMAIN GENERATOR</span>
             </div>
 
             <div className="relative inline-block my-1">
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-[62px] font-black uppercase tracking-tight text-slate-950 leading-[0.98] [text-shadow:3px_3px_0px_rgba(245,158,11,0.3),6px_6px_0px_rgba(0,0,0,0.06)]">
+              <h1 className="font-display text-3xl sm:text-5xl lg:text-[62px] font-black uppercase tracking-tight text-slate-950 leading-[1.02] sm:leading-[0.98] [text-shadow:2px_2px_0px_rgba(245,158,11,0.3),4px_4px_0px_rgba(0,0,0,0.06)] sm:[text-shadow:3px_3px_0px_rgba(245,158,11,0.3),6px_6px_0px_rgba(0,0,0,0.06)]">
                 BRAND NAMES
-                <span className="block text-purple-600 [text-shadow:3px_3px_0px_rgba(126,34,206,0.3)]">
+                <span className="block text-purple-600 [text-shadow:2px_2px_0px_rgba(126,34,206,0.3)] sm:[text-shadow:3px_3px_0px_rgba(126,34,206,0.3)]">
                   YOU CAN OWN.
                 </span>
               </h1>
             </div>
 
-            <p className="mt-5 max-w-xl font-sans text-base sm:text-lg font-medium text-slate-900/80 leading-relaxed">
+            <p className="mt-3 sm:mt-5 max-w-xl font-sans text-sm sm:text-lg font-medium text-slate-900/80 leading-relaxed">
               Find available domain names that sound memorable and roll off the tongue. Check real-time registration across .com, .ai, and global country domains without getting stuck on taken names.
             </p>
 
             {/* Hardware Feature Spec Pills */}
-            <div className="mt-5 flex flex-wrap items-center gap-2 font-mono text-[11px] font-black uppercase text-slate-900">
-              <span className="rounded-lg bg-slate-950/10 px-3 py-1 border border-slate-950/20">
+            <div className="mt-4 sm:mt-5 flex flex-wrap items-center gap-2 font-mono text-[10px] sm:text-[11px] font-black uppercase text-slate-900">
+              <span className="rounded-lg bg-slate-950/10 px-2.5 sm:px-3 py-1 border border-slate-950/20">
                 ⚡ REAL-TIME REGISTRAR CHECK
               </span>
-              <span className="rounded-lg bg-slate-950/10 px-3 py-1 border border-slate-950/20">
+              <span className="rounded-lg bg-slate-950/10 px-2.5 sm:px-3 py-1 border border-slate-950/20">
                 ● SET BY TONE
               </span>
             </div>
 
             {/* Primary Action Button: Massive Terracotta Mechanical Switch */}
-            <div className="mt-6 flex flex-wrap items-center gap-3">
+            <div className="mt-5 sm:mt-6 flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 onClick={handleScrollToConsole}
-                className="skeuo-button-terracotta inline-flex items-center justify-center gap-2.5 rounded-2xl px-8 py-4 font-mono text-xs sm:text-sm font-black uppercase tracking-wider text-white shadow-2xl active:scale-95 cursor-pointer group"
+                className="skeuo-button-terracotta w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl px-8 py-3.5 sm:py-4 font-mono text-xs sm:text-sm font-black uppercase tracking-wider text-white shadow-2xl active:scale-95 cursor-pointer group"
               >
                 <span>FIND MY DOMAIN</span>
                 <ArrowDown weight="bold" className="text-base group-hover:translate-y-1 transition-transform" />
@@ -111,23 +111,23 @@ export default function Brief({
           </div>
 
           {/* Right Column: Floating Interactive Hardware Gadget Centerpiece */}
-          <div className="lg:col-span-5 flex justify-center lg:justify-center items-center">
+          <div className="lg:col-span-5 flex justify-center lg:justify-center items-center w-full overflow-hidden sm:overflow-visible">
             <HeroHardwareGadget onInteractWithConsole={handleScrollToConsole} />
           </div>
         </div>
 
         {/* Hero Bottom Bar / Hardware Status Cue */}
-        <footer className="w-full max-w-7xl mx-auto flex items-center justify-between font-mono text-[10px] font-black uppercase tracking-wider text-slate-900/60 pt-2 border-t border-slate-950/15">
-          <div>TACTILE HARDWARE EDITION</div>
+        <footer className="w-full max-w-7xl mx-auto flex items-center justify-between font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-900/60 pt-2 border-t border-slate-950/15">
+          <div className="hidden sm:block">TACTILE HARDWARE EDITION</div>
           <button
             type="button"
             onClick={handleScrollToConsole}
-            className="hover:text-slate-950 transition-colors flex items-center gap-1 text-slate-900 font-extrabold cursor-pointer"
+            className="hover:text-slate-950 transition-colors flex items-center justify-center gap-1 text-slate-900 font-extrabold cursor-pointer w-full sm:w-auto"
           >
             <span>OPERATE MASTER CONSOLE</span>
             <ArrowDown weight="bold" />
           </button>
-          <div>VERIFIED REGISTRAR DATA</div>
+          <div className="hidden sm:block">VERIFIED REGISTRAR DATA</div>
         </footer>
       </section>
 

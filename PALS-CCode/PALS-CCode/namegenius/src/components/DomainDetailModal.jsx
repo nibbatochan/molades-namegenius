@@ -157,25 +157,25 @@ export default function DomainDetailModal({
       <div className="relative w-full max-w-3xl max-h-[92vh] flex flex-col rounded-3xl bg-[#f8f9fa] border-2 border-slate-950 shadow-2xl overflow-hidden select-none">
         
         {/* Pinned Modal Header with Currency Quick Switcher */}
-        <div className="shrink-0 px-6 py-4 sm:px-8 bg-white border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 z-20">
-          <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-950 text-sm font-black text-white shadow-md border border-slate-800">
+        <div className="shrink-0 px-4 py-3 sm:px-8 sm:py-4 bg-white border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5 z-20">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-slate-950 text-xs sm:text-sm font-black text-white shadow-md border border-slate-800 shrink-0">
               N
             </span>
             <div>
-              <div className="font-mono text-[10px] font-black uppercase tracking-wider text-slate-500">
+              <div className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500">
                 DOMAIN REGISTRATION & LIVE PRICING
               </div>
-              <h3 className="font-display text-2xl sm:text-3xl font-normal tracking-tight text-slate-950 uppercase leading-none">
+              <h3 className="font-display text-xl sm:text-3xl font-normal tracking-tight text-slate-950 uppercase leading-none">
                 {item.name}
               </h3>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 ml-auto sm:ml-0">
             {/* Header Currency Selector */}
-            <div className="flex items-center gap-1 rounded-xl bg-slate-100 border border-slate-300 p-1">
-              <Coins weight="bold" className="text-slate-600 text-xs ml-1" />
+            <div className="flex items-center gap-1 rounded-xl bg-slate-100 border border-slate-300 p-0.5 sm:p-1">
+              <Coins weight="bold" className="text-slate-600 text-xs ml-1 hidden xs:inline" />
               <div className="flex items-center gap-0.5">
                 {CURRENCIES.map((c) => {
                   const isCur = currency === c.code
@@ -184,7 +184,7 @@ export default function DomainDetailModal({
                       key={c.code}
                       type="button"
                       onClick={() => handleCurrencyChange(c.code)}
-                      className={`px-1.5 py-0.5 rounded-lg font-mono text-[11px] font-bold transition-all cursor-pointer ${
+                      className={`px-1.5 py-0.5 rounded-lg font-mono text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer ${
                         isCur
                           ? 'bg-slate-950 text-white shadow-xs'
                           : 'text-slate-600 hover:text-slate-950 hover:bg-white'
@@ -201,7 +201,7 @@ export default function DomainDetailModal({
             <button
               type="button"
               onClick={handleSpeak}
-              className="skeuo-push-btn p-2 rounded-xl text-slate-700 hover:text-slate-950 cursor-pointer"
+              className="skeuo-push-btn p-1.5 sm:p-2 rounded-xl text-slate-700 hover:text-slate-950 cursor-pointer"
               title="Listen to pronunciation"
             >
               <SpeakerHigh weight={isPlayingAudio ? 'fill' : 'bold'} className="text-base" />
@@ -212,16 +212,16 @@ export default function DomainDetailModal({
                 playMechanicalClick('click')
                 onClose()
               }}
-              className="skeuo-push-btn flex h-9 w-9 items-center justify-center rounded-xl text-slate-700 hover:text-slate-950 cursor-pointer"
+              className="skeuo-push-btn flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl text-slate-700 hover:text-slate-950 cursor-pointer"
               title="Close modal"
             >
-              <X weight="bold" className="text-lg" />
+              <X weight="bold" className="text-base sm:text-lg" />
             </button>
           </div>
         </div>
 
         {/* Scrollable Modal Body */}
-        <div className="overflow-y-auto p-6 sm:p-8 space-y-6">
+        <div className="overflow-y-auto p-4 sm:p-8 space-y-4 sm:space-y-6">
           
           {/* ZONE 1: CRT / OLED Telemetry Glass Screen */}
           <div className="screen-recess rounded-2xl bg-slate-950 p-5 sm:p-6 text-white shadow-xl relative border border-slate-800 overflow-hidden">

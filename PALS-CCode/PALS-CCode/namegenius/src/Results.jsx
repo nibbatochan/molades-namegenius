@@ -288,16 +288,16 @@ export default function Results({
       </div>
 
       {/* Main Results Container */}
-      <main className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+      <main className="mx-auto max-w-6xl px-3 sm:px-6 pt-4 sm:pt-6">
         {/* Telemetry Hardware Chassis Deck (Purple Header) */}
-        <div className="skeuo-chassis relative overflow-hidden rounded-[28px] p-5 sm:p-6 shadow-xl text-white">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="skeuo-chassis relative overflow-hidden rounded-[24px] sm:rounded-[28px] p-4 sm:p-6 shadow-xl text-white">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="font-display text-2xl sm:text-3xl font-black uppercase tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]">
+              <h1 className="font-display text-xl sm:text-3xl font-black uppercase tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)] leading-tight">
                 {hasKeyword ? (
                   <>
                     Generated names for{' '}
-                    <span className="rounded-xl bg-slate-950/80 px-3 py-0.5 text-[#fae127] border border-purple-400/40 shadow-inner">
+                    <span className="rounded-xl bg-slate-950/80 px-2.5 sm:px-3 py-0.5 text-[#fae127] border border-purple-400/40 shadow-inner inline-block mt-1 sm:mt-0">
                       "{brief.name.trim()}"
                     </span>
                   </>
@@ -308,12 +308,12 @@ export default function Results({
             </div>
 
             {/* Action Buttons: Terracotta Push Button for Next Batch */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={onRegenerate}
                 disabled={aiLoading}
-                className="skeuo-button-terracotta inline-flex items-center gap-2 rounded-xl px-4 py-2 font-mono text-xs font-bold tracking-wider uppercase text-white active:scale-95 shadow-md group cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+                className="skeuo-button-terracotta w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 sm:py-2.5 font-mono text-xs font-bold tracking-wider uppercase text-white active:scale-95 shadow-md group cursor-pointer disabled:opacity-50 disabled:cursor-wait"
               >
                 <ArrowsClockwise weight="bold" className={`text-sm transition-transform duration-500 ${aiLoading ? 'animate-spin' : 'group-hover:rotate-180'}`} />
                 <span className="deboss-dark">{aiLoading ? 'Generating…' : `Next Batch (#${generation + 1})`}</span>
@@ -434,9 +434,9 @@ export default function Results({
             </div>
           )}
 
-          {/* Quick Filter Pill Rack */}
-          <div className="mt-3.5 flex flex-wrap items-center gap-1.5 pt-3 border-t border-purple-400/30">
-            <span className="font-mono text-[10.5px] font-black text-purple-200 mr-1 uppercase tracking-wider">Filter:</span>
+          {/* Quick Filter Pill Rack — Horizontally Scrollable on Mobile/Tablet */}
+          <div className="mt-3.5 flex items-center gap-1.5 pt-3 border-t border-purple-400/30 overflow-x-auto no-scrollbar pb-1">
+            <span className="font-mono text-[10.5px] font-black text-purple-200 mr-1 uppercase tracking-wider shrink-0">Filter:</span>
             {[
               { id: 'all', label: `All (${allItems.length})` },
               { id: 'com', label: `.com (${itemsWithRegistry.filter((i) => i.availability['.com'] === 'available').length})` },
@@ -452,11 +452,11 @@ export default function Results({
             ].map((f) => {
               const isActive = filters.includes(f.id)
               return (
-                <div key={f.id} className="key-socket-dark !p-[1px] !rounded-lg">
+                <div key={f.id} className="key-socket-dark !p-[1px] !rounded-lg shrink-0">
                   <button
                     type="button"
                     onClick={() => handleToggleFilter(f.id)}
-                    className={`key-cap !rounded-md px-2.5 py-1 font-mono text-[11px] transition-all cursor-pointer ${
+                    className={`key-cap !rounded-md px-2.5 py-1 font-mono text-[11px] whitespace-nowrap transition-all cursor-pointer ${
                       isActive
                         ? 'key-cap-active-dark ring-1 ring-amber-400 text-amber-300 font-black'
                         : 'text-slate-950 hover:text-black font-black'
@@ -469,7 +469,7 @@ export default function Results({
             })}
 
             {/* Diagnostic Console Button — High Contrast Dark Mechanical Button */}
-            <div className="key-socket-dark !p-[1.5px] !rounded-lg ml-auto">
+            <div className="key-socket-dark !p-[1.5px] !rounded-lg ml-auto shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -477,12 +477,12 @@ export default function Results({
                   setShowDiscoveryDrawer((prev) => !prev)
                 }}
                 title="Open 7-question strategic brand discovery diagnostic"
-                className={`key-cap-active-dark !rounded-md px-3.5 py-1.5 font-mono text-[11px] font-black transition-all cursor-pointer flex items-center gap-1.5 text-white hover:text-amber-300 active:scale-95 shadow-md ${
+                className={`key-cap-active-dark !rounded-md px-3 sm:px-3.5 py-1 sm:py-1.5 font-mono text-[11px] font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 text-white hover:text-amber-300 active:scale-95 shadow-md ${
                   showDiscoveryDrawer ? 'ring-2 ring-amber-400' : 'ring-1 ring-slate-600'
                 }`}
               >
                 <SlidersHorizontal weight="bold" className="text-xs shrink-0 text-amber-400" />
-                <span className="text-white font-black">{generation >= 3 ? 'Tune Preferences (3+ Rerolls)' : 'Tune Preferences'}</span>
+                <span className="text-white font-black">{generation >= 3 ? 'Tune Preferences (3+)' : 'Tune Preferences'}</span>
               </button>
             </div>
           </div>

@@ -571,17 +571,17 @@ export default function DiscoveryDrawer({
         </div>
 
         {/* Footer Hardware Controls */}
-        <div className="relative z-10 mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/90 pt-4">
+        <div className="relative z-10 mt-6 sm:mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-200/90 pt-4">
           <div className="flex items-center gap-2">
             {activeStep > 0 && (
               <div className="key-socket !p-[2px] !rounded-xl">
                 <button
                   type="button"
                   onClick={handlePrev}
-                  className="key-cap !rounded-lg px-4 py-2 font-mono text-xs font-bold text-slate-800 hover:text-slate-950 flex items-center gap-1.5 cursor-pointer"
+                  className="key-cap !rounded-lg px-3.5 sm:px-4 py-2 font-mono text-xs font-bold text-slate-800 hover:text-slate-950 flex items-center gap-1.5 cursor-pointer"
                 >
                   <ArrowLeft weight="bold" />
-                  <span>Previous</span>
+                  <span>Prev</span>
                 </button>
               </div>
             )}
@@ -591,7 +591,7 @@ export default function DiscoveryDrawer({
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="key-cap !rounded-lg px-4 py-2 font-mono text-xs font-black text-blue-700 hover:text-blue-900 flex items-center gap-1.5 cursor-pointer"
+                  className="key-cap !rounded-lg px-3.5 sm:px-4 py-2 font-mono text-xs font-black text-blue-700 hover:text-blue-900 flex items-center gap-1.5 cursor-pointer"
                 >
                   <span>Next Step</span>
                   <ArrowRight weight="bold" />
@@ -600,14 +600,14 @@ export default function DiscoveryDrawer({
             )}
           </div>
 
-          <div className="flex items-center gap-2.5 ml-auto">
+          <div className="flex items-center gap-2.5 sm:ml-auto w-full sm:w-auto">
             <button
               type="button"
               onClick={handleApply}
-              className="skeuo-button-terracotta inline-flex items-center gap-2 rounded-2xl px-6 py-3 font-mono text-xs sm:text-sm font-black uppercase tracking-wider text-white shadow-xl cursor-pointer active:scale-95 group"
+              className="skeuo-button-terracotta w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl px-5 sm:px-6 py-3 font-mono text-xs sm:text-sm font-black uppercase tracking-wider text-white shadow-xl cursor-pointer active:scale-95 group"
             >
               <Lightning weight="fill" className="text-amber-200 text-base" />
-              <span>Apply & Synthesize Names</span>
+              <span>Apply & Synthesize</span>
               <ArrowRight weight="bold" className="group-hover:translate-x-1 transition-transform" />
             </button>
           </div>

@@ -383,9 +383,9 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
       <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 h-7 w-4/5 rounded-full bg-black/40 blur-lg pointer-events-none" />
 
       {/* Main Molded Plastic Chassis with Tactile Grain (No Screws) */}
-      <div className="skeuo-chassis-purple relative px-4 sm:px-5 pt-2.5 sm:pt-3 pb-4 sm:pb-5 shadow-2xl">
-        {/* Left Side: Industrial Woven Flight Ribbon Tag */}
-        <div className="absolute -left-4 sm:-left-5 top-1/3 -translate-y-1/2 flex items-center z-20 pointer-events-auto">
+      <div className="skeuo-chassis-purple relative px-3 sm:px-5 pt-2 sm:pt-3 pb-3.5 sm:pb-5 shadow-2xl">
+        {/* Left Side: Industrial Woven Flight Ribbon Tag (Responsive positioning on small screens) */}
+        <div className="hidden xs:flex absolute -left-3 sm:-left-5 top-1/3 -translate-y-1/2 items-center z-20 pointer-events-auto">
           <div className="lanyard-bracket">
             <div className="lanyard-bracket-slot" />
           </div>
@@ -711,7 +711,7 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
           {/* 4 Precision Mechanical Action Sockets */}
           <div className="grid grid-cols-4 gap-1 sm:gap-1.5">
             {/* Button 1: MOVE LEFT */}
-            <div className="key-socket-dark !p-[2.5px] !rounded-[12px] flex">
+            <div className="key-socket-dark !p-[2px] sm:!p-[2.5px] !rounded-[10px] sm:!rounded-[12px] flex">
               <button
                 type="button"
                 onPointerDown={(e) => {
@@ -720,25 +720,25 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                 }}
                 onPointerUp={() => handleMoveLeft(false)}
                 onPointerLeave={() => handleMoveLeft(false)}
-                className={`w-full py-1.5 sm:py-2 !rounded-[8px] font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-md cursor-pointer select-none ${
+                className={`w-full py-1.5 sm:py-2 !rounded-[7px] sm:!rounded-[8px] font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-md cursor-pointer select-none ${
                   pressedKeys.left
                     ? 'key-cap-active translate-y-0.5 shadow-inner bg-slate-200'
                     : 'key-cap active:scale-95'
                 }`}
                 title="Move Left / Backward (A key or Left Arrow)"
               >
-                <div className="flex items-center gap-1 font-black text-[10px] sm:text-[11px] tracking-tight text-slate-900">
-                  <span className="text-xs">◀</span>
+                <div className="flex items-center gap-0.5 sm:gap-1 font-black text-[9px] sm:text-[11px] tracking-tight text-slate-900">
+                  <span className="text-[10px] sm:text-xs">◀</span>
                   <span>LEFT</span>
                 </div>
-                <span className="text-[7px] sm:text-[7.5px] font-bold text-slate-500 tracking-tight font-mono">
-                  [A / ←]
+                <span className="text-[6.5px] sm:text-[7.5px] font-bold text-slate-500 tracking-tight font-mono">
+                  [A/←]
                 </span>
               </button>
             </div>
 
             {/* Button 2: MOVE RIGHT */}
-            <div className="key-socket-dark !p-[2.5px] !rounded-[12px] flex">
+            <div className="key-socket-dark !p-[2px] sm:!p-[2.5px] !rounded-[10px] sm:!rounded-[12px] flex">
               <button
                 type="button"
                 onPointerDown={(e) => {
@@ -747,25 +747,25 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                 }}
                 onPointerUp={() => handleMoveRight(false)}
                 onPointerLeave={() => handleMoveRight(false)}
-                className={`w-full py-1.5 sm:py-2 !rounded-[8px] font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-md cursor-pointer select-none ${
+                className={`w-full py-1.5 sm:py-2 !rounded-[7px] sm:!rounded-[8px] font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-md cursor-pointer select-none ${
                   pressedKeys.right
                     ? 'key-cap-active translate-y-0.5 shadow-inner bg-slate-200'
                     : 'key-cap active:scale-95'
                 }`}
                 title="Move Right / Forward (D key or Right Arrow)"
               >
-                <div className="flex items-center gap-1 font-black text-[10px] sm:text-[11px] tracking-tight text-slate-900">
+                <div className="flex items-center gap-0.5 sm:gap-1 font-black text-[9px] sm:text-[11px] tracking-tight text-slate-900">
                   <span>RIGHT</span>
-                  <span className="text-xs">▶</span>
+                  <span className="text-[10px] sm:text-xs">▶</span>
                 </div>
-                <span className="text-[7px] sm:text-[7.5px] font-bold text-slate-500 tracking-tight font-mono">
-                  [D / →]
+                <span className="text-[6.5px] sm:text-[7.5px] font-bold text-slate-500 tracking-tight font-mono">
+                  [D/→]
                 </span>
               </button>
             </div>
 
             {/* Button 3: Primary JUMP Keycap */}
-            <div className="key-socket-dark !p-[2.5px] !rounded-[12px] flex">
+            <div className="key-socket-dark !p-[2px] sm:!p-[2.5px] !rounded-[10px] sm:!rounded-[12px] flex">
               <button
                 type="button"
                 onPointerDown={(e) => {
@@ -775,23 +775,23 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                 }}
                 onPointerUp={() => setPressedKeys((p) => ({ ...p, jump: false }))}
                 onPointerLeave={() => setPressedKeys((p) => ({ ...p, jump: false }))}
-                className={`key-cap-terracotta w-full py-1.5 sm:py-2 !rounded-[8px] font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg cursor-pointer select-none ${
+                className={`key-cap-terracotta w-full py-1.5 sm:py-2 !rounded-[7px] sm:!rounded-[8px] font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg cursor-pointer select-none ${
                   pressedKeys.jump ? 'translate-y-0.5 shadow-inner brightness-90' : 'active:scale-95'
                 }`}
                 title="Click to jump! (Spacebar / W / Up Arrow)"
               >
-                <div className="flex items-center gap-1 font-black text-[10px] sm:text-[11px] tracking-wide text-white">
-                  <PawPrint weight="fill" className="text-amber-200 text-xs shrink-0" />
+                <div className="flex items-center gap-0.5 sm:gap-1 font-black text-[9px] sm:text-[11px] tracking-wide text-white">
+                  <PawPrint weight="fill" className="text-amber-200 text-[10px] sm:text-xs shrink-0" />
                   <span>HOP</span>
                 </div>
-                <span className="text-[7px] sm:text-[7.5px] font-bold text-amber-100/90 tracking-tight font-mono">
+                <span className="text-[6.5px] sm:text-[7.5px] font-bold text-amber-100/90 tracking-tight font-mono">
                   [space]
                 </span>
               </button>
             </div>
 
             {/* Button 4: Primary FIRE Keycap */}
-            <div className="key-socket-dark !p-[2.5px] !rounded-[12px] flex">
+            <div className="key-socket-dark !p-[2px] sm:!p-[2.5px] !rounded-[10px] sm:!rounded-[12px] flex">
               <button
                 type="button"
                 onPointerDown={(e) => {
@@ -801,17 +801,17 @@ export default function HeroHardwareGadget({ onInteractWithConsole }) {
                 }}
                 onPointerUp={() => setPressedKeys((p) => ({ ...p, fire: false }))}
                 onPointerLeave={() => setPressedKeys((p) => ({ ...p, fire: false }))}
-                className={`key-cap-cobalt w-full py-1.5 sm:py-2 !rounded-[8px] font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg cursor-pointer select-none ${
+                className={`key-cap-cobalt w-full py-1.5 sm:py-2 !rounded-[7px] sm:!rounded-[8px] font-mono text-center transition-all flex flex-col items-center justify-center gap-0.5 shadow-lg cursor-pointer select-none ${
                   pressedKeys.fire ? 'translate-y-0.5 shadow-inner brightness-90' : 'active:scale-95'
                 }`}
                 title="Fire blaster at enemies & bosses! (Left Click / J / F / Enter)"
               >
-                <div className="flex items-center gap-1 font-black text-[10px] sm:text-[11px] tracking-wide text-white">
-                  <Crosshair weight="bold" className="text-cyan-200 text-xs shrink-0" />
+                <div className="flex items-center gap-0.5 sm:gap-1 font-black text-[9px] sm:text-[11px] tracking-wide text-white">
+                  <Crosshair weight="bold" className="text-cyan-200 text-[10px] sm:text-xs shrink-0" />
                   <span>BLAST</span>
                 </div>
-                <span className="text-[7px] sm:text-[7.5px] font-bold text-cyan-100/90 tracking-tight font-mono">
-                  [click / J]
+                <span className="text-[6.5px] sm:text-[7.5px] font-bold text-cyan-100/90 tracking-tight font-mono">
+                  [click/J]
                 </span>
               </button>
             </div>

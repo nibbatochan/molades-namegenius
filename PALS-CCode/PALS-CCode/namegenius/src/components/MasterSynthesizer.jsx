@@ -647,21 +647,21 @@ export default function MasterSynthesizer({
 
             {/* Hardware Tone Slider */}
             <div className="mt-6 pt-4 border-t border-slate-200/80">
-              <div className="flex items-center justify-between font-mono text-xs font-bold text-slate-800">
-                <span className="flex items-center gap-1.5 text-amber-800">
+              <div className="flex items-center justify-between font-mono text-[11px] sm:text-xs font-bold text-slate-800 gap-2">
+                <span className="flex items-center gap-1.5 text-amber-800 shrink-0">
                   <Waveform weight="bold" />
-                  SMOOTH & FRIENDLY (WARM VOWELS)
+                  <span>SMOOTH <span className="hidden sm:inline">& FRIENDLY (WARM)</span></span>
                 </span>
-                <span className="rounded-full bg-slate-950 px-3.5 py-1 font-mono text-[11px] font-black text-white shadow-xs">
+                <span className="rounded-full bg-slate-950 px-2.5 sm:px-3.5 py-1 font-mono text-[10px] sm:text-[11px] font-black text-white shadow-xs shrink-0">
                   {acousticBias < 40
-                    ? 'SMOOTH TONE'
+                    ? 'SMOOTH'
                     : acousticBias > 60
-                    ? 'PUNCHY TONE'
-                    : 'BALANCED TONE'}
+                    ? 'PUNCHY'
+                    : 'BALANCED'}
                 </span>
-                <span className="flex items-center gap-1.5 text-cyan-800">
+                <span className="flex items-center gap-1.5 text-cyan-800 shrink-0">
                   <Lightning weight="bold" />
-                  SHORT & PUNCHY (SHARP CONSONANTS)
+                  <span>PUNCHY <span className="hidden sm:inline">& SHARP (CRISP)</span></span>
                 </span>
               </div>
 
@@ -677,11 +677,11 @@ export default function MasterSynthesizer({
                   }}
                   className="hardware-slider w-full"
                 />
-                <div className="flex justify-between px-2 pt-1 font-mono text-[9px] font-bold text-slate-500 select-none">
+                <div className="flex justify-between px-1 sm:px-2 pt-1 font-mono text-[8.5px] sm:text-[9px] font-bold text-slate-500 select-none">
                   <span>| 0% (SMOOTH)</span>
-                  <span>| 25%</span>
+                  <span className="hidden xs:inline">| 25%</span>
                   <span className="text-slate-900 font-black">| 50% (BALANCED)</span>
-                  <span>| 75%</span>
+                  <span className="hidden xs:inline">| 75%</span>
                   <span>| 100% (PUNCHY)</span>
                 </div>
               </div>
@@ -689,17 +689,17 @@ export default function MasterSynthesizer({
           </div>
 
           {/* Module D: Syllable Length + Grand Terracotta Action Button */}
-          <div className="skeuo-plate flex flex-wrap items-center justify-between gap-5 rounded-3xl p-5 sm:p-7 shadow-sm">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="font-mono text-xs font-black uppercase tracking-wider text-slate-900">
+          <div className="skeuo-plate flex flex-col sm:flex-row sm:items-center justify-between gap-5 rounded-3xl p-5 sm:p-7 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <span className="font-mono text-xs font-black uppercase tracking-wider text-slate-900 shrink-0">
                 6. Syllable count:
               </span>
-              <div className="key-socket-dark !p-1 !rounded-2xl inline-flex">
+              <div className="key-socket-dark !p-1 !rounded-2xl inline-flex overflow-x-auto no-scrollbar max-w-full">
                 {[
-                  { value: 0, label: 'Any length' },
-                  { value: 1, label: '1 syllable' },
-                  { value: 2, label: '2 syllables' },
-                  { value: 3, label: '3 syllables' },
+                  { value: 0, label: 'Any' },
+                  { value: 1, label: '1 syl' },
+                  { value: 2, label: '2 syl' },
+                  { value: 3, label: '3 syl' },
                 ].map((opt) => (
                   <button
                     key={opt.value}
@@ -708,7 +708,7 @@ export default function MasterSynthesizer({
                       playMechanicalClick('click')
                       setMaxSyllables(opt.value)
                     }}
-                    className={`rounded-xl px-4 py-1.5 font-mono text-xs font-bold transition-all ${
+                    className={`rounded-xl px-3 sm:px-4 py-1.5 font-mono text-xs font-bold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
                       maxSyllables === opt.value
                         ? 'key-cap-active-dark'
                         : 'text-slate-300 hover:text-white'
@@ -720,11 +720,11 @@ export default function MasterSynthesizer({
               </div>
             </div>
 
-            {/* Master Push Button (Style Guide §3 & Images 1 & 3) */}
+            {/* Master Push Button (Full width on mobile, right aligned on desktop) */}
             <button
               type="submit"
               disabled={isGenerating}
-              className="skeuo-button-terracotta inline-flex items-center gap-3.5 rounded-2xl px-9 py-4 font-mono text-xs sm:text-sm font-black tracking-wider uppercase text-white active:scale-95 shadow-2xl group"
+              className="skeuo-button-terracotta w-full sm:w-auto inline-flex items-center justify-center gap-3.5 rounded-2xl px-8 sm:px-9 py-3.5 sm:py-4 font-mono text-xs sm:text-sm font-black tracking-wider uppercase text-white active:scale-95 shadow-2xl group cursor-pointer"
             >
               {isGenerating ? (
                 <>
@@ -733,7 +733,7 @@ export default function MasterSynthesizer({
                 </>
               ) : (
                 <>
-                  <span className="deboss-dark font-black tracking-widest text-sm">
+                  <span className="deboss-dark font-black tracking-widest text-xs sm:text-sm">
                     SYNTHESIZE NAMES ⚡
                   </span>
                   <ArrowRight weight="bold" className="group-hover:translate-x-1.5 transition-transform text-base" />

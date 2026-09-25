@@ -41,35 +41,35 @@ export default function AppNavbar({
 
   return (
     <>
-      <header className="z-30 w-full max-w-7xl mx-auto flex items-center justify-between shrink-0 bg-[#fae127] border-2 border-slate-950 px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 rounded-2xl shadow-md select-none">
+      <header className="z-30 w-full max-w-7xl mx-auto flex items-center justify-between gap-2 shrink-0 bg-[#fae127] border-2 border-slate-950 px-2.5 sm:px-6 md:px-8 py-1.5 sm:py-2.5 rounded-2xl shadow-md select-none">
         {/* Left: Brand Logo & Title */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button
             type="button"
             onClick={() => handleNavClick('brief')}
-            className="group flex items-center gap-2.5 cursor-pointer transition-opacity hover:opacity-90 text-left"
+            className="group flex items-center gap-2 sm:gap-2.5 cursor-pointer transition-opacity hover:opacity-90 text-left"
             title="NameGenius Home"
           >
-            <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-slate-950 p-1.5 shadow-md border border-slate-800 transition-transform group-hover:scale-105">
+            <span className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-slate-950 p-1 sm:p-1.5 shadow-md border border-slate-800 transition-transform group-hover:scale-105 shrink-0">
               <img
                 src="/logo-white.png"
                 alt="NameGenius Logo"
                 className="h-full w-full object-contain"
               />
             </span>
-            <span className="font-display text-xl sm:text-2xl font-black tracking-tight text-slate-950 uppercase">
+            <span className="font-display text-lg sm:text-2xl font-black tracking-tight text-slate-950 uppercase hidden xs:inline sm:inline">
               NameGenius
             </span>
           </button>
         </div>
 
-        {/* Center: Sunk-in Tactile Navigation Cluster with High Contrast */}
-        <nav className="flex items-center gap-1 rounded-full border border-slate-950/20 bg-slate-950/10 p-1 text-xs shadow-inner backdrop-blur-xs">
+        {/* Center: Sunk-in Tactile Navigation Cluster with High Contrast (Horizontally scrollable on mobile) */}
+        <nav className="flex items-center gap-1 rounded-full border border-slate-950/20 bg-slate-950/10 p-0.5 sm:p-1 text-xs shadow-inner backdrop-blur-xs overflow-x-auto no-scrollbar max-w-[58vw] sm:max-w-none shrink">
           {/* 1. HOME (formerly CONSOLE/Generator) */}
           <button
             type="button"
             onClick={() => handleNavClick('brief')}
-            className={`rounded-full px-3.5 py-1.5 font-mono text-xs transition-all ${
+            className={`rounded-full px-2.5 sm:px-3.5 py-1 sm:py-1.5 font-mono text-[11px] sm:text-xs shrink-0 whitespace-nowrap transition-all ${
               isHomeActive
                 ? 'bg-slate-950 font-black text-white shadow-sm flex items-center ring-1 ring-slate-950'
                 : 'font-bold text-slate-950 hover:bg-slate-950/15 active:scale-95 cursor-pointer'
@@ -82,7 +82,7 @@ export default function AppNavbar({
           <button
             type="button"
             onClick={() => handleNavClick('results')}
-            className={`rounded-full px-3.5 py-1.5 font-mono text-xs transition-all ${
+            className={`rounded-full px-2.5 sm:px-3.5 py-1 sm:py-1.5 font-mono text-[11px] sm:text-xs shrink-0 whitespace-nowrap transition-all ${
               activeView === 'results'
                 ? 'bg-slate-950 font-black text-white shadow-sm flex items-center ring-1 ring-slate-950'
                 : 'font-bold text-slate-950 hover:bg-slate-950/15 active:scale-95 cursor-pointer'
@@ -104,7 +104,7 @@ export default function AppNavbar({
           <button
             type="button"
             onClick={() => handleNavClick('shortlist')}
-            className={`relative rounded-full px-3.5 py-1.5 font-mono text-xs transition-all cursor-pointer ${
+            className={`relative rounded-full px-2.5 sm:px-3.5 py-1 sm:py-1.5 font-mono text-[11px] sm:text-xs shrink-0 whitespace-nowrap transition-all cursor-pointer ${
               activeView === 'shortlist'
                 ? 'bg-slate-950 font-black text-white shadow-sm flex items-center ring-1 ring-slate-950'
                 : 'font-bold text-slate-950 hover:bg-slate-950/15 active:scale-95'
@@ -126,7 +126,7 @@ export default function AppNavbar({
           <button
             type="button"
             onClick={() => handleNavClick('compare')}
-            className={`rounded-full px-3.5 py-1.5 font-mono text-xs transition-all cursor-pointer ${
+            className={`rounded-full px-2.5 sm:px-3.5 py-1 sm:py-1.5 font-mono text-[11px] sm:text-xs shrink-0 whitespace-nowrap transition-all cursor-pointer ${
               activeView === 'compare'
                 ? 'bg-slate-950 font-black text-white shadow-sm flex items-center ring-1 ring-slate-950'
                 : 'font-bold text-slate-950 hover:bg-slate-950/15 active:scale-95'
@@ -148,7 +148,7 @@ export default function AppNavbar({
           <button
             type="button"
             onClick={() => handleNavClick('lab')}
-            className={`rounded-full px-3.5 py-1.5 font-mono text-xs font-black transition-all active:scale-95 cursor-pointer flex items-center gap-1 ${
+            className={`rounded-full px-2.5 sm:px-3.5 py-1 sm:py-1.5 font-mono text-[11px] sm:text-xs shrink-0 whitespace-nowrap font-black transition-all active:scale-95 cursor-pointer flex items-center gap-1 ${
               activeView === 'lab'
                 ? 'bg-slate-950 text-white shadow-sm ring-1 ring-slate-950'
                 : 'text-purple-950 bg-purple-200/90 hover:bg-purple-300 border border-purple-400/60'
@@ -160,19 +160,20 @@ export default function AppNavbar({
             ) : (
               <span>🧪</span>
             )}
-            <span>SPRITE LAB</span>
+            <span className="hidden xs:inline">SPRITE LAB</span>
+            <span className="xs:hidden">LAB</span>
           </button>
         </nav>
 
         {/* Right: Quick Actions (SFX toggle + Manual / Extra Actions) */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {rightExtra}
 
           <button
             type="button"
             onClick={handleToggleSound}
             title={soundEnabled ? 'Mechanical audio haptics enabled' : 'Mechanical audio muted'}
-            className="skeuo-push-btn hidden sm:inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-mono text-xs font-bold text-slate-900 border border-slate-950/20 bg-white/90 cursor-pointer active:scale-95"
+            className="skeuo-push-btn hidden md:inline-flex items-center gap-1.5 rounded-full px-2.5 sm:px-3 py-1 sm:py-1.5 font-mono text-[11px] sm:text-xs font-bold text-slate-900 border border-slate-950/20 bg-white/90 cursor-pointer active:scale-95"
           >
             {soundEnabled ? (
               <>
@@ -193,10 +194,10 @@ export default function AppNavbar({
               if (soundEnabled) playMechanicalClick('click')
               setShowModal(true)
             }}
-            className="skeuo-push-btn inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-mono text-xs font-bold text-slate-900 border border-slate-950/20 bg-white/90 active:scale-95 cursor-pointer"
+            className="skeuo-push-btn inline-flex items-center gap-1 sm:gap-1.5 rounded-full px-2.5 sm:px-3.5 py-1 sm:py-1.5 font-mono text-[11px] sm:text-xs font-bold text-slate-900 border border-slate-950/20 bg-white/90 active:scale-95 cursor-pointer"
           >
-            <BookOpen weight="bold" className="text-blue-700 text-sm" />
-            <span>MANUAL</span>
+            <BookOpen weight="bold" className="text-blue-700 text-xs sm:text-sm" />
+            <span className="hidden xs:inline">MANUAL</span>
           </button>
         </div>
       </header>
