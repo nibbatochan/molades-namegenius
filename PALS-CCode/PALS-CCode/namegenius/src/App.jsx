@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Agentation } from 'agentation'
 import Brief from './Brief'
 import Results from './Results'
 import { Shortlist, Compare } from './Screens'
@@ -153,12 +152,7 @@ function App() {
     }
   }
 
-  return (
-    <>
-      {renderCurrentView()}
-      <Agentation />
-    </>
-  )
+  return renderCurrentView()
 }
 
 export default App
